@@ -54,12 +54,22 @@ function uploadToCloudinary(buffer) {
 
 /* ---------- Google Sheets ---------- */
 // אימות מול חשבון שירות (Service Account)
-// ניקוי המפתח: הסרת מרכאות עוטפות/רווחים, והמרת \n לירידות שורה אמיתיות
+// ניקוי המפתח ושחזורו לפורמט PEM תקין — עמיד לכל צורת שמירה
+// (מרכאות עוטפות, \n טקסטואלי, או ירידות שורה שהפכו לרווחים ב-Render)
 function cleanPrivateKey(raw) {
-  return (raw || '')
-    .trim()
-    .replace(/^["']|["']$/g, '')   // הסרת מרכאות בתחילת/סוף (אם נכנסו)
+  let k = (raw || '').trim()
+    .replace(/^["']|["']$/g, '')   // הסרת מרכאות עוטפות
     .replace(/\\n/g, '\n');         // \n טקסטואלי → ירידת שורה אמיתית
+
+  // שחזור: חילוץ הגוף בין BEGIN/END, ניקוי כל הרווחים, ועטיפה מחדש ב-64 תווים
+  const m = k.match(/-----BEGIN ([A-Z ]+)-----([\s\S]*?)-----END \1-----/);
+  if (m) {
+    const label = m[1].trim();
+    const body = m[2].replace(/\s+/g, '');     // הסרת כל הרווחים/שורות מהגוף
+    const wrapped = (body.match(/.{1,64}/g) || []).join('\n');
+    return `-----BEGIN ${label}-----\n${wrapped}\n-----END ${label}-----\n`;
+  }
+  return k;
 }
 
 const serviceAccountAuth = new JWT({
