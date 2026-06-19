@@ -184,7 +184,7 @@ app.get('/api/products', async (req, res) => {
     res.json({ ok: true, products: rows.map(rowToProduct), source: 'sheets' });
   } catch (err) {
     console.error('GET /api/products failed:', err.message);
-    res.status(500).json({ ok: false, error: 'נכשלה משיכת המוצרים מגוגל שיטס', detail: err.message });
+    res.status(500).json({ ok: false, error: 'נכשלה משיכת המוצרים מגוגל שיטס' });
   }
 });
 
