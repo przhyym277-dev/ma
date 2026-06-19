@@ -83,6 +83,43 @@ function rowToProduct(row) {
   };
 }
 
+/* ---------- מצב הפעלה: Sheets אמיתי או זיכרון (fallback) ---------- */
+// אם משתני גוגל קיימים → עובדים מול Google Sheets. אחרת → מוצרי דמו בזיכרון.
+const SHEETS_ENABLED = !!(
+  process.env.GOOGLE_SHEET_ID &&
+  process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
+  process.env.GOOGLE_PRIVATE_KEY
+);
+const CLOUDINARY_ENABLED = !!(
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET
+);
+
+// מוצרי דמו — נטענים רק כשאין Google Sheets מחובר
+let memProducts = [
+  { id:'g1', world:'garden', category:'אדמה',        name:'אדמת גינה פרימיום 50 ליטר', price:45,  desc:'אדמה מועשרת ומאווררת לצמיחה בריאה.', image:'', hidden:false },
+  { id:'g2', world:'garden', category:'גינון',       name:'דשא סינתטי איכותי (מ״ר)',   price:89,  desc:'מראה טבעי, עמיד לשמש ולשחיקה.',      image:'', hidden:false },
+  { id:'g3', world:'garden', category:'מערכת השקיה', name:'מערכת השקיה בטפטוף',        price:320, desc:'ערכה מלאה לחיסכון במים ובזמן.',      image:'', hidden:false },
+  { id:'g4', world:'garden', category:'כלי מעון',     name:'עציץ טרקוטה גדול',          price:120, desc:'חרס איכותי, מתאים לפנים ולחוץ.',     image:'', hidden:false },
+  { id:'g5', world:'garden', category:'דשן אורגני',   name:'דשן אורגני 5 ק״ג',          price:65,  desc:'הזנה מתמשכת לצמחים פורחים.',         image:'', hidden:false },
+  { id:'g6', world:'garden', category:'כלים',        name:'מזמרה מקצועית',             price:180, desc:'להב פלדה חד, אחיזה ארגונומית.',      image:'', hidden:false },
+  { id:'r1', world:'rc', category:'באגי',     name:'מכונית באגי מקצועית 4X4', price:1200, desc:'מתח מלא, מתלים מוגברים לכל שטח.',  image:'', hidden:false },
+  { id:'r2', world:'rc', category:'דריפט',    name:'מכונית דריפט מהירה',      price:850,  desc:'ג׳יירו וצמיגי דריפט לשליטה מלאה.', image:'', hidden:false },
+  { id:'r3', world:'rc', category:'מכוניות',  name:'רכב מירוץ מהיר 1:14',     price:290,  desc:'מהירות גבוהה ושליטה מדויקת.',      image:'', hidden:false },
+  { id:'r4', world:'rc', category:'טיפוס',    name:'רכב טיפוס סלעים Crawler', price:750,  desc:'מנוע חזק לטיפוס על כל מכשול.',     image:'', hidden:false },
+];
+
+// מעלה תמונה: Cloudinary אם מוגדר, אחרת data-URL (כדי שתעבוד גם בלי Cloudinary)
+async function uploadImage(file) {
+  if (!file) return '';
+  if (CLOUDINARY_ENABLED) {
+    const result = await uploadToCloudinary(file.buffer);
+    return result.secure_url;
+  }
+  return `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+}
+
 /* ---------- אימות מנהל ---------- */
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
 
@@ -122,10 +159,12 @@ app.post('/api/admin/login', (req, res) => {
  * ============================================================ */
 app.get('/api/products', async (req, res) => {
   try {
+    if (!SHEETS_ENABLED) {
+      return res.json({ ok: true, products: memProducts, source: 'memory' });
+    }
     const sheet = await getSheet();
     const rows = await sheet.getRows();
-    const products = rows.map(rowToProduct);
-    res.json({ ok: true, products });
+    res.json({ ok: true, products: rows.map(rowToProduct), source: 'sheets' });
   } catch (err) {
     console.error('GET /api/products failed:', err.message);
     res.status(500).json({ ok: false, error: 'נכשלה משיכת המוצרים מגוגל שיטס' });
@@ -146,31 +185,33 @@ app.post('/api/products', requireAuth, upload.single('image'), async (req, res) 
       return res.status(400).json({ ok: false, error: 'חסר שם מוצר או מחיר' });
     }
 
-    // 1) העלאת התמונה ל-Cloudinary (אם הועלתה)
-    let imageUrl = '';
-    if (req.file) {
-      const result = await uploadToCloudinary(req.file.buffer);
-      imageUrl = result.secure_url;
-    }
+    // 1) העלאת התמונה (Cloudinary אם מוגדר, אחרת data-URL)
+    const imageUrl = await uploadImage(req.file);
 
-    // 2) בניית השורה והוספתה לגוגל שיט
-    const product = {
+    const base = {
       id: 'p' + Date.now(),
       world: world === 'rc' ? 'rc' : 'garden',
       category: world === 'rc' ? 'RC' : 'גינון',
       name: String(name).trim(),
       price: Number(price),
       desc: (desc || '').trim() || 'מוצר חדש במחסן.',
-      imageUrl,
-      hidden: status === 'hidden' ? 'TRUE' : 'FALSE',
-      createdAt: new Date().toISOString(),
     };
+    const isHidden = status === 'hidden';
 
-    const sheet = await getSheet();
-    await sheet.addRow(product);
+    // 2) שמירה: Google Sheets אם מחובר, אחרת זיכרון
+    if (SHEETS_ENABLED) {
+      const sheet = await getSheet();
+      await sheet.addRow({
+        ...base,
+        imageUrl,
+        hidden: isHidden ? 'TRUE' : 'FALSE',
+        createdAt: new Date().toISOString(),
+      });
+    } else {
+      memProducts.unshift({ ...base, image: imageUrl, hidden: isHidden });
+    }
 
-    // מחזירים את המוצר בפורמט שהפרונטאנד מכיר
-    res.json({ ok: true, product: { ...product, image: imageUrl, hidden: product.hidden === 'TRUE' } });
+    res.json({ ok: true, product: { ...base, image: imageUrl, hidden: isHidden } });
   } catch (err) {
     console.error('POST /api/products failed:', err.message);
     res.status(500).json({ ok: false, error: 'נכשלה שמירת המוצר' });
@@ -182,10 +223,23 @@ app.post('/api/products', requireAuth, upload.single('image'), async (req, res) 
  * ============================================================ */
 app.put('/api/products/:id', requireAuth, async (req, res) => {
   try {
+    const { name, price, desc, world, category, hidden } = req.body || {};
+
+    if (!SHEETS_ENABLED) {
+      const p = memProducts.find(x => String(x.id) === String(req.params.id));
+      if (!p) return res.status(404).json({ ok: false, error: 'מוצר לא נמצא' });
+      if (name !== undefined) p.name = String(name).trim();
+      if (price !== undefined) p.price = Number(price);
+      if (desc !== undefined) p.desc = String(desc).trim();
+      if (world !== undefined) p.world = world === 'rc' ? 'rc' : 'garden';
+      if (category !== undefined) p.category = String(category);
+      if (hidden !== undefined) p.hidden = !!hidden;
+      return res.json({ ok: true, product: p });
+    }
+
     const { row } = await findRowById(req.params.id);
     if (!row) return res.status(404).json({ ok: false, error: 'מוצר לא נמצא' });
 
-    const { name, price, desc, world, category, hidden } = req.body || {};
     if (name !== undefined) row.set('name', String(name).trim());
     if (price !== undefined) row.set('price', Number(price));
     if (desc !== undefined) row.set('desc', String(desc).trim());
@@ -206,6 +260,12 @@ app.put('/api/products/:id', requireAuth, async (req, res) => {
  * ============================================================ */
 app.delete('/api/products/:id', requireAuth, async (req, res) => {
   try {
+    if (!SHEETS_ENABLED) {
+      const p = memProducts.find(x => String(x.id) === String(req.params.id));
+      if (!p) return res.status(404).json({ ok: false, error: 'מוצר לא נמצא' });
+      p.hidden = true;
+      return res.json({ ok: true });
+    }
     const { row } = await findRowById(req.params.id);
     if (!row) return res.status(404).json({ ok: false, error: 'מוצר לא נמצא' });
     row.set('hidden', 'TRUE');
@@ -220,4 +280,7 @@ app.delete('/api/products/:id', requireAuth, async (req, res) => {
 /* ---------- start ---------- */
 app.listen(PORT, () => {
   console.log(`🌿 המחסן הגדול רץ על http://localhost:${PORT}`);
+  console.log(`   מקור מוצרים: ${SHEETS_ENABLED ? 'Google Sheets ✅' : 'זיכרון (דמו) — הוסף משתני GOOGLE_* כדי לחבר Sheets'}`);
+  console.log(`   תמונות: ${CLOUDINARY_ENABLED ? 'Cloudinary ✅' : 'data-URL (הוסף CLOUDINARY_* לאחסון אמיתי)'}`);
+  console.log(`   סיסמת מנהל: ${ADMIN_PASSWORD ? 'מוגדרת ✅' : 'חסרה ⚠️ (הגדר ADMIN_PASSWORD)'}`);
 });
