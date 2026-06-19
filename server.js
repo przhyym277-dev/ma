@@ -95,7 +95,7 @@ function rowToProduct(row) {
     name: row.get('name') || '',
     desc: row.get('desc') || '',
     price: Number(row.get('price')) || 0,
-    image: row.get('imageUrl') || '',                  // קישור Cloudinary
+    image: row.get('imageUrl') || row.get('imageurl') || '',  // תומך בכותרת imageUrl/imageurl
     hidden: hiddenRaw === 'true' || hiddenRaw === '1' || hiddenRaw === 'כן',
   };
 }
@@ -238,12 +238,16 @@ app.post('/api/products', requireAuth, upload.single('image'), async (req, res) 
     // 2) שמירה: Google Sheets אם מחובר, אחרת זיכרון
     if (SHEETS_ENABLED) {
       const sheet = await getSheet();
-      await sheet.addRow({
+      await sheet.loadHeaderRow();
+      // מאתר את שם עמודת התמונה בפועל (imageUrl או imageurl)
+      const imgCol = (sheet.headerValues || []).find(h => h.toLowerCase() === 'imageurl') || 'imageUrl';
+      const rowObj = {
         ...base,
-        imageUrl,
         hidden: isHidden ? 'TRUE' : 'FALSE',
         createdAt: new Date().toISOString(),
-      });
+      };
+      rowObj[imgCol] = imageUrl;
+      await sheet.addRow(rowObj);
     } else {
       memProducts.unshift({ ...base, image: imageUrl, hidden: isHidden });
     }
