@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>המחסן הגדול — גינון & RC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:'Assistant',system-ui,sans-serif;background:#F6F4EE;color:#1C2620;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  ::selection{background:#E8741E;color:#fff}
+  input,select,textarea{font-family:'Assistant',sans-serif}
+  input:focus,select:focus,textarea:focus{outline:none}
+  button{font-family:'Assistant',sans-serif}
+  @keyframes floatUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes blob{0%,100%{border-radius:42% 58% 63% 37%/42% 45% 55% 58%}50%{border-radius:58% 42% 38% 62%/55% 58% 42% 45%}}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-4px)}40%,80%{transform:translateX(4px)}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:#cdbfa9;border-radius:10px}
+  .card{transition:transform .22s cubic-bezier(.2,.7,.3,1),box-shadow .22s ease}
+  .card:hover{transform:translateY(-6px);box-shadow:0 18px 38px rgba(20,68,47,0.14)}
+  .tab:hover{transform:translateY(-3px)}
+  .hbtn{transition:transform .18s ease,box-shadow .18s ease}
+</style>
+</head>
+<body>
+
+<div dir="rtl" style="position:relative;min-height:100vh;overflow-x:hidden;background:radial-gradient(1200px 600px at 12% -5%,rgba(60,164,106,0.13),transparent 45%),radial-gradient(1000px 560px at 90% 6%,rgba(232,116,30,0.11),transparent 46%),radial-gradient(1100px 700px at 50% 108%,rgba(60,164,106,0.09),transparent 55%),linear-gradient(180deg,#F4F1E7 0%,#F1EFE6 100%)">
+
+  <!-- decorative texture -->
+  <div style="position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle,rgba(20,68,47,0.055) 1px,transparent 1.4px);background-size:24px 24px;mask-image:linear-gradient(180deg,rgba(0,0,0,0.9),rgba(0,0,0,0.35) 60%,transparent);-webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,0.9),rgba(0,0,0,0.35) 60%,transparent)"></div>
+
+  <!-- ================= SHOP VIEW ================= -->
+  <div id="shopView" style="position:relative;z-index:1;display:block">
+
+  <!-- HEADER -->
+  <header style="position:sticky;top:0;z-index:40;background:rgba(246,244,238,0.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(20,68,47,0.10)">
+    <div style="max-width:1200px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0">
+        <div style="width:42px;height:42px;flex-shrink:0;background:#14442F;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 6px 16px rgba(20,68,47,0.28)">🌿</div>
+        <div style="line-height:1.05;min-width:0">
+          <div style="font-family:'Rubik',sans-serif;font-weight:900;font-size:17px;color:#14442F;letter-spacing:-0.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">המחסן הגדול</div>
+          <div style="font-size:10.5px;font-weight:700;color:#E8741E;letter-spacing:0.3px;white-space:nowrap">גינון&nbsp;&amp;&nbsp;צעצועים RC</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button data-act="go-admin" class="hbtn" style="display:flex;align-items:center;gap:6px;background:#fff;color:#4A574E;border:1px solid rgba(20,68,47,0.14);border-radius:999px;padding:9px 13px;font-weight:700;font-size:13px;cursor:pointer">ניהול 🛠️</button>
+        <button data-act="open-cart" class="hbtn" style="display:flex;align-items:center;gap:8px;background:#14442F;color:#fff;border:none;border-radius:999px;padding:9px 14px;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 8px 20px rgba(20,68,47,0.22);white-space:nowrap">
+          <span style="font-size:17px">🛒</span>
+          <span>הסל שלי (<span id="hdrCount">0</span>)</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section style="position:relative;max-width:1200px;margin:14px auto 0;padding:0 14px">
+    <div style="position:relative;overflow:hidden;border-radius:30px;padding:42px 26px 32px;background:linear-gradient(150deg,#1C5A3C 0%,#143F2C 58%,#0E3322 100%);box-shadow:0 26px 54px rgba(14,46,30,0.34)">
+      <div style="position:absolute;top:-60px;right:-30px;width:280px;height:280px;background:radial-gradient(circle,rgba(232,116,30,0.5),transparent 66%);animation:blob 16s ease-in-out infinite;z-index:0"></div>
+      <div style="position:absolute;bottom:-80px;left:-50px;width:260px;height:260px;background:radial-gradient(circle,rgba(70,210,140,0.34),transparent 68%);animation:blob 20s ease-in-out infinite;z-index:0"></div>
+      <div style="position:relative;z-index:1;animation:floatUp .7s ease both">
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.22);padding:6px 13px;border-radius:999px;font-size:13px;font-weight:700;color:#EAF6EE">⭐ 5 שנות ניסיון</div>
+          <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.22);padding:6px 13px;border-radius:999px;font-size:13px;font-weight:700;color:#EAF6EE">
+            <span style="width:8px;height:8px;background:#3CA46A;border-radius:50%;box-shadow:0 0 0 4px rgba(60,164,106,0.18)"></span>
+            המחסן פתוח עכשיו
+          </div>
+        </div>
+        <h1 style="font-family:'Rubik',sans-serif;font-weight:900;font-size:clamp(34px,7vw,60px);line-height:1.04;letter-spacing:-1.2px;margin:18px 0 0;max-width:13ch;color:#fff">
+          כל הגינה שלך<br><span style="color:#7FE0A8">במקום אחד</span> <span style="color:#FF9E45">.</span>
+        </h1>
+        <p style="font-size:clamp(16px,2.4vw,19px);font-weight:500;color:rgba(233,242,236,0.88);line-height:1.55;margin:16px 0 0;max-width:48ch">
+          מוצרי גינון איכותיים לצד עולם שלם של מכוניות וצעצועים על שלט. <strong style="color:#FFC78F">איסוף עצמי מהמחסן</strong> או <strong style="color:#FFC78F">משלוח עד הבית</strong> — אתם בוחרים.
+        </p>
+        <!-- BIG TABS -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:28px;max-width:660px">
+          <button id="tabGarden" data-act="pick-garden" class="tab" style="position:relative;border-radius:20px;padding:20px 16px;cursor:pointer;font-family:'Rubik',sans-serif;text-align:right;transition:transform .2s ease,box-shadow .2s ease,background .2s ease">
+            <div style="font-size:30px;line-height:1">🌿</div>
+            <div style="font-weight:800;font-size:19px;margin-top:8px">לעולם הגינון</div>
+            <div style="font-size:12.5px;font-weight:500;opacity:0.72;font-family:'Assistant'">אדמה · צמחים · השקיה · כלים</div>
+          </button>
+          <button id="tabRc" data-act="pick-rc" class="tab" style="position:relative;border-radius:20px;padding:20px 16px;cursor:pointer;font-family:'Rubik',sans-serif;text-align:right;transition:transform .2s ease,box-shadow .2s ease,background .2s ease">
+            <div style="font-size:30px;line-height:1">🏎️</div>
+            <div style="font-weight:800;font-size:19px;margin-top:8px">עולם ה‑RC</div>
+            <div style="font-size:12.5px;font-weight:500;opacity:0.72;font-family:'Assistant'">מכוניות · באגי · דריפט · חלקים</div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- sticky mini switcher -->
+  <div style="position:sticky;top:67px;z-index:30;background:rgba(246,244,238,0.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)">
+    <div style="max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <h2 id="sectionTitle" style="font-family:'Rubik',sans-serif;font-weight:800;font-size:clamp(19px,4vw,26px);margin:0;color:#14442F">🌿 עולם הגינון</h2>
+      <div style="display:inline-flex;background:#EAE6DB;border-radius:999px;padding:4px;gap:2px">
+        <button id="pillGarden" data-act="pick-garden" style="border:none;border-radius:999px;padding:8px 15px;font-weight:800;font-size:13.5px;cursor:pointer;transition:all .2s ease">🌿 גינון</button>
+        <button id="pillRc" data-act="pick-rc" style="border:none;border-radius:999px;padding:8px 15px;font-weight:800;font-size:13.5px;cursor:pointer;transition:all .2s ease">🏎️ RC</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUCT GRID -->
+  <section style="max-width:1200px;margin:0 auto;padding:18px 20px 90px">
+    <div id="grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,180px),1fr));gap:16px"></div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer style="background:#14442F;color:#D8E4DC">
+    <div style="max-width:1200px;margin:0 auto;padding:46px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:30px">
+      <div>
+        <div style="font-family:'Rubik',sans-serif;font-weight:900;font-size:22px;color:#fff">המחסן הגדול 🌿🏎️</div>
+        <p style="font-size:14px;line-height:1.6;color:#9DB7AB;margin:12px 0 0;max-width:30ch">מאות לקוחות מרוצים — מרכז גדול למוצרי גינון לצד עולם הצעצועים על שלט.</p>
+      </div>
+      <div>
+        <div style="font-weight:800;color:#fff;font-size:15px;margin-bottom:10px">שעות פעילות</div>
+        <div style="font-size:14px;line-height:1.8;color:#9DB7AB">א׳–ה׳ · 08:00–18:00<br>ו׳ · 08:00–14:00<br>שבת · סגור</div>
+      </div>
+      <div>
+        <div style="font-weight:800;color:#fff;font-size:15px;margin-bottom:10px">צרו קשר</div>
+        <div style="font-size:14px;line-height:1.8;color:#9DB7AB">📍 אזה״ת, רחוב הדוגמה 12<br>📞 050‑000‑0000</div>
+        <button data-act="go-admin" style="margin-top:14px;background:rgba(255,255,255,0.08);color:#C9DBD0;border:1px solid rgba(255,255,255,0.14);border-radius:10px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer">מעבר לפאנל ניהול 🛠️</button>
+      </div>
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,0.1);padding:16px 20px;text-align:center;font-size:12px;color:#7E9A8D">© 2026 המחסן הגדול</div>
+  </footer>
+
+  <!-- FLOATING CART FAB -->
+  <button data-act="open-cart" style="position:fixed;bottom:22px;left:22px;z-index:35;width:62px;height:62px;border:none;border-radius:50%;background:#E8741E;color:#fff;font-size:26px;cursor:pointer;box-shadow:0 12px 30px rgba(232,116,30,0.45);display:flex;align-items:center;justify-content:center;transition:transform .2s ease">
+    🛒
+    <span id="fabBadge" style="position:absolute;top:-4px;right:-4px;min-width:24px;height:24px;display:none;align-items:center;justify-content:center;background:#14442F;border:2px solid #F6F4EE;border-radius:999px;font-size:12px;font-weight:800;padding:0 5px;transition:transform .25s cubic-bezier(.3,1.4,.5,1)"><span id="fabCount">0</span></span>
+  </button>
+
+  <!-- CART OVERLAY + DRAWER -->
+  <div id="overlay" data-act="close-cart" style="position:fixed;inset:0;z-index:50;background:rgba(20,32,28,0.45);backdrop-filter:blur(2px);transition:opacity .3s ease;opacity:0;pointer-events:none"></div>
+
+  <aside id="drawer" style="position:fixed;top:0;bottom:0;right:0;z-index:60;width:min(420px,100%);background:#F6F4EE;box-shadow:-20px 0 50px rgba(0,0,0,0.22);display:flex;flex-direction:column;transform:translateX(102%);transition:transform .38s cubic-bezier(.22,.8,.28,1)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid rgba(20,68,47,0.1);background:#fff">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:22px">🛒</span>
+        <div>
+          <div style="font-family:'Rubik',sans-serif;font-weight:800;font-size:18px;color:#14442F">הסל שלי</div>
+          <div style="font-size:12px;color:#6B7A70;font-weight:600"><span id="drawerCount">0</span> פריטים</div>
+        </div>
+      </div>
+      <button data-act="close-cart" style="width:36px;height:36px;border:none;border-radius:10px;background:#EFEBE0;color:#1C2620;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>
+
+    <div id="cartScroll" style="flex:1;overflow-y:auto;padding:16px 16px 8px"></div>
+
+    <div id="cartFooter" style="border-top:1px solid rgba(20,68,47,0.1);background:#fff;padding:16px 18px 20px;display:none">
+      <div style="font-weight:800;font-size:13px;color:#1C2620;margin-bottom:8px">איך תרצו לקבל את ההזמנה?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+        <button id="btnPickup" data-act="set-pickup" style="border-radius:14px;padding:11px 8px;cursor:pointer;font-weight:800;font-size:13px;text-align:center;transition:all .2s ease"><div style="font-size:18px">🏬</div>איסוף עצמי</button>
+        <button id="btnDelivery" data-act="set-delivery" style="border-radius:14px;padding:11px 8px;cursor:pointer;font-weight:800;font-size:13px;text-align:center;transition:all .2s ease"><div style="font-size:18px">📦</div>משלוח עד הבית</button>
+      </div>
+      <div id="warning" style="display:none;gap:9px;background:#FCEBE9;border:1px solid #F1C4BE;border-radius:13px;padding:12px;margin-bottom:14px;animation:shake .4s ease">
+        <span style="font-size:18px;flex-shrink:0">⚠️</span>
+        <div style="font-size:12.5px;font-weight:600;line-height:1.45;color:#A12A20">מינימום הזמנה למשלוח הוא <strong>1,500 ש״ח</strong> בגלל מורכבות ההובלה. חסרים עוד <strong>₪<span id="remaining">0</span></strong> — ניתן להוסיף מוצרים או לבצע איסוף עצמי מהמחסן ללא הגבלה.</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <span style="font-size:15px;font-weight:600;color:#4A574E">סה״כ לתשלום</span>
+        <span style="font-family:'Rubik',sans-serif;font-weight:900;font-size:26px;color:#14442F">₪<span id="cartTotal">0</span></span>
+      </div>
+      <button id="checkoutBtn" data-act="checkout" style="width:100%;border:none;border-radius:15px;padding:15px;font-family:'Rubik',sans-serif;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;gap:9px;transition:filter .18s ease,transform .1s ease">
+        <span style="font-size:20px">💬</span> <span id="checkoutLabel">שליחת הזמנה לוואטסאפ</span>
+      </button>
+      <div style="text-align:center;font-size:11.5px;color:#8A968D;font-weight:600;margin-top:9px">ההזמנה תישלח אלינו בוואטסאפ לאישור סופי</div>
+    </div>
+  </aside>
+  </div><!-- /shop -->
+
+  <!-- ================= ADMIN VIEW ================= -->
+  <div id="adminView" style="display:none;min-height:100vh;background:#EEF1ED">
+    <header style="background:#14442F;color:#fff">
+      <div style="max-width:760px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div style="display:flex;align-items:center;gap:11px">
+          <div style="width:40px;height:40px;background:rgba(255,255,255,0.12);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px">🛠️</div>
+          <div style="line-height:1.1">
+            <div style="font-family:'Rubik',sans-serif;font-weight:800;font-size:18px">פאנל ניהול מוצרים</div>
+            <div style="font-size:12px;color:#9DB7AB;font-weight:600">המחסן הגדול</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button data-act="logout" style="background:rgba(255,255,255,0.12);color:#fff;border:none;border-radius:10px;padding:9px 12px;font-weight:700;font-size:13px;cursor:pointer">🔓 יציאה</button>
+          <button data-act="go-shop" style="background:rgba(255,255,255,0.12);color:#fff;border:none;border-radius:10px;padding:9px 14px;font-weight:700;font-size:13px;cursor:pointer">→ חזרה לאתר</button>
+        </div>
+      </div>
+    </header>
+
+    <main style="max-width:760px;margin:0 auto;padding:24px 20px 80px">
+      <div style="background:#fff;border-radius:22px;box-shadow:0 8px 30px rgba(20,68,47,0.08);overflow:hidden">
+        <div style="padding:22px 22px 18px;border-bottom:1px solid #EFEBE0">
+          <h2 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:22px;margin:0;color:#14442F">הוספת מוצר חדש</h2>
+          <p style="font-size:14px;color:#6B7A70;margin:6px 0 0;font-weight:500">מלאו את הפרטים והמוצר יעלה אוטומטית לאתר ולגוגל שיטס.</p>
+        </div>
+
+        <div style="padding:22px;display:flex;flex-direction:column;gap:18px">
+          <div>
+            <label style="display:block;font-weight:800;font-size:13.5px;color:#1C2620;margin-bottom:7px">שם המוצר</label>
+            <input id="fName" placeholder="לדוגמה: מערכת השקיה חכמה" style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:13px 15px;font-size:15px;font-weight:600;background:#FBFAF6">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div>
+              <label style="display:block;font-weight:800;font-size:13.5px;color:#1C2620;margin-bottom:7px">קטגוריה</label>
+              <select id="fWorld" style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:13px 12px;font-size:14.5px;font-weight:700;background:#FBFAF6;cursor:pointer;color:#1C2620">
+                <option value="garden">עולם הגינון 🌿</option>
+                <option value="rc">עולם ה‑RC והצעצועים 🏎️</option>
+              </select>
+            </div>
+            <div>
+              <label style="display:block;font-weight:800;font-size:13.5px;color:#1C2620;margin-bottom:7px">מחיר בש״ח</label>
+              <input id="fPrice" type="number" inputmode="numeric" placeholder="0" style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:13px 15px;font-size:15px;font-weight:700;background:#FBFAF6">
+            </div>
+          </div>
+          <div>
+            <label style="display:block;font-weight:800;font-size:13.5px;color:#1C2620;margin-bottom:7px">תיאור קצר של המוצר</label>
+            <textarea id="fDesc" rows="3" placeholder="כתבו תיאור קצר ומזמין..." style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:13px 15px;font-size:15px;font-weight:500;background:#FBFAF6;resize:vertical;line-height:1.5"></textarea>
+          </div>
+          <div>
+            <label style="display:block;font-weight:800;font-size:13.5px;color:#1C2620;margin-bottom:7px">סטטוס מוצר</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <button id="btnActive" data-act="set-active" style="border-radius:13px;padding:12px;cursor:pointer;font-weight:800;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s ease"><span style="width:9px;height:9px;border-radius:50%;background:#3CA46A"></span>פעיל ומוצג באתר</button>
+              <button id="btnHidden" data-act="set-hidden" style="border-radius:13px;padding:12px;cursor:pointer;font-weight:800;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s ease"><span style="width:9px;height:9px;border-radius:50%;background:#B0A892"></span>מוסתר ובמלאי</button>
+            </div>
+          </div>
+          <div>
+            <label style="display:block;font-weight:800;font-size:13.5px;color:#1C2620;margin-bottom:7px">תמונת מוצר</label>
+            <label id="dropzone" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:2px dashed #C9C2B4;background:#F8F6F0;border-radius:16px;padding:26px 16px;cursor:pointer;text-align:center;transition:all .2s ease;background-size:cover;background-position:center;min-height:140px;position:relative;overflow:hidden">
+              <span id="dropNoImg" style="display:flex;flex-direction:column;align-items:center;gap:8px">
+                <span style="font-size:34px">📸</span>
+                <span style="font-weight:800;font-size:14.5px;color:#14442F">העלאת תמונה / צילום מהיר</span>
+                <span style="font-size:12.5px;color:#8A968D;font-weight:600">גררו לכאן או הקישו לבחירה מהגלריה</span>
+              </span>
+              <span id="dropHasImg" style="display:none;position:absolute;bottom:10px;background:rgba(20,68,47,0.92);color:#fff;font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px">✓ <span id="dropFileName"></span> — הקישו להחלפה</span>
+              <input id="fileInput" type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer"/>
+            </label>
+          </div>
+          <button id="saveBtn" data-act="save" style="width:100%;border:none;border-radius:15px;padding:16px;font-family:'Rubik',sans-serif;font-weight:800;font-size:16.5px;color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;transition:filter .18s ease,transform .1s ease;box-shadow:0 10px 24px rgba(20,68,47,0.22)">
+            <span id="saveSaving" style="display:none;align-items:center;gap:10px">
+              <span style="width:19px;height:19px;border:3px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;display:inline-block;animation:spin .7s linear infinite"></span>
+              שומר ומעלה לענן...
+            </span>
+            <span id="saveLabel">🚀 שמור והוסף מוצר לאתר</span>
+          </button>
+        </div>
+      </div>
+      <div style="text-align:center;font-size:12.5px;color:#8A968D;font-weight:600;margin-top:16px">המוצרים שתוסיפו כאן יישמרו בגוגל שיטס ויופיעו מיד בקטלוג 👆</div>
+
+      <!-- admin product list -->
+      <div style="background:#fff;border-radius:22px;box-shadow:0 8px 30px rgba(20,68,47,0.08);overflow:hidden;margin-top:22px">
+        <div style="padding:20px 22px 16px;border-bottom:1px solid #EFEBE0;display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div>
+            <h2 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:20px;margin:0;color:#14442F">כל המוצרים במערכת</h2>
+            <p style="font-size:13px;color:#6B7A70;margin:5px 0 0;font-weight:500">עריכה מהירה או הסתרה מהקטלוג</p>
+          </div>
+          <button data-act="reload" style="border:1px solid #DCD7C9;background:#FBFAF6;color:#14442F;font-weight:700;font-size:13px;padding:8px 13px;border-radius:10px;cursor:pointer">🔄 רענון</button>
+        </div>
+        <div id="adminList"></div>
+      </div>
+    </main>
+  </div><!-- /admin -->
+
+  <!-- LOGIN MODAL -->
+  <div id="loginModal" style="position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(20,32,28,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;transition:opacity .22s ease">
+    <div id="loginCard" style="background:#fff;border-radius:22px;width:min(380px,100%);padding:28px 24px;box-shadow:0 24px 60px rgba(0,0,0,0.3);transform:scale(0.94);transition:transform .22s cubic-bezier(.3,1.2,.5,1);text-align:center">
+      <div style="width:58px;height:58px;margin:0 auto;background:#14442F;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 8px 20px rgba(20,68,47,0.28)">🔒</div>
+      <h2 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:21px;margin:16px 0 4px;color:#14442F">כניסת מנהל</h2>
+      <p style="font-size:13.5px;color:#6B7A70;font-weight:500;margin:0 0 18px">הזינו סיסמה כדי לגשת לפאנל הניהול</p>
+      <input id="loginPw" type="password" placeholder="סיסמה" style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:13px 15px;font-size:15px;font-weight:600;background:#FBFAF6;text-align:center;letter-spacing:1px">
+      <div id="loginError" style="display:none;color:#C8372B;font-size:13px;font-weight:700;margin-top:10px">סיסמה שגויה, נסו שוב</div>
+      <button id="loginSubmit" data-act="login-submit" style="width:100%;border:none;border-radius:14px;padding:14px;margin-top:16px;background:#14442F;color:#fff;font-family:'Rubik',sans-serif;font-weight:800;font-size:15.5px;cursor:pointer;box-shadow:0 10px 24px rgba(20,68,47,0.22)">כניסה →</button>
+      <button data-act="login-cancel" style="width:100%;border:none;background:none;color:#8A968D;font-weight:700;font-size:13px;cursor:pointer;margin-top:8px;padding:8px">ביטול</button>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" style="position:fixed;top:20px;left:50%;z-index:90;transform:translateX(-50%) translateY(-24px);opacity:0;transition:all .4s cubic-bezier(.22,.8,.28,1);pointer-events:none">
+    <div style="display:flex;align-items:center;gap:10px;background:#14442F;color:#fff;padding:13px 20px;border-radius:14px;box-shadow:0 14px 36px rgba(20,68,47,0.34);font-weight:700;font-size:14.5px;white-space:nowrap">
+      <span style="font-size:18px">✅</span> <span id="toastMsg">המוצר נשמר בהצלחה ונוסף לגוגל שיטס!</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ===== הגדרות ===== */
+const API = '';                       // אותו origin כמו השרת
+const WA_NUMBER = '972500000000';     // ← מספר הוואטסאפ של העסק
+
+/* ===== state ===== */
+const state = {
+  view:'shop', cat:'garden', cart:{}, open:false, delivery:'pickup', pop:false,
+  products:[], loading:true, loadError:false,
+  form:{ name:'', world:'garden', price:'', desc:'', status:'active', file:null, fileName:'' },
+  saving:false, editingId:null,
+};
+
+/* ===== עזרים ===== */
+const nf = n => Number(n||0).toLocaleString('he-IL');
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// תמונת placeholder אם למוצר אין תמונה
+function ph(label, world){
+  const garden = world === 'garden';
+  const bg = garden ? '#E3EDE4' : '#FBEAD7';
+  const stripe = garden ? '#D2E2D4' : '#F6DCC0';
+  const txt = garden ? '#5C7A66' : '#B07A47';
+  const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'>"
+    + "<defs><pattern id='p' width='18' height='18' patternUnits='userSpaceOnUse' patternTransform='rotate(45)'>"
+    + "<rect width='18' height='18' fill='"+bg+"'/><rect width='9' height='18' fill='"+stripe+"'/></pattern></defs>"
+    + "<rect width='400' height='300' fill='url(#p)'/>"
+    + "<text x='50%' y='50%' font-family='monospace' font-size='15' fill='"+txt+"' text-anchor='middle' dominant-baseline='middle'>"+label+"</text></svg>";
+  return 'url("data:image/svg+xml,'+encodeURIComponent(svg)+'")';
+}
+const imgFor = p => p.image ? 'url("'+p.image+'")' : ph(p.name, p.world);
+
+/* ===== טעינת מוצרים מהשרת (Google Sheets) ===== */
+async function loadProducts(){
+  state.loading = true; state.loadError = false; renderGrid();
+  try {
+    const res = await fetch(API + '/api/products');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'load failed');
+    state.products = data.products;
+  } catch (e){
+    console.error(e); state.loadError = true; state.products = [];
+  } finally {
+    state.loading = false; renderGrid();
+  }
+}
+
+/* ===== חישובים ===== */
+function lines(){
+  return Object.keys(state.cart).map(id => {
+    const p = state.products.find(x => x.id === id); if(!p) return null;
+    const qty = state.cart[id];
+    return { id, name:p.name, price:p.price, qty, line:p.price*qty, world:p.world, image:p.image };
+  }).filter(Boolean);
+}
+const cartCount = () => lines().reduce((s,i)=>s+i.qty,0);
+const cartTotal = () => lines().reduce((s,i)=>s+i.line,0);
+
+/* ===== פעולות סל ===== */
+function addToCart(id){
+  state.cart[id] = (state.cart[id]||0)+1; state.pop = true;
+  update(); clearTimeout(window._t); window._t = setTimeout(()=>{ state.pop=false; update(); }, 360);
+}
+function inc(id){ state.cart[id]=(state.cart[id]||0)+1; update(); }
+function dec(id){ const q=(state.cart[id]||0)-1; if(q<=0) delete state.cart[id]; else state.cart[id]=q; update(); }
+function removeItem(id){ delete state.cart[id]; update(); }
+
+/* ===== checkout → וואטסאפ ===== */
+function checkout(){
+  const ls = lines(); if(!ls.length) return;
+  const total = cartTotal();
+  if (state.delivery==='delivery' && total<1500) return;
+  let m = '🛒 *הזמנה חדשה — המחסן הגדול*\n\n';
+  ls.forEach(it => { m += '▪️ '+it.name+'\n   '+it.qty+' × ₪'+nf(it.price)+' = *₪'+nf(it.line)+'*\n'; });
+  m += '\n———————————\n💰 *סה״כ: ₪'+nf(total)+'*\n';
+  m += state.delivery==='delivery' ? '📦 משלוח עד הבית\n' : '🏬 איסוף עצמי מהמחסן\n';
+  m += '\nשם מלא: \nכתובת / איסוף: \nטלפון: ';
+  window.open('https://wa.me/'+WA_NUMBER+'?text='+encodeURIComponent(m), '_blank');
+}
+
+/* ===== שמירת מוצר חדש → POST לשרת ===== */
+async function saveProduct(){
+  const f = state.form;
+  if (!f.name.trim() || !f.price || state.saving) return;
+  state.saving = true; update();
+  try {
+    const fd = new FormData();
+    fd.append('name', f.name.trim());
+    fd.append('world', f.world);
+    fd.append('price', f.price);
+    fd.append('desc', f.desc.trim());
+    fd.append('status', f.status);
+    if (f.file) fd.append('image', f.file);
+
+    const res = await fetch(API + '/api/products', { method:'POST', headers:authHeaders(), body:fd });
+    if (res.status === 401){ handle401(); return; }
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'save failed');
+
+    state.products.unshift(data.product);          // הוספה מקומית מיידית
+    state.cat = f.world;                            // קופצים לעולם של המוצר שנוסף
+    state.form = { name:'', world:'garden', price:'', desc:'', status:'active', file:null, fileName:'' };
+    resetFormInputs();
+    showToast('המוצר נשמר בהצלחה ונוסף לגוגל שיטס!');
+  } catch (e){
+    console.error(e); showToast('⚠️ שמירה נכשלה — בדקו את השרת', true);
+  } finally {
+    state.saving = false; update();
+  }
+}
+
+function showToast(msg){
+  document.getElementById('toastMsg').textContent = msg;
+  const t = document.getElementById('toast');
+  t.style.opacity='1'; t.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(window._toast);
+  window._toast = setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateX(-50%) translateY(-24px)'; }, 3200);
+}
+
+/* ===== רינדור הגריד ===== */
+function renderGrid(){
+  const el = document.getElementById('grid');
+  if (state.loading){
+    el.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#6B7A70;font-weight:600">⏳ טוען מוצרים מגוגל שיטס...</div>';
+    return;
+  }
+  if (state.loadError){
+    el.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#A12A20;font-weight:600">⚠️ שגיאה בטעינת המוצרים מהשרת.<br><button data-act="reload" style="margin-top:14px;border:none;background:#14442F;color:#fff;font-weight:800;padding:10px 20px;border-radius:12px;cursor:pointer">נסה שוב</button></div>';
+    return;
+  }
+  const items = state.products.filter(p => p.world === state.cat && !p.hidden);
+  if (!items.length){
+    el.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#6B7A70;font-weight:600">אין מוצרים בעולם הזה עדיין 🌱</div>';
+    return;
+  }
+  el.innerHTML = items.map(p => {
+    const qty = state.cart[p.id] || 0, inCart = qty>0, g = p.world==='garden';
+    const tagBg = g ? 'rgba(231,240,233,0.92)' : 'rgba(252,227,204,0.92)';
+    const tagColor = g ? '#1E6B47' : '#C25E12';
+    const btnLabel = inCart ? ('בסל · '+qty+'  ✓') : 'הוספה לסל  +';
+    const btnBg = inCart ? '#E8741E' : '#14442F';
+    return `<div class="card" style="background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 18px rgba(20,68,47,0.06);border:1px solid rgba(20,68,47,0.05);display:flex;flex-direction:column">
+      <div style="position:relative;aspect-ratio:4/3;background-image:${imgFor(p)};background-size:cover;background-position:center">
+        <span style="position:absolute;top:10px;right:10px;background:${tagBg};color:${tagColor};font-size:11px;font-weight:800;padding:5px 10px;border-radius:999px;backdrop-filter:blur(4px)">${esc(p.category)}</span>
+      </div>
+      <div style="padding:14px 14px 16px;display:flex;flex-direction:column;flex:1">
+        <h3 style="font-family:'Rubik',sans-serif;font-weight:700;font-size:16px;margin:0;line-height:1.2;color:#1C2620">${esc(p.name)}</h3>
+        <p style="font-size:13px;color:#6B7A70;font-weight:500;margin:6px 0 0;line-height:1.4;flex:1">${esc(p.desc)}</p>
+        <div style="display:flex;align-items:baseline;gap:4px;margin:12px 0 10px">
+          <span style="font-family:'Rubik',sans-serif;font-weight:800;font-size:22px;color:#14442F">₪${nf(p.price)}</span>
+        </div>
+        <button data-act="add" data-id="${esc(p.id)}" style="border:none;border-radius:13px;padding:11px;font-weight:800;font-size:14px;cursor:pointer;background:${btnBg};color:#fff;display:flex;align-items:center;justify-content:center;gap:6px">${btnLabel}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ===== רינדור שורות הסל ===== */
+function renderCart(){
+  const el = document.getElementById('cartScroll');
+  const ls = lines();
+  if (!ls.length){
+    el.innerHTML = `<div style="text-align:center;padding:60px 24px;color:#6B7A70">
+      <div style="font-size:54px">🛒</div>
+      <div style="font-family:'Rubik',sans-serif;font-weight:700;font-size:18px;color:#1C2620;margin-top:10px">הסל שלך ריק</div>
+      <p style="font-size:14px;margin:6px 0 18px">בחרו מוצרים מעולם הגינון או ה‑RC כדי להתחיל.</p>
+      <button data-act="close-cart" style="border:none;background:#14442F;color:#fff;font-weight:800;font-size:14px;padding:11px 22px;border-radius:12px;cursor:pointer">חזרה לקטלוג</button>
+    </div>`;
+    return;
+  }
+  el.innerHTML = '<div style="display:flex;flex-direction:column;gap:12px">' + ls.map(l => {
+    const img = l.image ? 'url("'+l.image+'")' : ph('', l.world);
+    return `<div style="display:flex;gap:12px;background:#fff;border-radius:16px;padding:10px;box-shadow:0 3px 12px rgba(20,68,47,0.05)">
+      <div style="width:66px;height:66px;border-radius:12px;flex-shrink:0;background-image:${img};background-size:cover;background-position:center"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:'Rubik',sans-serif;font-weight:700;font-size:14px;line-height:1.25;color:#1C2620">${esc(l.name)}</div>
+        <div style="font-weight:800;font-size:15px;color:#14442F;margin-top:3px">₪${nf(l.line)}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+          <div style="display:inline-flex;align-items:center;background:#F1EDE2;border-radius:999px;padding:3px">
+            <button data-act="dec" data-id="${esc(l.id)}" style="width:28px;height:28px;border:none;border-radius:50%;background:#fff;color:#14442F;font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.08)">−</button>
+            <span style="min-width:30px;text-align:center;font-weight:800;font-size:14px">${l.qty}</span>
+            <button data-act="inc" data-id="${esc(l.id)}" style="width:28px;height:28px;border:none;border-radius:50%;background:#fff;color:#14442F;font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.08)">+</button>
+          </div>
+          <button data-act="remove" data-id="${esc(l.id)}" style="border:none;background:none;color:#C8372B;font-size:13px;font-weight:700;cursor:pointer;padding:6px">הסר 🗑️</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+/* ===== עדכון כל החלקים הדינמיים ===== */
+function update(){
+  const garden = state.cat === 'garden';
+  const total = cartTotal(), count = cartCount(), hasItems = count>0;
+  const isDelivery = state.delivery === 'delivery';
+  const blocked = isDelivery && total<1500;
+
+  // תצוגות
+  document.getElementById('shopView').style.display  = state.view==='shop'  ? 'block' : 'none';
+  document.getElementById('adminView').style.display = state.view==='admin' ? 'block' : 'none';
+
+  // ספירות
+  document.getElementById('hdrCount').textContent   = count;
+  document.getElementById('drawerCount').textContent = count;
+  document.getElementById('fabCount').textContent   = count;
+
+  // hero tabs
+  const tg = document.getElementById('tabGarden');
+  tg.style.border = '2px solid ' + (garden ? '#FFFFFF' : 'rgba(255,255,255,0.22)');
+  tg.style.background = garden ? '#FFFFFF' : 'rgba(255,255,255,0.10)';
+  tg.style.color = garden ? '#14442F' : '#EAF6EE';
+  tg.style.boxShadow = garden ? '0 16px 32px rgba(0,0,0,0.3)' : 'none';
+  const tr = document.getElementById('tabRc');
+  tr.style.border = '2px solid ' + (!garden ? '#FF9E45' : 'rgba(255,255,255,0.22)');
+  tr.style.background = !garden ? '#E8741E' : 'rgba(255,255,255,0.10)';
+  tr.style.color = !garden ? '#fff' : '#EAF6EE';
+  tr.style.boxShadow = !garden ? '0 16px 32px rgba(232,116,30,0.42)' : 'none';
+
+  document.getElementById('sectionTitle').textContent = garden ? '🌿 עולם הגינון' : '🏎️ עולם ה‑RC';
+
+  // pills
+  const pg = document.getElementById('pillGarden');
+  pg.style.background = garden ? '#14442F' : 'transparent'; pg.style.color = garden ? '#fff' : '#5A6B60';
+  const pr = document.getElementById('pillRc');
+  pr.style.background = !garden ? '#E8741E' : 'transparent'; pr.style.color = !garden ? '#fff' : '#5A6B60';
+
+  renderGrid();
+
+  // fab badge
+  const fab = document.getElementById('fabBadge');
+  fab.style.display = hasItems ? 'flex' : 'none';
+  fab.style.transform = state.pop ? 'scale(1.45)' : 'scale(1)';
+
+  // drawer
+  document.getElementById('overlay').style.opacity = state.open ? '1' : '0';
+  document.getElementById('overlay').style.pointerEvents = state.open ? 'auto' : 'none';
+  document.getElementById('drawer').style.transform = state.open ? 'translateX(0)' : 'translateX(102%)';
+
+  renderCart();
+
+  // cart footer
+  document.getElementById('cartFooter').style.display = hasItems ? 'block' : 'none';
+
+  // delivery buttons
+  const bp = document.getElementById('btnPickup');
+  bp.style.border = '2px solid ' + (!isDelivery ? '#14442F' : 'rgba(20,68,47,0.14)');
+  bp.style.background = !isDelivery ? '#14442F' : '#fff'; bp.style.color = !isDelivery ? '#fff' : '#4A574E';
+  const bd = document.getElementById('btnDelivery');
+  bd.style.border = '2px solid ' + (isDelivery ? '#14442F' : 'rgba(20,68,47,0.14)');
+  bd.style.background = isDelivery ? '#14442F' : '#fff'; bd.style.color = isDelivery ? '#fff' : '#4A574E';
+
+  // warning
+  document.getElementById('warning').style.display = blocked ? 'flex' : 'none';
+  document.getElementById('remaining').textContent = nf(Math.max(0,1500-total));
+
+  document.getElementById('cartTotal').textContent = nf(total);
+
+  // checkout button
+  const cb = document.getElementById('checkoutBtn');
+  const off = blocked || !hasItems;
+  document.getElementById('checkoutLabel').textContent = blocked ? 'מינימום ₪1,500 למשלוח' : 'שליחת הזמנה לוואטסאפ';
+  cb.style.background = off ? '#C9C2B4' : '#25A65A';
+  cb.style.color = off ? '#7A7466' : '#fff';
+  cb.style.cursor = off ? 'not-allowed' : 'pointer';
+  cb.style.boxShadow = off ? 'none' : '0 10px 24px rgba(37,166,90,0.32)';
+  cb.dataset.disabled = off ? '1' : '0';
+
+  // ---- admin form ----
+  const fActive = state.form.status === 'active';
+  const ba = document.getElementById('btnActive');
+  ba.style.border = '2px solid ' + (fActive ? '#14442F' : '#DCD7C9');
+  ba.style.background = fActive ? '#E7F0E9' : '#FBFAF6'; ba.style.color = fActive ? '#14442F' : '#6B7A70';
+  const bh = document.getElementById('btnHidden');
+  bh.style.border = '2px solid ' + (!fActive ? '#9A9176' : '#DCD7C9');
+  bh.style.background = !fActive ? '#EFEBE0' : '#FBFAF6'; bh.style.color = !fActive ? '#5A5240' : '#6B7A70';
+
+  // dropzone preview
+  const dz = document.getElementById('dropzone');
+  if (state.form.fileName){
+    dz.style.backgroundImage = 'linear-gradient(rgba(20,68,47,0.12),rgba(20,68,47,0.12)), url("'+state.form._preview+'")';
+    dz.style.borderColor = '#14442F';
+    document.getElementById('dropNoImg').style.display = 'none';
+    document.getElementById('dropHasImg').style.display = 'block';
+    document.getElementById('dropFileName').textContent = state.form.fileName;
+  } else {
+    dz.style.backgroundImage = 'none'; dz.style.borderColor = '#C9C2B4';
+    document.getElementById('dropNoImg').style.display = 'flex';
+    document.getElementById('dropHasImg').style.display = 'none';
+  }
+
+  // save button
+  refreshSaveBtn();
+  document.getElementById('saveSaving').style.display = state.saving ? 'flex' : 'none';
+  document.getElementById('saveLabel').style.display  = state.saving ? 'none' : 'inline';
+
+  if (state.view === 'admin') renderAdminList();
+}
+
+function refreshSaveBtn(){
+  const canSave = !!state.form.name.trim() && !!state.form.price && !state.saving;
+  const sb = document.getElementById('saveBtn');
+  sb.style.background = canSave ? '#14442F' : '#A9B3AB';
+  sb.style.cursor = canSave ? 'pointer' : 'not-allowed';
+  sb.dataset.disabled = canSave ? '0' : '1';
+}
+
+function resetFormInputs(){
+  document.getElementById('fName').value = '';
+  document.getElementById('fPrice').value = '';
+  document.getElementById('fDesc').value = '';
+  document.getElementById('fWorld').value = 'garden';
+  document.getElementById('fileInput').value = '';
+}
+
+/* ===== אימות מנהל ===== */
+const getPw = () => sessionStorage.getItem('adminPassword') || '';
+const setPw = p => sessionStorage.setItem('adminPassword', p);
+const clearPw = () => sessionStorage.removeItem('adminPassword');
+const authHeaders = (extra={}) => Object.assign({ 'Authorization':'Bearer ' + getPw() }, extra);
+
+// עוטף fetch לנתיבי ניהול: מוסיף אימות + מטפל ב-401
+async function adminFetch(url, opts={}){
+  const res = await fetch(url, Object.assign({}, opts, { headers: authHeaders(opts.headers||{}) }));
+  if (res.status === 401){ handle401(); return null; }
+  return res;
+}
+function handle401(){
+  clearPw(); state.view='shop'; update();
+  showToast('⚠️ הסשן פג — התחברו מחדש'); openLogin();
+}
+
+function enterAdmin(){
+  if (getPw()){ state.view='admin'; state.open=false; update(); }
+  else openLogin();
+}
+function openLogin(){
+  document.getElementById('loginError').style.display='none';
+  const ov = document.getElementById('loginModal');
+  ov.style.display='flex';
+  requestAnimationFrame(()=>{ ov.style.opacity='1'; document.getElementById('loginCard').style.transform='scale(1)'; });
+  setTimeout(()=>document.getElementById('loginPw').focus(), 60);
+}
+function closeLogin(){
+  const ov = document.getElementById('loginModal');
+  ov.style.opacity='0'; document.getElementById('loginCard').style.transform='scale(0.94)';
+  setTimeout(()=>{ ov.style.display='none'; document.getElementById('loginPw').value=''; }, 220);
+}
+async function submitLogin(){
+  const pw = document.getElementById('loginPw').value;
+  const errEl = document.getElementById('loginError');
+  if (!pw) return;
+  const btn = document.getElementById('loginSubmit');
+  btn.disabled = true; btn.style.opacity='0.7';
+  try {
+    const res = await fetch(API + '/api/admin/login', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: pw })
+    });
+    if (!res.ok){ errEl.textContent='סיסמה שגויה, נסו שוב'; errEl.style.display='block'; return; }
+    setPw(pw); closeLogin(); state.view='admin'; state.open=false; update();
+  } catch(e){ errEl.textContent='שגיאת חיבור לשרת'; errEl.style.display='block'; }
+  finally { btn.disabled=false; btn.style.opacity='1'; }
+}
+
+/* ===== ניהול: עריכה / הסתרה / הצגה ===== */
+async function hideProduct(id){
+  const res = await adminFetch(API + '/api/products/' + encodeURIComponent(id), { method:'DELETE' });
+  if (!res) return;
+  const data = await res.json();
+  if (data.ok){ const p = state.products.find(x=>x.id===id); if(p) p.hidden=true; showToast('המוצר הוסתר מהאתר'); update(); }
+  else showToast('⚠️ ' + (data.error||'נכשל'));
+}
+async function showProduct(id){
+  const res = await adminFetch(API + '/api/products/' + encodeURIComponent(id), {
+    method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ hidden:false })
+  });
+  if (!res) return;
+  const data = await res.json();
+  if (data.ok){ const p = state.products.find(x=>x.id===id); if(p) p.hidden=false; showToast('המוצר חזר לאתר'); update(); }
+  else showToast('⚠️ ' + (data.error||'נכשל'));
+}
+async function saveEdit(id){
+  const name = document.getElementById('edit-name-'+id).value.trim();
+  const price = document.getElementById('edit-price-'+id).value;
+  if (!name || !price){ showToast('⚠️ שם ומחיר נדרשים'); return; }
+  const res = await adminFetch(API + '/api/products/' + encodeURIComponent(id), {
+    method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, price })
+  });
+  if (!res) return;
+  const data = await res.json();
+  if (data.ok){
+    const p = state.products.find(x=>x.id===id);
+    if (p){ p.name=name; p.price=Number(price); }
+    state.editingId=null; showToast('המוצר עודכן'); update();
+  } else showToast('⚠️ ' + (data.error||'נכשל'));
+}
+
+/* ===== רינדור טבלת הניהול ===== */
+function renderAdminList(){
+  const el = document.getElementById('adminList'); if(!el) return;
+  const ps = state.products;
+  if (!ps.length){ el.innerHTML = '<div style="text-align:center;color:#8A968D;padding:24px;font-weight:600">אין מוצרים עדיין</div>'; return; }
+  el.innerHTML = ps.map(p => {
+    const g = p.world==='garden';
+    const worldBadge = g ? '🌿 גינון' : '🏎️ RC';
+    if (state.editingId === p.id){
+      return `<div style="display:flex;gap:10px;align-items:center;padding:12px;border-bottom:1px solid #EFEBE0;flex-wrap:wrap">
+        <input id="edit-name-${esc(p.id)}" value="${esc(p.name)}" style="flex:1;min-width:140px;border:1.5px solid #14442F;border-radius:10px;padding:9px 11px;font-size:14px;font-weight:600;background:#FBFAF6">
+        <input id="edit-price-${esc(p.id)}" type="number" value="${esc(p.price)}" style="width:90px;border:1.5px solid #14442F;border-radius:10px;padding:9px 11px;font-size:14px;font-weight:700;background:#FBFAF6">
+        <button data-act="admin-edit-save" data-id="${esc(p.id)}" style="border:none;background:#25A65A;color:#fff;font-weight:800;font-size:13px;padding:9px 14px;border-radius:10px;cursor:pointer">שמירה ✓</button>
+        <button data-act="admin-edit-cancel" data-id="${esc(p.id)}" style="border:none;background:#EFEBE0;color:#1C2620;font-weight:700;font-size:13px;padding:9px 12px;border-radius:10px;cursor:pointer">ביטול</button>
+      </div>`;
+    }
+    const hiddenBadge = p.hidden ? ' <span style="font-size:11px;background:#EFEBE0;color:#7A7466;padding:2px 7px;border-radius:999px;font-weight:700">מוסתר</span>' : '';
+    const actionBtn = p.hidden
+      ? `<button data-act="admin-show" data-id="${esc(p.id)}" style="border:none;background:#E7F0E9;color:#14442F;font-weight:700;font-size:13px;padding:8px 11px;border-radius:10px;cursor:pointer">👁️ הצג</button>`
+      : `<button data-act="admin-hide" data-id="${esc(p.id)}" style="border:none;background:#FCEBE9;color:#C8372B;font-weight:700;font-size:13px;padding:8px 11px;border-radius:10px;cursor:pointer">🗑️ הסתר</button>`;
+    return `<div style="display:flex;gap:12px;align-items:center;padding:12px;border-bottom:1px solid #EFEBE0;${p.hidden?'opacity:0.55':''}">
+      <div style="width:46px;height:46px;border-radius:10px;flex-shrink:0;background-image:${imgFor(p)};background-size:cover;background-position:center"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:800;font-size:14.5px;color:#1C2620;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.name)}${hiddenBadge}</div>
+        <div style="font-size:12.5px;color:#6B7A70;font-weight:600;margin-top:2px">${worldBadge} · ₪${nf(p.price)}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button data-act="admin-edit" data-id="${esc(p.id)}" style="border:1px solid #DCD7C9;background:#fff;color:#14442F;font-weight:700;font-size:13px;padding:8px 11px;border-radius:10px;cursor:pointer">✏️ ערוך</button>
+        ${actionBtn}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ===== חיווט אירועים ===== */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]'); if(!t) return;
+  const act = t.dataset.act, id = t.dataset.id;
+  switch(act){
+    case 'add': addToCart(id); break;
+    case 'inc': inc(id); break;
+    case 'dec': dec(id); break;
+    case 'remove': removeItem(id); break;
+    case 'open-cart': state.open=true; update(); break;
+    case 'close-cart': state.open=false; update(); break;
+    case 'pick-garden': state.cat='garden'; update(); break;
+    case 'pick-rc': state.cat='rc'; update(); break;
+    case 'set-pickup': state.delivery='pickup'; update(); break;
+    case 'set-delivery': state.delivery='delivery'; update(); break;
+    case 'checkout': if(t.dataset.disabled!=='1') checkout(); break;
+    case 'go-admin': enterAdmin(); break;
+    case 'go-shop': state.view='shop'; update(); break;
+    case 'logout': clearPw(); state.view='shop'; state.editingId=null; update(); showToast('התנתקת מהפאנל'); break;
+    case 'admin-edit': state.editingId=id; update(); break;
+    case 'admin-edit-cancel': state.editingId=null; update(); break;
+    case 'admin-edit-save': saveEdit(id); break;
+    case 'admin-hide': hideProduct(id); break;
+    case 'admin-show': showProduct(id); break;
+    case 'login-submit': submitLogin(); break;
+    case 'login-cancel': closeLogin(); break;
+    case 'set-active': state.form.status='active'; update(); break;
+    case 'set-hidden': state.form.status='hidden'; update(); break;
+    case 'save': if(t.dataset.disabled!=='1') saveProduct(); break;
+    case 'reload': loadProducts(); break;
+  }
+});
+
+// שדות הטופס — מעדכנים state בלי רינדור מלא (כדי לא לאבד פוקוס)
+document.getElementById('fName').addEventListener('input', e => { state.form.name = e.target.value; refreshSaveBtn(); });
+document.getElementById('fPrice').addEventListener('input', e => { state.form.price = e.target.value; refreshSaveBtn(); });
+document.getElementById('fDesc').addEventListener('input', e => { state.form.desc = e.target.value; });
+document.getElementById('fWorld').addEventListener('change', e => { state.form.world = e.target.value; });
+document.getElementById('loginPw').addEventListener('keydown', e => { if(e.key==='Enter') submitLogin(); });
+document.getElementById('fileInput').addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0]; if(!f) return;
+  state.form.file = f; state.form.fileName = f.name;
+  const r = new FileReader();
+  r.onload = () => { state.form._preview = r.result; update(); };
+  r.readAsDataURL(f);
+});
+
+/* ===== הפעלה ===== */
+update();
+loadProducts();
+</script>
+</body>
+</html>

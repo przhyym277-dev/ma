@@ -1,0 +1,25 @@
+# Render Blueprint — שירות שרת Node ל"המחסן הגדול"
+# Render יזהה את הקובץ הזה אוטומטית ויקים את השירות.
+# את המשתנים הסודיים (sync:false) ממלאים ידנית בלוח הבקרה של Render.
+services:
+  - type: web
+    name: mahsan-hagadol
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: GOOGLE_SHEET_ID
+        sync: false
+      - key: GOOGLE_SERVICE_ACCOUNT_EMAIL
+        sync: false
+      - key: GOOGLE_PRIVATE_KEY
+        sync: false
