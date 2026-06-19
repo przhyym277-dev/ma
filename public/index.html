@@ -536,7 +536,7 @@ const imgFor = p => p.image ? 'url("'+p.image+'")' : ph(p.name, p.world);
 async function loadProducts(){
   state.loading = true; state.loadError = false; renderGrid();
   try {
-    const res = await fetch(API + '/api/products');
+    const res = await fetch(API + '/api/products?t=' + Date.now(), { cache: 'no-store' });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'load failed');
     state.products = data.products;
