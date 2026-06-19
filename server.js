@@ -248,7 +248,7 @@ app.post('/api/products', requireAuth, upload.single('image'), async (req, res) 
       memProducts.unshift({ ...base, image: imageUrl, hidden: isHidden });
     }
 
-    res.json({ ok: true, product: { ...base, image: imageUrl, hidden: isHidden } });
+    res.json({ ok: true, product: { ...base, image: imageUrl, hidden: isHidden }, _img: { got: !!req.file, size: req.file ? req.file.size : 0, cloud: CLOUDINARY_ENABLED } });
   } catch (err) {
     console.error('POST /api/products failed:', err.message);
     res.status(500).json({ ok: false, error: 'נכשלה שמירת המוצר' });
