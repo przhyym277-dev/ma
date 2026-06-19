@@ -313,6 +313,7 @@
         <div style="padding:22px 22px 18px;border-bottom:1px solid #EFEBE0">
           <h2 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:22px;margin:0;color:#14442F">הוספת מוצר חדש</h2>
           <p style="font-size:14px;color:#6B7A70;margin:6px 0 0;font-weight:500">מלאו את הפרטים והמוצר יעלה אוטומטית לאתר ולגוגל שיטס.</p>
+          <div id="limitBanner" style="margin-top:13px;display:flex;align-items:center;gap:8px;border-radius:12px;padding:10px 13px;font-size:13px;font-weight:700"></div>
         </div>
 
         <div style="padding:22px;display:flex;flex-direction:column;gap:18px">
@@ -416,7 +417,7 @@ const state = {
   view:'shop', cat:'garden', cart:{}, open:false, delivery:'pickup', pop:false,
   products:[], loading:true, loadError:false,
   form:{ name:'', world:'garden', price:'', desc:'', status:'active', file:null, fileName:'' },
-  saving:false, editingId:null,
+  saving:false, editingId:null, limit:60,
 };
 
 /* ===== עזרים ===== */
@@ -446,6 +447,7 @@ async function loadProducts(){
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'load failed');
     state.products = data.products;
+    if (data.limit) state.limit = data.limit;
   } catch (e){
     console.error(e); state.loadError = true; state.products = [];
   } finally {
@@ -511,7 +513,7 @@ async function saveProduct(){
     resetFormInputs();
     showToast('המוצר נשמר בהצלחה ונוסף לגוגל שיטס!');
   } catch (e){
-    console.error(e); showToast('⚠️ שמירה נכשלה — בדקו את השרת', true);
+    console.error(e); showToast('⚠️ ' + (e.message || 'שמירה נכשלה'));
   } finally {
     state.saving = false; update();
   }
@@ -701,11 +703,25 @@ function update(){
   document.getElementById('saveSaving').style.display = state.saving ? 'flex' : 'none';
   document.getElementById('saveLabel').style.display  = state.saving ? 'none' : 'inline';
 
+  // מונה מגבלת מוצרים
+  const activeCount = state.products.filter(p => !p.hidden).length;
+  const atLimit = activeCount >= state.limit;
+  const banner = document.getElementById('limitBanner');
+  if (banner){
+    banner.innerHTML = atLimit
+      ? `🚫 הגעת למגבלה — ${activeCount} / ${state.limit} מוצרים. הסתר מוצר קיים כדי להוסיף חדש.`
+      : `📦 ${activeCount} / ${state.limit} מוצרים פעילים`;
+    banner.style.background = atLimit ? '#FCEBE9' : '#E7F0E9';
+    banner.style.color = atLimit ? '#A12A20' : '#1E6B47';
+    banner.style.border = '1px solid ' + (atLimit ? '#F1C4BE' : '#CDE3D3');
+  }
+
   if (state.view === 'admin') renderAdminList();
 }
 
 function refreshSaveBtn(){
-  const canSave = !!state.form.name.trim() && !!state.form.price && !state.saving;
+  const atLimit = state.products.filter(p => !p.hidden).length >= state.limit;
+  const canSave = !!state.form.name.trim() && !!state.form.price && !state.saving && !atLimit;
   const sb = document.getElementById('saveBtn');
   sb.style.background = canSave ? '#14442F' : '#A9B3AB';
   sb.style.cursor = canSave ? 'pointer' : 'not-allowed';

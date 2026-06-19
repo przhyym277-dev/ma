@@ -137,6 +137,17 @@ async function uploadImage(file) {
   return `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
 }
 
+// מגבלת מוצרים פעילים (ניתן לשינוי דרך משתנה סביבה MAX_PRODUCTS)
+const MAX_PRODUCTS = Number(process.env.MAX_PRODUCTS) || 60;
+
+// סופר מוצרים פעילים (לא מוסתרים) — לצורך אכיפת המגבלה
+async function countActiveProducts() {
+  if (!SHEETS_ENABLED) return memProducts.filter(p => !p.hidden).length;
+  const sheet = await getSheet();
+  const rows = await sheet.getRows();
+  return rows.filter(r => String(r.get('hidden') || '').trim().toLowerCase() !== 'true').length;
+}
+
 /* ---------- אימות מנהל ---------- */
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
 
@@ -177,11 +188,11 @@ app.post('/api/admin/login', (req, res) => {
 app.get('/api/products', async (req, res) => {
   try {
     if (!SHEETS_ENABLED) {
-      return res.json({ ok: true, products: memProducts, source: 'memory' });
+      return res.json({ ok: true, products: memProducts, source: 'memory', limit: MAX_PRODUCTS });
     }
     const sheet = await getSheet();
     const rows = await sheet.getRows();
-    res.json({ ok: true, products: rows.map(rowToProduct), source: 'sheets' });
+    res.json({ ok: true, products: rows.map(rowToProduct), source: 'sheets', limit: MAX_PRODUCTS });
   } catch (err) {
     console.error('GET /api/products failed:', err.message);
     res.status(500).json({ ok: false, error: 'נכשלה משיכת המוצרים מגוגל שיטס' });
@@ -200,6 +211,15 @@ app.post('/api/products', requireAuth, upload.single('image'), async (req, res) 
     // ולידציה בסיסית
     if (!name || !String(name).trim() || !price) {
       return res.status(400).json({ ok: false, error: 'חסר שם מוצר או מחיר' });
+    }
+
+    // אכיפת מגבלת מוצרים פעילים
+    const activeCount = await countActiveProducts();
+    if (activeCount >= MAX_PRODUCTS) {
+      return res.status(409).json({
+        ok: false, limitReached: true,
+        error: `הגעת למגבלה של ${MAX_PRODUCTS} מוצרים פעילים. כדי להוסיף מוצר חדש — הסתר מוצר קיים, או שדרג את החבילה.`,
+      });
     }
 
     // 1) העלאת התמונה (Cloudinary אם מוגדר, אחרת data-URL)
