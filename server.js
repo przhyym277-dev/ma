@@ -54,10 +54,17 @@ function uploadToCloudinary(buffer) {
 
 /* ---------- Google Sheets ---------- */
 // אימות מול חשבון שירות (Service Account)
+// ניקוי המפתח: הסרת מרכאות עוטפות/רווחים, והמרת \n לירידות שורה אמיתיות
+function cleanPrivateKey(raw) {
+  return (raw || '')
+    .trim()
+    .replace(/^["']|["']$/g, '')   // הסרת מרכאות בתחילת/סוף (אם נכנסו)
+    .replace(/\\n/g, '\n');         // \n טקסטואלי → ירידת שורה אמיתית
+}
+
 const serviceAccountAuth = new JWT({
-  email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-  // ב-.env המפתח נשמר בשורה אחת עם \n — נמיר אותם חזרה לירידות שורה אמיתיות
-  key: (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+  email: (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '').trim(),
+  key: cleanPrivateKey(process.env.GOOGLE_PRIVATE_KEY),
   scopes: ['https://www.googleapis.com/auth/spreadsheets'],
 });
 
@@ -167,7 +174,7 @@ app.get('/api/products', async (req, res) => {
     res.json({ ok: true, products: rows.map(rowToProduct), source: 'sheets' });
   } catch (err) {
     console.error('GET /api/products failed:', err.message);
-    res.status(500).json({ ok: false, error: 'נכשלה משיכת המוצרים מגוגל שיטס' });
+    res.status(500).json({ ok: false, error: 'נכשלה משיכת המוצרים מגוגל שיטס', detail: err.message });
   }
 });
 
