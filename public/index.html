@@ -604,8 +604,7 @@ async function saveProduct(){
     state.cat = f.world;                            // קופצים לעולם של המוצר שנוסף
     state.form = { name:'', world:'garden', price:'', desc:'', status:'active', file:null, fileName:'' };
     resetFormInputs();
-    const dbg = data._img ? (' · תמונה: ' + (data._img.got ? (Math.round(data._img.size/1024)+'KB ' + (data._img.cloud?'☁️':'(אין ענן)')) : 'לא נשלחה ❌')) : '';
-    showToast('נשמר' + dbg);
+    showToast('המוצר נשמר בהצלחה ונוסף לקטלוג!');
   } catch (e){
     console.error(e); showToast('⚠️ ' + (e.message || 'שמירה נכשלה'));
   } finally {
