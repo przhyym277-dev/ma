@@ -289,7 +289,10 @@
 
 <script>
 /* ===== הגדרות ===== */
-const API = '';                       // אותו origin כמו השרת
+// כתובת השרת: מקומית → localhost, בפרודקשן → Render (אוטומטי)
+const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? ''
+  : 'https://ma-dsnz.onrender.com';
 const WA_NUMBER = '972500000000';     // ← מספר הוואטסאפ של העסק
 
 /* ===== state ===== */
