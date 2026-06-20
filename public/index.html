@@ -201,38 +201,14 @@
     </div>
   </section>
 
-  <!-- ===== TESTIMONIALS ===== -->
+  <!-- ===== TESTIMONIALS (dynamic) ===== -->
   <section style="max-width:1200px;margin:0 auto;padding:30px 20px 12px">
-    <div style="text-align:center;margin-bottom:24px">
+    <div style="text-align:center;margin-bottom:20px">
       <div style="display:inline-flex;align-items:center;gap:7px;background:#FBEAD7;color:#C25E12;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:800">💬 לקוחות מספרים</div>
-      <h2 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:clamp(22px,4.5vw,32px);color:#14442F;margin:12px 0 0">מה אומרים עלינו</h2>
+      <h2 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:clamp(22px,4.5vw,32px);color:#14442F;margin:12px 0 14px">מה אומרים עלינו</h2>
+      <button data-act="open-review" class="hbtn" style="border:none;background:#E8741E;color:#fff;font-family:'Assistant';font-weight:800;font-size:14.5px;padding:11px 22px;border-radius:999px;cursor:pointer;box-shadow:0 8px 20px rgba(232,116,30,0.32)">⭐ כתבו לנו המלצה</button>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px">
-      <div style="background:#fff;border-radius:20px;padding:24px;box-shadow:0 4px 18px rgba(20,68,47,0.06);border:1px solid rgba(20,68,47,0.05)">
-        <div style="font-size:16px;letter-spacing:2px">⭐⭐⭐⭐⭐</div>
-        <p style="font-size:14.5px;color:#3A463F;font-weight:500;line-height:1.6;margin:12px 0 16px">"קניתי אדמה ומערכת השקיה — שירות מעולה והכול הגיע מהר עד הבית. הגינה לא הכירה את עצמה!"</p>
-        <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:40px;height:40px;border-radius:50%;background:#14442F;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-family:'Rubik'">ד</div>
-          <div><div style="font-weight:800;font-size:14px;color:#1C2620">דנה כהן</div><div style="font-size:12px;color:#8A968D;font-weight:600">פתח תקווה</div></div>
-        </div>
-      </div>
-      <div style="background:#fff;border-radius:20px;padding:24px;box-shadow:0 4px 18px rgba(20,68,47,0.06);border:1px solid rgba(20,68,47,0.05)">
-        <div style="font-size:16px;letter-spacing:2px">⭐⭐⭐⭐⭐</div>
-        <p style="font-size:14.5px;color:#3A463F;font-weight:500;line-height:1.6;margin:12px 0 16px">"הבן שלי מכור למכוניות ה‑RC. מבחר ענק, מחירים הוגנים, וקיבלנו הסבר על כל דגם. ממליץ בחום!"</p>
-        <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:40px;height:40px;border-radius:50%;background:#E8741E;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-family:'Rubik'">י</div>
-          <div><div style="font-weight:800;font-size:14px;color:#1C2620">יוסי לוי</div><div style="font-size:12px;color:#8A968D;font-weight:600">ראשון לציון</div></div>
-        </div>
-      </div>
-      <div style="background:#fff;border-radius:20px;padding:24px;box-shadow:0 4px 18px rgba(20,68,47,0.06);border:1px solid rgba(20,68,47,0.05)">
-        <div style="font-size:16px;letter-spacing:2px">⭐⭐⭐⭐⭐</div>
-        <p style="font-size:14.5px;color:#3A463F;font-weight:500;line-height:1.6;margin:12px 0 16px">"הזמנתי בוואטסאפ בערב, אספתי למחרת בבוקר. פשוט, מהיר, ואנשים נחמדים. בדיוק מה שחיפשתי."</p>
-        <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:40px;height:40px;border-radius:50%;background:#14442F;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-family:'Rubik'">מ</div>
-          <div><div style="font-weight:800;font-size:14px;color:#1C2620">מאיה ברק</div><div style="font-size:12px;color:#8A968D;font-weight:600">מודיעין</div></div>
-        </div>
-      </div>
-    </div>
+    <div id="reviews" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px"></div>
   </section>
 
   <!-- ===== FAQ ===== -->
@@ -418,8 +394,56 @@
         </div>
         <div id="adminList"></div>
       </div>
+
+      <!-- admin reviews management -->
+      <div style="background:#fff;border-radius:22px;box-shadow:0 8px 30px rgba(20,68,47,0.08);overflow:hidden;margin-top:22px">
+        <div style="padding:20px 22px 16px;border-bottom:1px solid #EFEBE0">
+          <h2 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:20px;margin:0;color:#14442F">ניהול המלצות</h2>
+          <p style="font-size:13px;color:#6B7A70;margin:5px 0 0;font-weight:500">מחיקת המלצות לא רצויות מהאתר</p>
+        </div>
+        <div id="adminReviews"></div>
+      </div>
+
+      <!-- DEV-ONLY settings -->
+      <div id="devCard" style="display:none;background:#14442F;border-radius:22px;box-shadow:0 8px 30px rgba(20,68,47,0.18);overflow:hidden;margin-top:22px">
+        <div style="padding:20px 22px;color:#fff">
+          <h2 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:20px;margin:0">👑 הגדרות מפתח</h2>
+          <p style="font-size:13px;color:#9DB7AB;margin:5px 0 16px;font-weight:500">אזור זה גלוי רק למפתח (סיסמת על-מנהל)</p>
+          <label style="display:block;font-weight:800;font-size:13.5px;color:#fff;margin-bottom:7px">מגבלת מספר מוצרים</label>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <input id="devLimit" type="number" inputmode="numeric" min="1" max="5000" style="flex:1;min-width:120px;border:1.5px solid rgba(255,255,255,0.25);border-radius:12px;padding:12px 14px;font-size:16px;font-weight:800;background:rgba(255,255,255,0.10);color:#fff">
+            <button data-act="save-limit" style="border:none;background:#E8741E;color:#fff;font-family:'Rubik';font-weight:800;font-size:15px;padding:12px 22px;border-radius:12px;cursor:pointer">שמירת מגבלה</button>
+          </div>
+          <div style="font-size:12px;color:#9DB7AB;font-weight:600;margin-top:8px">המגבלה נשמרת לצמיתות ומשפיעה על כל הלקוחות.</div>
+        </div>
+      </div>
     </main>
   </div><!-- /admin -->
+
+  <!-- REVIEW MODAL -->
+  <div id="reviewModal" style="position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(20,32,28,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;transition:opacity .22s ease">
+    <div id="reviewCard" style="background:#fff;border-radius:22px;width:min(420px,100%);padding:26px 24px;box-shadow:0 24px 60px rgba(0,0,0,0.3);transform:scale(0.94);transition:transform .22s cubic-bezier(.3,1.2,.5,1)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <h2 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:21px;margin:0;color:#14442F">כתבו לנו המלצה ⭐</h2>
+        <button data-act="close-review" aria-label="סגירה" style="width:34px;height:34px;border:none;border-radius:10px;background:#EFEBE0;color:#1C2620;font-size:18px;cursor:pointer">✕</button>
+      </div>
+      <p style="font-size:13px;color:#6B7A70;font-weight:500;margin:0 0 16px">חוות הדעת שלכם תופיע באתר ותעזור לאחרים</p>
+
+      <label style="display:block;font-weight:800;font-size:13px;color:#1C2620;margin-bottom:6px">השם שלך</label>
+      <input id="rvName" maxlength="40" placeholder="לדוגמה: דני מ." style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:12px 14px;font-size:15px;font-weight:600;background:#FBFAF6;margin-bottom:14px">
+
+      <label style="display:block;font-weight:800;font-size:13px;color:#1C2620;margin-bottom:6px">דירוג</label>
+      <div id="rvStars" style="display:flex;gap:6px;margin-bottom:14px;font-size:32px;cursor:pointer">
+        <span data-star="1">★</span><span data-star="2">★</span><span data-star="3">★</span><span data-star="4">★</span><span data-star="5">★</span>
+      </div>
+
+      <label style="display:block;font-weight:800;font-size:13px;color:#1C2620;margin-bottom:6px">ההמלצה שלך</label>
+      <textarea id="rvText" rows="3" maxlength="600" placeholder="ספרו על החוויה שלכם..." style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:12px 14px;font-size:15px;font-weight:500;background:#FBFAF6;resize:vertical;line-height:1.5"></textarea>
+
+      <div id="rvError" style="display:none;color:#C8372B;font-size:13px;font-weight:700;margin-top:10px">נא למלא שם וטקסט המלצה</div>
+      <button id="rvSubmit" data-act="submit-review" style="width:100%;border:none;border-radius:14px;padding:14px;margin-top:16px;background:#14442F;color:#fff;font-family:'Rubik',sans-serif;font-weight:800;font-size:15.5px;cursor:pointer;box-shadow:0 10px 24px rgba(20,68,47,0.22)">שליחת המלצה</button>
+    </div>
+  </div>
 
   <!-- LOGIN MODAL -->
   <div id="loginModal" style="position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(20,32,28,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;transition:opacity .22s ease">
@@ -511,6 +535,7 @@ const state = {
   products:[], loading:true, loadError:false,
   form:{ name:'', world:'garden', price:'', desc:'', status:'active', file:null, fileName:'' },
   saving:false, editingId:null, limit:60,
+  reviews:[], role:'', rvRating:5,
 };
 
 /* ===== עזרים ===== */
@@ -809,7 +834,16 @@ function update(){
     banner.style.border = '1px solid ' + (atLimit ? '#F1C4BE' : '#CDE3D3');
   }
 
-  if (state.view === 'admin') renderAdminList();
+  // המלצות (ציבורי) — מציג כפתורי מחיקה רק אם מחובר
+  renderReviews();
+
+  // אזור מפתח + ניהול
+  const devCard = document.getElementById('devCard');
+  if (devCard){
+    devCard.style.display = (state.role === 'dev') ? 'block' : 'none';
+    const dl = document.getElementById('devLimit'); if (dl && document.activeElement !== dl) dl.value = state.limit;
+  }
+  if (state.view === 'admin'){ renderAdminList(); renderAdminReviews(); }
 }
 
 function refreshSaveBtn(){
@@ -832,7 +866,9 @@ function resetFormInputs(){
 /* ===== אימות מנהל ===== */
 const getPw = () => sessionStorage.getItem('adminPassword') || '';
 const setPw = p => sessionStorage.setItem('adminPassword', p);
-const clearPw = () => sessionStorage.removeItem('adminPassword');
+const clearPw = () => { sessionStorage.removeItem('adminPassword'); sessionStorage.removeItem('adminRole'); state.role=''; };
+const getRole = () => sessionStorage.getItem('adminRole') || '';
+const setRole = r => { sessionStorage.setItem('adminRole', r||''); state.role = r||''; };
 const authHeaders = (extra={}) => Object.assign({ 'Authorization':'Bearer ' + getPw() }, extra);
 
 // עוטף fetch לנתיבי ניהול: מוסיף אימות + מטפל ב-401
@@ -847,7 +883,7 @@ function handle401(){
 }
 
 function enterAdmin(){
-  if (getPw()){ state.view='admin'; state.open=false; update(); }
+  if (getPw()){ state.role = getRole(); state.view='admin'; state.open=false; update(); }
   else openLogin();
 }
 function openLogin(){
@@ -872,10 +908,107 @@ async function submitLogin(){
     const res = await fetch(API + '/api/admin/login', {
       method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: pw })
     });
+    const d = await res.json().catch(()=>({}));
     if (!res.ok){ errEl.textContent='סיסמה שגויה, נסו שוב'; errEl.style.display='block'; return; }
-    setPw(pw); closeLogin(); state.view='admin'; state.open=false; update();
+    setPw(pw); setRole(d.role||'admin'); closeLogin(); state.view='admin'; state.open=false; update();
   } catch(e){ errEl.textContent='שגיאת חיבור לשרת'; errEl.style.display='block'; }
   finally { btn.disabled=false; btn.style.opacity='1'; }
+}
+
+/* ===== המלצות (Reviews) ===== */
+async function loadReviews(){
+  try{
+    const r = await fetch(API + '/api/reviews?t=' + Date.now(), { cache:'no-store' });
+    const d = await r.json();
+    if (d.ok) state.reviews = d.reviews || [];
+  }catch(e){ console.error(e); }
+  renderReviews(); renderAdminReviews();
+}
+function starStr(n){ n=Math.max(1,Math.min(5,n|0)); return '★★★★★'.slice(0,n) + '☆☆☆☆☆'.slice(0,5-n); }
+
+function renderReviews(){
+  const el = document.getElementById('reviews'); if(!el) return;
+  const isAdmin = !!state.role;
+  if (!state.reviews.length){
+    el.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#6B7A70;font-weight:600;padding:30px">עדיין אין המלצות — היו הראשונים לכתוב! ⭐</div>`;
+    return;
+  }
+  el.innerHTML = state.reviews.map(rv => {
+    const initial = esc((rv.name||'?').trim().charAt(0) || '?');
+    const delBtn = isAdmin ? `<button data-act="del-review" data-id="${esc(rv.id)}" style="border:none;background:#FCEBE9;color:#C8372B;font-weight:700;font-size:12px;padding:6px 10px;border-radius:9px;cursor:pointer;margin-top:10px">🗑️ מחק</button>` : '';
+    return `<div style="background:#fff;border-radius:20px;padding:24px;box-shadow:0 4px 18px rgba(20,68,47,0.06);border:1px solid rgba(20,68,47,0.05)">
+      <div style="font-size:17px;letter-spacing:2px;color:#E8741E">${starStr(rv.rating)}</div>
+      <p style="font-size:14.5px;color:#3A463F;font-weight:500;line-height:1.6;margin:12px 0 16px">"${esc(rv.text)}"</p>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:40px;height:40px;border-radius:50%;background:#14442F;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-family:'Rubik'">${initial}</div>
+        <div style="font-weight:800;font-size:14px;color:#1C2620">${esc(rv.name)}</div>
+      </div>
+      ${delBtn}
+    </div>`;
+  }).join('');
+}
+
+function renderAdminReviews(){
+  const el = document.getElementById('adminReviews'); if(!el) return;
+  if (!state.reviews.length){ el.innerHTML = '<div style="text-align:center;color:#8A968D;padding:24px;font-weight:600">אין המלצות עדיין</div>'; return; }
+  el.innerHTML = state.reviews.map(rv => `<div style="display:flex;gap:12px;align-items:center;padding:12px;border-bottom:1px solid #EFEBE0">
+    <div style="flex:1;min-width:0">
+      <div style="font-weight:800;font-size:14px;color:#1C2620">${esc(rv.name)} <span style="color:#E8741E">${starStr(rv.rating)}</span></div>
+      <div style="font-size:13px;color:#6B7A70;font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(rv.text)}</div>
+    </div>
+    <button data-act="del-review" data-id="${esc(rv.id)}" style="flex-shrink:0;border:none;background:#FCEBE9;color:#C8372B;font-weight:700;font-size:13px;padding:8px 12px;border-radius:10px;cursor:pointer">🗑️ מחק</button>
+  </div>`).join('');
+}
+
+async function deleteReview(id){
+  const res = await adminFetch(API + '/api/reviews/' + encodeURIComponent(id), { method:'DELETE' });
+  if (!res) return;
+  const d = await res.json();
+  if (d.ok){ state.reviews = state.reviews.filter(r=>r.id!==id); showToast('ההמלצה נמחקה'); renderReviews(); renderAdminReviews(); }
+  else showToast('⚠️ ' + (d.error||'נכשל'));
+}
+
+/* ===== מודאל המלצה + בורר כוכבים ===== */
+function paintStars(){
+  document.querySelectorAll('#rvStars span').forEach(s=>{ s.style.color = (Number(s.dataset.star) <= state.rvRating) ? '#E8741E' : '#DCD7C9'; });
+}
+function openReview(){
+  state.rvRating = 5; paintStars();
+  document.getElementById('rvName').value=''; document.getElementById('rvText').value='';
+  document.getElementById('rvError').style.display='none';
+  const ov = document.getElementById('reviewModal'); ov.style.display='flex';
+  requestAnimationFrame(()=>{ ov.style.opacity='1'; document.getElementById('reviewCard').style.transform='scale(1)'; });
+  setTimeout(()=>document.getElementById('rvName').focus(), 60);
+}
+function closeReview(){
+  const ov = document.getElementById('reviewModal');
+  ov.style.opacity='0'; document.getElementById('reviewCard').style.transform='scale(0.94)';
+  setTimeout(()=>{ ov.style.display='none'; }, 220);
+}
+async function submitReview(){
+  const name = document.getElementById('rvName').value.trim();
+  const text = document.getElementById('rvText').value.trim();
+  const errEl = document.getElementById('rvError');
+  if (!name || !text){ errEl.textContent='נא למלא שם וטקסט המלצה'; errEl.style.display='block'; return; }
+  const btn = document.getElementById('rvSubmit'); btn.disabled=true; btn.style.opacity='0.7';
+  try{
+    const res = await fetch(API + '/api/reviews', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, text, rating: state.rvRating }) });
+    const d = await res.json();
+    if (!d.ok){ errEl.textContent = d.error||'שמירה נכשלה'; errEl.style.display='block'; return; }
+    closeReview(); showToast('תודה! ההמלצה נוספה ⭐'); loadReviews();
+  }catch(e){ errEl.textContent='שגיאת חיבור לשרת'; errEl.style.display='block'; }
+  finally{ btn.disabled=false; btn.style.opacity='1'; }
+}
+
+/* ===== מפתח: שינוי מגבלת מוצרים ===== */
+async function saveLimit(){
+  const v = Number(document.getElementById('devLimit').value);
+  if (!v || v<1){ showToast('⚠️ מספר לא תקין'); return; }
+  const res = await adminFetch(API + '/api/config', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ maxProducts: v }) });
+  if (!res) return;
+  const d = await res.json();
+  if (d.ok){ state.limit = d.limit; showToast('המגבלה עודכנה ל-' + d.limit + ' מוצרים'); update(); }
+  else showToast('⚠️ ' + (d.error||'נכשל'));
 }
 
 /* ===== ניהול: עריכה / הסתרה / הצגה ===== */
@@ -974,7 +1107,12 @@ document.addEventListener('click', e => {
     case 'set-active': state.form.status='active'; update(); break;
     case 'set-hidden': state.form.status='hidden'; update(); break;
     case 'save': if(t.dataset.disabled!=='1') saveProduct(); break;
-    case 'reload': loadProducts(); break;
+    case 'reload': loadProducts(); loadReviews(); break;
+    case 'open-review': openReview(); break;
+    case 'close-review': closeReview(); break;
+    case 'submit-review': submitReview(); break;
+    case 'del-review': deleteReview(id); break;
+    case 'save-limit': saveLimit(); break;
   }
 });
 
@@ -992,9 +1130,19 @@ document.getElementById('fileInput').addEventListener('change', e => {
   r.readAsDataURL(f);
 });
 
+// בורר כוכבים במודאל ההמלצה
+document.querySelectorAll('#rvStars span').forEach(s=>{
+  s.addEventListener('click', ()=>{ state.rvRating = Number(s.dataset.star); paintStars(); });
+});
+// סגירת מודאל המלצה בלחיצה על הרקע / Escape
+document.getElementById('reviewModal').addEventListener('click', e => { if(e.target.id==='reviewModal') closeReview(); });
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeReview(); });
+
 /* ===== הפעלה ===== */
+state.role = getRole();
 update();
 loadProducts();
+loadReviews();
 </script>
 
 <script>

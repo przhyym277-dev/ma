@@ -1,11 +1,10 @@
 /**
- * המחסן הגדול — שרת Backend
+ * צרפתי שיווק — שרת Backend
  * ------------------------------------------------------------
- * GET  /api/products  → מושך את כל המוצרים מגוגל שיטס ומחזיר JSON
- * POST /api/products  → מקבל טופס + תמונה, מעלה ל-Cloudinary,
- *                       ומוסיף שורה חדשה לגוגל שיט עם קישור התמונה.
- *
- * דורש קובץ .env (ראה .env.example).
+ * מוצרים:  GET/POST/PUT/DELETE /api/products
+ * המלצות:  GET/POST /api/reviews (ציבורי) · DELETE /api/reviews/:id (מנהל)
+ * תפקידים: מנהל (ADMIN_PASSWORD) · מפתח/על-מנהל (DEV_PASSWORD) — משנה מגבלת מוצרים
+ * נתונים:  Google Sheets (+ Cloudinary לתמונות). יש fallback לזיכרון.
  */
 
 require('dotenv').config();
@@ -25,14 +24,9 @@ const PORT = process.env.PORT || 3000;
 /* ---------- middleware ---------- */
 app.use(cors());
 app.use(express.json());
-// מגישים את הפרונטאנד מתוך תיקיית public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// קובץ התמונה נשמר בזיכרון (buffer) ולא בדיסק — נעביר אותו ישר ל-Cloudinary
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 8 * 1024 * 1024 }, // 8MB
-});
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 8 * 1024 * 1024 } });
 
 /* ---------- Cloudinary ---------- */
 cloudinary.config({
@@ -40,8 +34,6 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-
-// מעלה buffer של תמונה ל-Cloudinary ומחזיר את ה-secure_url
 function uploadToCloudinary(buffer) {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
@@ -53,19 +45,12 @@ function uploadToCloudinary(buffer) {
 }
 
 /* ---------- Google Sheets ---------- */
-// אימות מול חשבון שירות (Service Account)
-// ניקוי המפתח ושחזורו לפורמט PEM תקין — עמיד לכל צורת שמירה
-// (מרכאות עוטפות, \n טקסטואלי, או ירידות שורה שהפכו לרווחים ב-Render)
 function cleanPrivateKey(raw) {
-  let k = (raw || '').trim()
-    .replace(/^["']|["']$/g, '')   // הסרת מרכאות עוטפות
-    .replace(/\\n/g, '\n');         // \n טקסטואלי → ירידת שורה אמיתית
-
-  // שחזור: חילוץ הגוף בין BEGIN/END, ניקוי כל הרווחים, ועטיפה מחדש ב-64 תווים
+  let k = (raw || '').trim().replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
   const m = k.match(/-----BEGIN ([A-Z ]+)-----([\s\S]*?)-----END \1-----/);
   if (m) {
     const label = m[1].trim();
-    const body = m[2].replace(/\s+/g, '');     // הסרת כל הרווחים/שורות מהגוף
+    const body = m[2].replace(/\s+/g, '');
     const wrapped = (body.match(/.{1,64}/g) || []).join('\n');
     return `-----BEGIN ${label}-----\n${wrapped}\n-----END ${label}-----\n`;
   }
@@ -78,69 +63,76 @@ const serviceAccountAuth = new JWT({
   scopes: ['https://www.googleapis.com/auth/spreadsheets'],
 });
 
-// מחזיר את הגיליון הראשון (sheet) מוכן לקריאה/כתיבה
-async function getSheet() {
+// טוען את המסמך כולו (לגישה לכל הגיליונות)
+async function getDoc() {
   const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID, serviceAccountAuth);
   await doc.loadInfo();
-  return doc.sheetsByIndex[0];
+  return doc;
+}
+async function getSheet() { return (await getDoc()).sheetsByIndex[0]; }
+// מחזיר גיליון לפי שם, יוצר אותו אם חסר
+async function getNamedSheet(doc, title, headers) {
+  return doc.sheetsByTitle[title] || (await doc.addSheet({ title, headerValues: headers }));
 }
 
-// ממיר שורת גיליון לאובייקט מוצר שהפרונטאנד מכיר
 function rowToProduct(row) {
   const hiddenRaw = String(row.get('hidden') ?? '').trim().toLowerCase();
   return {
     id: row.get('id') || ('row-' + row.rowNumber),
-    world: (row.get('world') || 'garden').trim(),     // 'garden' | 'rc'
+    world: (row.get('world') || 'garden').trim(),
     category: row.get('category') || '',
     name: row.get('name') || '',
     desc: row.get('desc') || '',
     price: Number(row.get('price')) || 0,
-    image: row.get('imageUrl') || row.get('imageurl') || '',  // תומך בכותרת imageUrl/imageurl
+    image: row.get('imageUrl') || row.get('imageurl') || '',
     hidden: hiddenRaw === 'true' || hiddenRaw === '1' || hiddenRaw === 'כן',
   };
 }
 
-/* ---------- מצב הפעלה: Sheets אמיתי או זיכרון (fallback) ---------- */
-// אם משתני גוגל קיימים → עובדים מול Google Sheets. אחרת → מוצרי דמו בזיכרון.
-const SHEETS_ENABLED = !!(
-  process.env.GOOGLE_SHEET_ID &&
-  process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
-  process.env.GOOGLE_PRIVATE_KEY
-);
-const CLOUDINARY_ENABLED = !!(
-  process.env.CLOUDINARY_CLOUD_NAME &&
-  process.env.CLOUDINARY_API_KEY &&
-  process.env.CLOUDINARY_API_SECRET
-);
+/* ---------- מצב הפעלה: Sheets אמיתי או זיכרון ---------- */
+const SHEETS_ENABLED = !!(process.env.GOOGLE_SHEET_ID && process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_PRIVATE_KEY);
+const CLOUDINARY_ENABLED = !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET);
 
-// מוצרי דמו — נטענים רק כשאין Google Sheets מחובר
 let memProducts = [
   { id:'g1', world:'garden', category:'אדמה',        name:'אדמת גינה פרימיום 50 ליטר', price:45,  desc:'אדמה מועשרת ומאווררת לצמיחה בריאה.', image:'', hidden:false },
   { id:'g2', world:'garden', category:'גינון',       name:'דשא סינתטי איכותי (מ״ר)',   price:89,  desc:'מראה טבעי, עמיד לשמש ולשחיקה.',      image:'', hidden:false },
   { id:'g3', world:'garden', category:'מערכת השקיה', name:'מערכת השקיה בטפטוף',        price:320, desc:'ערכה מלאה לחיסכון במים ובזמן.',      image:'', hidden:false },
   { id:'g4', world:'garden', category:'כלי מעון',     name:'עציץ טרקוטה גדול',          price:120, desc:'חרס איכותי, מתאים לפנים ולחוץ.',     image:'', hidden:false },
-  { id:'g5', world:'garden', category:'דשן אורגני',   name:'דשן אורגני 5 ק״ג',          price:65,  desc:'הזנה מתמשכת לצמחים פורחים.',         image:'', hidden:false },
-  { id:'g6', world:'garden', category:'כלים',        name:'מזמרה מקצועית',             price:180, desc:'להב פלדה חד, אחיזה ארגונומית.',      image:'', hidden:false },
   { id:'r1', world:'rc', category:'באגי',     name:'מכונית באגי מקצועית 4X4', price:1200, desc:'מתח מלא, מתלים מוגברים לכל שטח.',  image:'', hidden:false },
   { id:'r2', world:'rc', category:'דריפט',    name:'מכונית דריפט מהירה',      price:850,  desc:'ג׳יירו וצמיגי דריפט לשליטה מלאה.', image:'', hidden:false },
-  { id:'r3', world:'rc', category:'מכוניות',  name:'רכב מירוץ מהיר 1:14',     price:290,  desc:'מהירות גבוהה ושליטה מדויקת.',      image:'', hidden:false },
-  { id:'r4', world:'rc', category:'טיפוס',    name:'רכב טיפוס סלעים Crawler', price:750,  desc:'מנוע חזק לטיפוס על כל מכשול.',     image:'', hidden:false },
 ];
+let memReviews = [];
 
-// מעלה תמונה: Cloudinary אם מוגדר, אחרת data-URL (כדי שתעבוד גם בלי Cloudinary)
 async function uploadImage(file) {
   if (!file) return '';
-  if (CLOUDINARY_ENABLED) {
-    const result = await uploadToCloudinary(file.buffer);
-    return result.secure_url;
-  }
+  if (CLOUDINARY_ENABLED) return (await uploadToCloudinary(file.buffer)).secure_url;
   return `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
 }
 
-// מגבלת מוצרים פעילים (ניתן לשינוי דרך משתנה סביבה MAX_PRODUCTS)
-const MAX_PRODUCTS = Number(process.env.MAX_PRODUCTS) || 60;
+/* ---------- מגבלת מוצרים (דינמית, נשמרת בגיליון config) ---------- */
+let runtimeLimit = Number(process.env.MAX_PRODUCTS) || 60;
 
-// סופר מוצרים פעילים (לא מוסתרים) — לצורך אכיפת המגבלה
+async function loadLimitFromSheet() {
+  if (!SHEETS_ENABLED) return;
+  try {
+    const doc = await getDoc();
+    const cfg = doc.sheetsByTitle['config'];
+    if (!cfg) return;
+    const rows = await cfg.getRows();
+    const r = rows.find(x => x.get('key') === 'maxProducts');
+    if (r && Number(r.get('value')) > 0) runtimeLimit = Number(r.get('value'));
+  } catch (e) { console.error('loadLimit:', e.message); }
+}
+async function saveLimitToSheet(val) {
+  if (!SHEETS_ENABLED) return;
+  const doc = await getDoc();
+  const cfg = await getNamedSheet(doc, 'config', ['key', 'value']);
+  const rows = await cfg.getRows();
+  const r = rows.find(x => x.get('key') === 'maxProducts');
+  if (r) { r.set('value', String(val)); await r.save(); }
+  else await cfg.addRow({ key: 'maxProducts', value: String(val) });
+}
+
 async function countActiveProducts() {
   if (!SHEETS_ENABLED) return memProducts.filter(p => !p.hidden).length;
   const sheet = await getSheet();
@@ -148,83 +140,72 @@ async function countActiveProducts() {
   return rows.filter(r => String(r.get('hidden') || '').trim().toLowerCase() !== 'true').length;
 }
 
-/* ---------- אימות מנהל ---------- */
+/* ---------- אימות + תפקידים ---------- */
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
+const DEV_PASSWORD = process.env.DEV_PASSWORD || 'Yair';   // על-מנהל (מפתח)
 
-// Middleware: דורש סיסמת מנהל ב-Authorization: Bearer <password>
+function roleFor(token) {
+  if (DEV_PASSWORD && token === DEV_PASSWORD) return 'dev';
+  if (ADMIN_PASSWORD && token === ADMIN_PASSWORD) return 'admin';
+  return null;
+}
+function tokenFromReq(req) {
+  const h = req.headers.authorization || '';
+  return h.startsWith('Bearer ') ? h.slice(7) : ((req.body && req.body.password) || '');
+}
 function requireAuth(req, res, next) {
-  const header = req.headers.authorization || '';
-  const token = header.startsWith('Bearer ')
-    ? header.slice(7)
-    : ((req.body && req.body.password) || '');
-  if (!ADMIN_PASSWORD || token !== ADMIN_PASSWORD) {
-    return res.status(401).json({ ok: false, error: 'סיסמת מנהל שגויה' });
-  }
-  next();
+  const role = roleFor(tokenFromReq(req));
+  if (!role) return res.status(401).json({ ok: false, error: 'סיסמה שגויה' });
+  req.role = role; next();
+}
+function requireDev(req, res, next) {
+  const role = roleFor(tokenFromReq(req));
+  if (role !== 'dev') return res.status(403).json({ ok: false, error: 'נדרשת הרשאת מפתח' });
+  req.role = role; next();
 }
 
-// מאתר שורה בגיליון לפי id
 async function findRowById(id) {
   const sheet = await getSheet();
   const rows = await sheet.getRows();
-  const row = rows.find(r => String(r.get('id')) === String(id));
-  return { sheet, row };
+  return { sheet, row: rows.find(r => String(r.get('id')) === String(id)) };
 }
 
 /* ============================================================
- *  POST /api/admin/login — אימות סיסמה (לפתיחת הפאנל)
+ *  התחברות — מחזיר תפקיד (admin / dev)
  * ============================================================ */
 app.post('/api/admin/login', (req, res) => {
-  const { password } = req.body || {};
-  if (!ADMIN_PASSWORD || password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ ok: false, error: 'סיסמה שגויה' });
-  }
-  res.json({ ok: true });
+  const role = roleFor((req.body || {}).password);
+  if (!role) return res.status(401).json({ ok: false, error: 'סיסמה שגויה' });
+  res.json({ ok: true, role });
 });
 
 /* ============================================================
- *  GET /api/products  — רשימת מוצרים מגוגל שיטס
+ *  מוצרים
  * ============================================================ */
 app.get('/api/products', async (req, res) => {
   try {
-    if (!SHEETS_ENABLED) {
-      return res.json({ ok: true, products: memProducts, source: 'memory', limit: MAX_PRODUCTS });
-    }
+    if (!SHEETS_ENABLED) return res.json({ ok: true, products: memProducts, source: 'memory', limit: runtimeLimit });
     const sheet = await getSheet();
     const rows = await sheet.getRows();
-    res.json({ ok: true, products: rows.map(rowToProduct), source: 'sheets', limit: MAX_PRODUCTS });
+    res.json({ ok: true, products: rows.map(rowToProduct), source: 'sheets', limit: runtimeLimit });
   } catch (err) {
-    console.error('GET /api/products failed:', err.message);
+    console.error('GET /api/products:', err.message);
     res.status(500).json({ ok: false, error: 'נכשלה משיכת המוצרים מגוגל שיטס' });
   }
 });
 
-/* ============================================================
- *  POST /api/products  — הוספת מוצר חדש (טופס + תמונה)
- *  Content-Type: multipart/form-data
- *  שדות: name, world, price, desc, status, image(file)
- * ============================================================ */
 app.post('/api/products', requireAuth, upload.single('image'), async (req, res) => {
   try {
     const { name, world, price, desc, status } = req.body;
+    if (!name || !String(name).trim() || !price) return res.status(400).json({ ok: false, error: 'חסר שם מוצר או מחיר' });
 
-    // ולידציה בסיסית
-    if (!name || !String(name).trim() || !price) {
-      return res.status(400).json({ ok: false, error: 'חסר שם מוצר או מחיר' });
-    }
-
-    // אכיפת מגבלת מוצרים פעילים
     const activeCount = await countActiveProducts();
-    if (activeCount >= MAX_PRODUCTS) {
-      return res.status(409).json({
-        ok: false, limitReached: true,
-        error: `הגעת למגבלה של ${MAX_PRODUCTS} מוצרים פעילים. כדי להוסיף מוצר חדש — הסתר מוצר קיים, או שדרג את החבילה.`,
-      });
+    if (activeCount >= runtimeLimit) {
+      return res.status(409).json({ ok: false, limitReached: true,
+        error: `הגעת למגבלה של ${runtimeLimit} מוצרים פעילים. כדי להוסיף מוצר חדש — הסתר מוצר קיים, או שדרג את החבילה.` });
     }
 
-    // 1) העלאת התמונה (Cloudinary אם מוגדר, אחרת data-URL)
     const imageUrl = await uploadImage(req.file);
-
     const base = {
       id: 'p' + Date.now(),
       world: world === 'rc' ? 'rc' : 'garden',
@@ -235,37 +216,26 @@ app.post('/api/products', requireAuth, upload.single('image'), async (req, res) 
     };
     const isHidden = status === 'hidden';
 
-    // 2) שמירה: Google Sheets אם מחובר, אחרת זיכרון
     if (SHEETS_ENABLED) {
       const sheet = await getSheet();
       await sheet.loadHeaderRow();
-      // מאתר את שם עמודת התמונה בפועל (imageUrl או imageurl)
       const imgCol = (sheet.headerValues || []).find(h => h.toLowerCase() === 'imageurl') || 'imageUrl';
-      const rowObj = {
-        ...base,
-        hidden: isHidden ? 'TRUE' : 'FALSE',
-        createdAt: new Date().toISOString(),
-      };
+      const rowObj = { ...base, hidden: isHidden ? 'TRUE' : 'FALSE', createdAt: new Date().toISOString() };
       rowObj[imgCol] = imageUrl;
       await sheet.addRow(rowObj);
     } else {
       memProducts.unshift({ ...base, image: imageUrl, hidden: isHidden });
     }
-
     res.json({ ok: true, product: { ...base, image: imageUrl, hidden: isHidden } });
   } catch (err) {
-    console.error('POST /api/products failed:', err.message);
+    console.error('POST /api/products:', err.message);
     res.status(500).json({ ok: false, error: 'נכשלה שמירת המוצר' });
   }
 });
 
-/* ============================================================
- *  PUT /api/products/:id — עדכון מוצר (שם, מחיר, תיאור, עולם, הצגה/הסתרה)
- * ============================================================ */
 app.put('/api/products/:id', requireAuth, async (req, res) => {
   try {
     const { name, price, desc, world, category, hidden } = req.body || {};
-
     if (!SHEETS_ENABLED) {
       const p = memProducts.find(x => String(x.id) === String(req.params.id));
       if (!p) return res.status(404).json({ ok: false, error: 'מוצר לא נמצא' });
@@ -277,35 +247,28 @@ app.put('/api/products/:id', requireAuth, async (req, res) => {
       if (hidden !== undefined) p.hidden = !!hidden;
       return res.json({ ok: true, product: p });
     }
-
     const { row } = await findRowById(req.params.id);
     if (!row) return res.status(404).json({ ok: false, error: 'מוצר לא נמצא' });
-
     if (name !== undefined) row.set('name', String(name).trim());
     if (price !== undefined) row.set('price', Number(price));
     if (desc !== undefined) row.set('desc', String(desc).trim());
     if (world !== undefined) row.set('world', world === 'rc' ? 'rc' : 'garden');
     if (category !== undefined) row.set('category', String(category));
     if (hidden !== undefined) row.set('hidden', hidden ? 'TRUE' : 'FALSE');
-
     await row.save();
     res.json({ ok: true, product: rowToProduct(row) });
   } catch (err) {
-    console.error('PUT /api/products failed:', err.message);
+    console.error('PUT /api/products:', err.message);
     res.status(500).json({ ok: false, error: 'נכשל עדכון המוצר' });
   }
 });
 
-/* ============================================================
- *  DELETE /api/products/:id — הסתרה רכה (hidden = TRUE), בלי מחיקה פיזית
- * ============================================================ */
 app.delete('/api/products/:id', requireAuth, async (req, res) => {
   try {
     if (!SHEETS_ENABLED) {
       const p = memProducts.find(x => String(x.id) === String(req.params.id));
       if (!p) return res.status(404).json({ ok: false, error: 'מוצר לא נמצא' });
-      p.hidden = true;
-      return res.json({ ok: true });
+      p.hidden = true; return res.json({ ok: true });
     }
     const { row } = await findRowById(req.params.id);
     if (!row) return res.status(404).json({ ok: false, error: 'מוצר לא נמצא' });
@@ -313,15 +276,88 @@ app.delete('/api/products/:id', requireAuth, async (req, res) => {
     await row.save();
     res.json({ ok: true });
   } catch (err) {
-    console.error('DELETE /api/products failed:', err.message);
+    console.error('DELETE /api/products:', err.message);
     res.status(500).json({ ok: false, error: 'נכשלה הסתרת המוצר' });
   }
 });
 
+/* ============================================================
+ *  המלצות (Reviews)
+ * ============================================================ */
+const REVIEW_HEADERS = ['id', 'name', 'rating', 'text', 'createdAt'];
+function rowToReview(row) {
+  return { id: row.get('id'), name: row.get('name') || '', rating: Number(row.get('rating')) || 5, text: row.get('text') || '', createdAt: row.get('createdAt') || '' };
+}
+
+// ציבורי — רשימת המלצות (החדשות קודם)
+app.get('/api/reviews', async (req, res) => {
+  try {
+    if (!SHEETS_ENABLED) return res.json({ ok: true, reviews: memReviews });
+    const doc = await getDoc();
+    const sheet = await getNamedSheet(doc, 'reviews', REVIEW_HEADERS);
+    const rows = await sheet.getRows();
+    res.json({ ok: true, reviews: rows.map(rowToReview).reverse() });
+  } catch (err) {
+    console.error('GET /api/reviews:', err.message);
+    res.status(500).json({ ok: false, error: 'נכשלה טעינת ההמלצות' });
+  }
+});
+
+// ציבורי — הוספת המלצה
+app.post('/api/reviews', async (req, res) => {
+  try {
+    let { name, rating, text } = req.body || {};
+    name = String(name || '').trim().slice(0, 40);
+    text = String(text || '').trim().slice(0, 600);
+    rating = Math.max(1, Math.min(5, Math.round(Number(rating) || 5)));
+    if (!name || !text) return res.status(400).json({ ok: false, error: 'נא למלא שם וטקסט המלצה' });
+    const review = { id: 'rv' + Date.now(), name, rating, text, createdAt: new Date().toISOString() };
+    if (!SHEETS_ENABLED) memReviews.unshift(review);
+    else { const doc = await getDoc(); const sheet = await getNamedSheet(doc, 'reviews', REVIEW_HEADERS); await sheet.addRow(review); }
+    res.json({ ok: true, review });
+  } catch (err) {
+    console.error('POST /api/reviews:', err.message);
+    res.status(500).json({ ok: false, error: 'נכשלה שמירת ההמלצה' });
+  }
+});
+
+// מנהל — מחיקת המלצה
+app.delete('/api/reviews/:id', requireAuth, async (req, res) => {
+  try {
+    if (!SHEETS_ENABLED) { memReviews = memReviews.filter(r => r.id !== req.params.id); return res.json({ ok: true }); }
+    const doc = await getDoc();
+    const sheet = await getNamedSheet(doc, 'reviews', REVIEW_HEADERS);
+    const rows = await sheet.getRows();
+    const r = rows.find(x => String(x.get('id')) === String(req.params.id));
+    if (r) await r.delete();
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('DELETE /api/reviews:', err.message);
+    res.status(500).json({ ok: false, error: 'נכשלה מחיקת ההמלצה' });
+  }
+});
+
+/* ============================================================
+ *  הגדרות — מפתח בלבד (שינוי מגבלת מוצרים)
+ * ============================================================ */
+app.put('/api/config', requireDev, async (req, res) => {
+  try {
+    const n = Number((req.body || {}).maxProducts);
+    if (!Number.isFinite(n) || n < 1 || n > 5000) return res.status(400).json({ ok: false, error: 'מספר לא תקין (1–5000)' });
+    runtimeLimit = Math.floor(n);
+    await saveLimitToSheet(runtimeLimit);
+    res.json({ ok: true, limit: runtimeLimit });
+  } catch (err) {
+    console.error('PUT /api/config:', err.message);
+    res.status(500).json({ ok: false, error: 'נכשל עדכון ההגדרה' });
+  }
+});
+
 /* ---------- start ---------- */
-app.listen(PORT, () => {
-  console.log(`🌿 המחסן הגדול רץ על http://localhost:${PORT}`);
-  console.log(`   מקור מוצרים: ${SHEETS_ENABLED ? 'Google Sheets ✅' : 'זיכרון (דמו) — הוסף משתני GOOGLE_* כדי לחבר Sheets'}`);
-  console.log(`   תמונות: ${CLOUDINARY_ENABLED ? 'Cloudinary ✅' : 'data-URL (הוסף CLOUDINARY_* לאחסון אמיתי)'}`);
-  console.log(`   סיסמת מנהל: ${ADMIN_PASSWORD ? 'מוגדרת ✅' : 'חסרה ⚠️ (הגדר ADMIN_PASSWORD)'}`);
+app.listen(PORT, async () => {
+  await loadLimitFromSheet();
+  console.log(`🌿 צרפתי שיווק רץ על http://localhost:${PORT}`);
+  console.log(`   מקור מוצרים: ${SHEETS_ENABLED ? 'Google Sheets ✅' : 'זיכרון (דמו)'}`);
+  console.log(`   תמונות: ${CLOUDINARY_ENABLED ? 'Cloudinary ✅' : 'data-URL'}`);
+  console.log(`   סיסמת מנהל: ${ADMIN_PASSWORD ? '✅' : '⚠️ חסרה'} · סיסמת מפתח: ${DEV_PASSWORD ? '✅' : '⚠️'} · מגבלה: ${runtimeLimit}`);
 });
