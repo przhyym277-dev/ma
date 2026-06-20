@@ -263,21 +263,29 @@ app.put('/api/products/:id', requireAuth, async (req, res) => {
   }
 });
 
+// ?permanent=1 → מחיקה פיזית מהגיליון. אחרת → הסתרה רכה (hidden=TRUE).
 app.delete('/api/products/:id', requireAuth, async (req, res) => {
+  const permanent = req.query.permanent === '1' || req.query.permanent === 'true';
   try {
     if (!SHEETS_ENABLED) {
-      const p = memProducts.find(x => String(x.id) === String(req.params.id));
-      if (!p) return res.status(404).json({ ok: false, error: 'מוצר לא נמצא' });
-      p.hidden = true; return res.json({ ok: true });
+      const idx = memProducts.findIndex(x => String(x.id) === String(req.params.id));
+      if (idx === -1) return res.status(404).json({ ok: false, error: 'מוצר לא נמצא' });
+      if (permanent) memProducts.splice(idx, 1);
+      else memProducts[idx].hidden = true;
+      return res.json({ ok: true, permanent });
     }
     const { row } = await findRowById(req.params.id);
     if (!row) return res.status(404).json({ ok: false, error: 'מוצר לא נמצא' });
-    row.set('hidden', 'TRUE');
-    await row.save();
-    res.json({ ok: true });
+    if (permanent) {
+      await row.delete();
+    } else {
+      row.set('hidden', 'TRUE');
+      await row.save();
+    }
+    res.json({ ok: true, permanent });
   } catch (err) {
     console.error('DELETE /api/products:', err.message);
-    res.status(500).json({ ok: false, error: 'נכשלה הסתרת המוצר' });
+    res.status(500).json({ ok: false, error: permanent ? 'נכשלה מחיקת המוצר' : 'נכשלה הסתרת המוצר' });
   }
 });
 

@@ -1019,6 +1019,14 @@ async function hideProduct(id){
   if (data.ok){ const p = state.products.find(x=>x.id===id); if(p) p.hidden=true; showToast('המוצר הוסתר מהאתר'); update(); }
   else showToast('⚠️ ' + (data.error||'נכשל'));
 }
+async function removeProduct(id, name){
+  if (!confirm('למחוק לצמיתות את "' + (name||'המוצר') + '"?\nהפעולה בלתי הפיכה — המוצר יימחק מהגיליון.')) return;
+  const res = await adminFetch(API + '/api/products/' + encodeURIComponent(id) + '?permanent=1', { method:'DELETE' });
+  if (!res) return;
+  const d = await res.json();
+  if (d.ok){ state.products = state.products.filter(p=>p.id!==id); state.editingId=null; showToast('המוצר נמחק לצמיתות'); update(); }
+  else showToast('⚠️ ' + (d.error||'נכשל'));
+}
 async function showProduct(id){
   const res = await adminFetch(API + '/api/products/' + encodeURIComponent(id), {
     method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ hidden:false })
@@ -1070,9 +1078,10 @@ function renderAdminList(){
         <div style="font-weight:800;font-size:14.5px;color:#1C2620;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.name)}${hiddenBadge}</div>
         <div style="font-size:12.5px;color:#6B7A70;font-weight:600;margin-top:2px">${worldBadge} · ₪${nf(p.price)}</div>
       </div>
-      <div style="display:flex;gap:6px;flex-shrink:0">
+      <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
         <button data-act="admin-edit" data-id="${esc(p.id)}" style="border:1px solid #DCD7C9;background:#fff;color:#14442F;font-weight:700;font-size:13px;padding:8px 11px;border-radius:10px;cursor:pointer">✏️ ערוך</button>
         ${actionBtn}
+        <button data-act="admin-delete" data-id="${esc(p.id)}" data-name="${esc(p.name)}" style="border:none;background:#C8372B;color:#fff;font-weight:700;font-size:13px;padding:8px 11px;border-radius:10px;cursor:pointer">✕ מחק</button>
       </div>
     </div>`;
   }).join('');
@@ -1102,6 +1111,7 @@ document.addEventListener('click', e => {
     case 'admin-edit-save': saveEdit(id); break;
     case 'admin-hide': hideProduct(id); break;
     case 'admin-show': showProduct(id); break;
+    case 'admin-delete': removeProduct(id, t.dataset.name); break;
     case 'login-submit': submitLogin(); break;
     case 'login-cancel': closeLogin(); break;
     case 'set-active': state.form.status='active'; update(); break;
