@@ -3,8 +3,49 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>צרפתי שיווק — המרכז למוצרי גינון</title>
+<title>צרפתי שיווק — המרכז למוצרי גינון | אדמה, צמחים, השקיה וצעצועי RC</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='88'%3E%F0%9F%8C%BF%3C/text%3E%3C/svg%3E">
+
+<!-- ===== SEO / Meta ===== -->
+<meta name="description" content="צרפתי שיווק — המרכז למוצרי גינון במושב רמת צבי. מבחר ענק של אדמה לגינה, צמחים, מערכות השקיה, כלי גינון וצעצועי שלט רחוק (RC). איכות, מחירים הוגנים, איסוף עצמי או משלוח עד הבית.">
+<meta name="keywords" content="מוצרי גינון, אדמה לגינה, מערכת השקיה, צמחים, כלי גינון, דשן, עציצים, צעצועי שלט, RC, מכוניות על שלט, צרפתי שיווק, רמת צבי">
+<meta name="author" content="צרפתי שיווק">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#14442F">
+<link rel="canonical" href="https://ct-vr6l.onrender.com/">
+
+<!-- Open Graph (שיתוף בפייסבוק/וואטסאפ) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="צרפתי שיווק">
+<meta property="og:title" content="צרפתי שיווק — המרכז למוצרי גינון">
+<meta property="og:description" content="מבחר ענק של מוצרי גינון וצעצועי RC. איכות, מחירים הוגנים, איסוף עצמי או משלוח עד הבית. מושב רמת צבי.">
+<meta property="og:url" content="https://ct-vr6l.onrender.com/">
+<meta property="og:locale" content="he_IL">
+<!-- TODO: כשיהיה לוגו/תמונה — להוסיף og:image עם כתובת תמונה אמיתית -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="צרפתי שיווק — המרכז למוצרי גינון">
+<meta name="twitter:description" content="מבחר ענק של מוצרי גינון וצעצועי RC. איסוף עצמי או משלוח עד הבית.">
+
+<!-- Google Search Console — להחליף את התוכן בקוד האימות שתקבל (ראה הוראות) -->
+<!-- <meta name="google-site-verification" content="PASTE_YOUR_CODE_HERE"> -->
+
+<!-- Structured Data — עסק מקומי (עוזר לגוגל) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Store",
+  "name": "צרפתי שיווק",
+  "description": "המרכז למוצרי גינון — אדמה, צמחים, מערכות השקיה, כלי גינון וצעצועי שלט רחוק (RC).",
+  "telephone": "+972-52-540-8113",
+  "address": { "@type": "PostalAddress", "addressLocality": "מושב רמת צבי", "addressCountry": "IL" },
+  "openingHoursSpecification": [{
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday"],
+    "opens": "09:00", "closes": "18:00"
+  }],
+  "url": "https://ct-vr6l.onrender.com/"
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
@@ -555,7 +596,10 @@ function ph(label, world){
     + "<text x='50%' y='50%' font-family='monospace' font-size='15' fill='"+txt+"' text-anchor='middle' dominant-baseline='middle'>"+label+"</text></svg>";
   return "url('data:image/svg+xml," + encodeURIComponent(svg).replace(/'/g, '%27') + "')";
 }
-const imgFor = p => p.image ? "url('"+p.image+"')" : ph(p.name, p.world);
+// אופטימיזציית תמונות: Cloudinary מגיש WebP/איכות אוטומטית (f_auto,q_auto)
+const optImg = u => (u && u.includes('res.cloudinary.com') && u.includes('/upload/') && !u.includes('/upload/f_auto'))
+  ? u.replace('/upload/', '/upload/f_auto,q_auto/') : u;
+const imgFor = p => p.image ? "url('"+optImg(p.image)+"')" : ph(p.name, p.world);
 
 /* ===== טעינת מוצרים מהשרת (Google Sheets) ===== */
 async function loadProducts(){
@@ -697,7 +741,7 @@ function renderCart(){
     return;
   }
   el.innerHTML = '<div style="display:flex;flex-direction:column;gap:12px">' + ls.map(l => {
-    const img = l.image ? "url('"+l.image+"')" : ph('', l.world);
+    const img = l.image ? "url('"+optImg(l.image)+"')" : ph('', l.world);
     return `<div style="display:flex;gap:12px;background:#fff;border-radius:16px;padding:10px;box-shadow:0 3px 12px rgba(20,68,47,0.05)">
       <div style="width:66px;height:66px;border-radius:12px;flex-shrink:0;background-image:${img};background-size:cover;background-position:center"></div>
       <div style="flex:1;min-width:0">
