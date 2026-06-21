@@ -364,7 +364,8 @@ app.post('/api/contact', async (req, res) => {
     if (!name || !phone) return res.status(400).json({ ok: false, error: 'נא למלא שם וטלפון' });
     const row = { id: 'ct' + Date.now(), name, phone, message, createdAt: new Date().toISOString() };
     if (!SHEETS_ENABLED) memContacts.unshift(row);
-    else { const doc = await getDoc(); const sheet = await getNamedSheet(doc, 'contacts', CONTACT_HEADERS); await sheet.addRow(row); }
+    // raw:true שומר כטקסט גולמי — מונע מגוגל שיטס למחוק את ה-0 בתחילת הטלפון
+    else { const doc = await getDoc(); const sheet = await getNamedSheet(doc, 'contacts', CONTACT_HEADERS); await sheet.addRow(row, { raw: true }); }
     res.json({ ok: true });
   } catch (err) {
     console.error('POST /api/contact:', err.message);
