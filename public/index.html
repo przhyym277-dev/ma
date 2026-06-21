@@ -278,6 +278,43 @@
     </div>
   </section>
 
+  <!-- ===== CONTACT ===== -->
+  <section id="contact" style="max-width:1100px;margin:0 auto;padding:30px 20px 40px">
+    <div style="text-align:center;margin-bottom:22px">
+      <div style="display:inline-flex;align-items:center;gap:7px;background:#FBEAD7;color:#C25E12;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:800">📍 צור קשר</div>
+      <h2 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:clamp(22px,4.5vw,32px);color:#14442F;margin:12px 0 0">נשמח לשמוע מכם</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:18px">
+
+      <!-- טופס -->
+      <div style="background:#fff;border-radius:22px;padding:26px;box-shadow:0 4px 18px rgba(20,68,47,0.06);border:1px solid rgba(20,68,47,0.05)">
+        <h3 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:19px;color:#14442F;margin:0 0 4px">שלחו לנו הודעה</h3>
+        <p style="font-size:13.5px;color:#6B7A70;font-weight:500;margin:0 0 16px">נחזור אליכם בהקדם האפשרי</p>
+        <input id="ctName" maxlength="60" placeholder="שם מלא" style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:12px 14px;font-size:15px;font-weight:600;background:#FBFAF6;margin-bottom:12px">
+        <input id="ctPhone" type="tel" inputmode="tel" maxlength="30" placeholder="טלפון" style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:12px 14px;font-size:15px;font-weight:600;background:#FBFAF6;margin-bottom:12px">
+        <textarea id="ctMsg" rows="3" maxlength="1000" placeholder="במה נוכל לעזור?" style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:12px 14px;font-size:15px;font-weight:500;background:#FBFAF6;resize:vertical;line-height:1.5;margin-bottom:14px"></textarea>
+        <button id="ctSubmit" data-act="send-contact" style="width:100%;border:none;border-radius:14px;padding:14px;background:#14442F;color:#fff;font-family:'Rubik',sans-serif;font-weight:800;font-size:15.5px;cursor:pointer;box-shadow:0 10px 24px rgba(20,68,47,0.22)">שליחת פנייה</button>
+      </div>
+
+      <!-- מיקום + מפה -->
+      <div style="background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 4px 18px rgba(20,68,47,0.06);border:1px solid rgba(20,68,47,0.05);display:flex;flex-direction:column">
+        <div style="padding:24px 24px 18px">
+          <h3 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:19px;color:#14442F;margin:0 0 12px">איפה אנחנו</h3>
+          <div style="font-size:14.5px;color:#3A463F;font-weight:600;line-height:1.9">
+            📍 מושב רמת צבי<br>
+            🕒 כל יום 09:00–18:00 · שבת סגור<br>
+            📞 <a href="tel:+972525408113" dir="ltr" style="color:#14442F;font-weight:700">052‑540‑8113</a>
+          </div>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=מושב רמת צבי" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;margin-top:14px;background:#E8741E;color:#fff;font-weight:800;font-size:14.5px;padding:11px 20px;border-radius:999px;text-decoration:none;box-shadow:0 8px 20px rgba(232,116,30,0.32)">🧭 נווט אלינו</a>
+        </div>
+        <a href="https://www.google.com/maps/search/?api=1&query=מושב רמת צבי" target="_blank" rel="noopener" aria-label="פתח את המיקום במפות" style="display:block;flex:1;min-height:200px;text-decoration:none">
+          <iframe title="מפת המיקום" src="https://maps.google.com/maps?q=מושב רמת צבי&z=12&output=embed" style="width:100%;height:100%;min-height:200px;border:0;pointer-events:none" loading="lazy"></iframe>
+        </a>
+      </div>
+
+    </div>
+  </section>
+
   <!-- FOOTER -->
   <footer role="contentinfo" style="background:#14442F;color:#D8E4DC">
     <div style="max-width:1200px;margin:0 auto;padding:46px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:30px">
@@ -445,6 +482,18 @@
         <div id="adminReviews"></div>
       </div>
 
+      <!-- admin contacts (פניות) -->
+      <div style="background:#fff;border-radius:22px;box-shadow:0 8px 30px rgba(20,68,47,0.08);overflow:hidden;margin-top:22px">
+        <div style="padding:20px 22px 16px;border-bottom:1px solid #EFEBE0;display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div>
+            <h2 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:20px;margin:0;color:#14442F">פניות שהתקבלו 📩</h2>
+            <p style="font-size:13px;color:#6B7A70;margin:5px 0 0;font-weight:500">כל מי שמילא טופס "צור קשר" באתר</p>
+          </div>
+          <button data-act="reload" style="border:1px solid #DCD7C9;background:#FBFAF6;color:#14442F;font-weight:700;font-size:13px;padding:8px 13px;border-radius:10px;cursor:pointer">🔄 רענון</button>
+        </div>
+        <div id="adminContacts"></div>
+      </div>
+
       <!-- DEV-ONLY settings -->
       <div id="devCard" style="display:none;background:#14442F;border-radius:22px;box-shadow:0 8px 30px rgba(20,68,47,0.18);overflow:hidden;margin-top:22px">
         <div style="padding:20px 22px;color:#fff">
@@ -576,7 +625,7 @@ const state = {
   products:[], loading:true, loadError:false,
   form:{ name:'', world:'garden', price:'', desc:'', status:'active', file:null, fileName:'' },
   saving:false, editingId:null, limit:60,
-  reviews:[], role:'', rvRating:5,
+  reviews:[], role:'', rvRating:5, contacts:[],
 };
 
 /* ===== עזרים ===== */
@@ -887,7 +936,7 @@ function update(){
     devCard.style.display = (state.role === 'dev') ? 'block' : 'none';
     const dl = document.getElementById('devLimit'); if (dl && document.activeElement !== dl) dl.value = state.limit;
   }
-  if (state.view === 'admin'){ renderAdminList(); renderAdminReviews(); }
+  if (state.view === 'admin'){ renderAdminList(); renderAdminReviews(); renderAdminContacts(); }
 }
 
 function refreshSaveBtn(){
@@ -927,7 +976,7 @@ function handle401(){
 }
 
 function enterAdmin(){
-  if (getPw()){ state.role = getRole(); state.view='admin'; state.open=false; update(); }
+  if (getPw()){ state.role = getRole(); state.view='admin'; state.open=false; update(); loadContacts(); }
   else openLogin();
 }
 function openLogin(){
@@ -954,7 +1003,7 @@ async function submitLogin(){
     });
     const d = await res.json().catch(()=>({}));
     if (!res.ok){ errEl.textContent='סיסמה שגויה, נסו שוב'; errEl.style.display='block'; return; }
-    setPw(pw); setRole(d.role||'admin'); closeLogin(); state.view='admin'; state.open=false; update();
+    setPw(pw); setRole(d.role||'admin'); closeLogin(); state.view='admin'; state.open=false; update(); loadContacts();
   } catch(e){ errEl.textContent='שגיאת חיבור לשרת'; errEl.style.display='block'; }
   finally { btn.disabled=false; btn.style.opacity='1'; }
 }
@@ -1042,6 +1091,54 @@ async function submitReview(){
     closeReview(); showToast('תודה! ההמלצה נוספה ⭐'); loadReviews();
   }catch(e){ errEl.textContent='שגיאת חיבור לשרת'; errEl.style.display='block'; }
   finally{ btn.disabled=false; btn.style.opacity='1'; }
+}
+
+/* ===== צור קשר ===== */
+async function sendContact(){
+  const name = document.getElementById('ctName').value.trim();
+  const phone = document.getElementById('ctPhone').value.trim();
+  const message = document.getElementById('ctMsg').value.trim();
+  if (!name || !phone){ showToast('⚠️ נא למלא שם וטלפון'); return; }
+  const btn = document.getElementById('ctSubmit'); btn.disabled=true; btn.style.opacity='0.7';
+  try{
+    const res = await fetch(API + '/api/contact', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, phone, message }) });
+    const d = await res.json();
+    if (!d.ok){ showToast('⚠️ ' + (d.error||'נכשל')); return; }
+    document.getElementById('ctName').value=''; document.getElementById('ctPhone').value=''; document.getElementById('ctMsg').value='';
+    showToast('תודה! פנייתכם התקבלה 📩 נחזור אליכם בהקדם');
+  }catch(e){ showToast('⚠️ שגיאת חיבור'); }
+  finally{ btn.disabled=false; btn.style.opacity='1'; }
+}
+async function loadContacts(){
+  if (!getPw()) return;
+  const res = await adminFetch(API + '/api/contacts?t=' + Date.now());
+  if (!res) return;
+  const d = await res.json();
+  if (d.ok){ state.contacts = d.contacts || []; renderAdminContacts(); }
+}
+function renderAdminContacts(){
+  const el = document.getElementById('adminContacts'); if(!el) return;
+  if (!state.contacts.length){ el.innerHTML = '<div style="text-align:center;color:#8A968D;padding:24px;font-weight:600">אין פניות עדיין</div>'; return; }
+  el.innerHTML = state.contacts.map(c => {
+    const d = c.createdAt ? new Date(c.createdAt).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+    const tel = String(c.phone||'').replace(/[^0-9+]/g,'');
+    return `<div style="padding:14px 16px;border-bottom:1px solid #EFEBE0">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <div style="font-weight:800;font-size:14.5px;color:#1C2620">${esc(c.name)}</div>
+        <div style="font-size:11.5px;color:#8A968D;font-weight:600">${esc(d)}</div>
+      </div>
+      <div style="font-size:13.5px;color:#14442F;font-weight:700;margin-top:3px"><a href="tel:${esc(tel)}" dir="ltr" style="color:#14442F">📞 ${esc(c.phone)}</a></div>
+      ${c.message ? `<div style="font-size:13.5px;color:#6B7A70;font-weight:500;margin-top:5px;line-height:1.5">${esc(c.message)}</div>` : ''}
+      <button data-act="del-contact" data-id="${esc(c.id)}" style="border:none;background:#FCEBE9;color:#C8372B;font-weight:700;font-size:12px;padding:6px 12px;border-radius:9px;cursor:pointer;margin-top:9px">🗑️ מחק פנייה</button>
+    </div>`;
+  }).join('');
+}
+async function deleteContact(id){
+  const res = await adminFetch(API + '/api/contacts/' + encodeURIComponent(id), { method:'DELETE' });
+  if (!res) return;
+  const d = await res.json();
+  if (d.ok){ state.contacts = state.contacts.filter(c=>c.id!==id); showToast('הפנייה נמחקה'); renderAdminContacts(); }
+  else showToast('⚠️ ' + (d.error||'נכשל'));
 }
 
 /* ===== מפתח: שינוי מגבלת מוצרים ===== */
@@ -1161,12 +1258,14 @@ document.addEventListener('click', e => {
     case 'set-active': state.form.status='active'; update(); break;
     case 'set-hidden': state.form.status='hidden'; update(); break;
     case 'save': if(t.dataset.disabled!=='1') saveProduct(); break;
-    case 'reload': loadProducts(); loadReviews(); break;
+    case 'reload': loadProducts(); loadReviews(); loadContacts(); break;
     case 'open-review': openReview(); break;
     case 'close-review': closeReview(); break;
     case 'submit-review': submitReview(); break;
     case 'del-review': deleteReview(id); break;
     case 'save-limit': saveLimit(); break;
+    case 'send-contact': sendContact(); break;
+    case 'del-contact': deleteContact(id); break;
   }
 });
 

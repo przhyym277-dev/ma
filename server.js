@@ -346,6 +346,63 @@ app.delete('/api/reviews/:id', requireAuth, async (req, res) => {
 });
 
 /* ============================================================
+ *  צור קשר — פניות מהאתר (ציבורי לשליחה, מנהל לצפייה/מחיקה)
+ * ============================================================ */
+const CONTACT_HEADERS = ['id', 'name', 'phone', 'message', 'createdAt'];
+let memContacts = [];
+function rowToContact(row) {
+  return { id: row.get('id'), name: row.get('name') || '', phone: row.get('phone') || '', message: row.get('message') || '', createdAt: row.get('createdAt') || '' };
+}
+
+// ציבורי — שליחת פנייה (נשמרת בלבד, מופיעה בפאנל הניהול)
+app.post('/api/contact', async (req, res) => {
+  try {
+    let { name, phone, message } = req.body || {};
+    name = String(name || '').trim().slice(0, 60);
+    phone = String(phone || '').trim().slice(0, 30);
+    message = String(message || '').trim().slice(0, 1000);
+    if (!name || !phone) return res.status(400).json({ ok: false, error: 'נא למלא שם וטלפון' });
+    const row = { id: 'ct' + Date.now(), name, phone, message, createdAt: new Date().toISOString() };
+    if (!SHEETS_ENABLED) memContacts.unshift(row);
+    else { const doc = await getDoc(); const sheet = await getNamedSheet(doc, 'contacts', CONTACT_HEADERS); await sheet.addRow(row); }
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('POST /api/contact:', err.message);
+    res.status(500).json({ ok: false, error: 'נכשלה שליחת הפנייה' });
+  }
+});
+
+// מנהל — רשימת פניות (החדשות קודם)
+app.get('/api/contacts', requireAuth, async (req, res) => {
+  try {
+    if (!SHEETS_ENABLED) return res.json({ ok: true, contacts: memContacts });
+    const doc = await getDoc();
+    const sheet = await getNamedSheet(doc, 'contacts', CONTACT_HEADERS);
+    const rows = await sheet.getRows();
+    res.json({ ok: true, contacts: rows.map(rowToContact).reverse() });
+  } catch (err) {
+    console.error('GET /api/contacts:', err.message);
+    res.status(500).json({ ok: false, error: 'נכשלה טעינת הפניות' });
+  }
+});
+
+// מנהל — מחיקת פנייה
+app.delete('/api/contacts/:id', requireAuth, async (req, res) => {
+  try {
+    if (!SHEETS_ENABLED) { memContacts = memContacts.filter(c => c.id !== req.params.id); return res.json({ ok: true }); }
+    const doc = await getDoc();
+    const sheet = await getNamedSheet(doc, 'contacts', CONTACT_HEADERS);
+    const rows = await sheet.getRows();
+    const r = rows.find(x => String(x.get('id')) === String(req.params.id));
+    if (r) await r.delete();
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('DELETE /api/contacts:', err.message);
+    res.status(500).json({ ok: false, error: 'נכשלה מחיקת הפנייה' });
+  }
+});
+
+/* ============================================================
  *  הגדרות — מפתח בלבד (שינוי מגבלת מוצרים)
  * ============================================================ */
 app.put('/api/config', requireDev, async (req, res) => {
