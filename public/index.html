@@ -208,6 +208,7 @@
 
   <!-- PRODUCT GRID -->
   <section id="main-content" role="main" tabindex="-1" aria-label="קטלוג המוצרים" style="max-width:1200px;margin:0 auto;padding:18px 20px 90px;outline:none">
+    <div id="catFilter" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:20px"></div>
     <div id="grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,180px),1fr));gap:16px"></div>
   </section>
 
@@ -301,6 +302,16 @@
         <p style="font-size:14px;color:#6B7A70;line-height:1.6;margin:0 0 14px;font-weight:500">בהחלט! הצוות שלנו מכיר כל מוצר וישמח לעזור לכם לבחור את ההתאמה הנכונה — בוואטסאפ או במחסן.</p>
       </details>
     </div>
+  </section>
+
+  <!-- ===== ARTICLES ===== -->
+  <section id="articles-sec" style="max-width:1200px;margin:0 auto;padding:34px 20px 12px">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="display:inline-flex;align-items:center;gap:7px;background:#E7F0E9;color:#1E6B47;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:800">📚 מאמרים ומדריכים</div>
+      <h2 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:clamp(22px,4.5vw,32px);color:#14442F;margin:12px 0 6px">הידע שלנו — לרשותכם</h2>
+      <p style="font-size:clamp(14px,2.2vw,16px);color:#6B7A70;font-weight:500;margin:0">מדריכים מקצועיים שיעזרו לכם להפיק את המקסימום מהגינה</p>
+    </div>
+    <div id="articles" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:16px"></div>
   </section>
 
   <!-- ===== CONTACT ===== -->
@@ -540,6 +551,17 @@
     </main>
   </div><!-- /admin -->
 
+  <!-- ARTICLE MODAL -->
+  <div id="articleModal" style="position:fixed;inset:0;z-index:85;display:none;align-items:flex-start;justify-content:center;padding:20px;background:rgba(20,32,28,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;transition:opacity .22s ease;overflow-y:auto">
+    <div id="articleCard" style="background:#fff;border-radius:22px;width:min(720px,100%);margin:auto;padding:30px 28px;box-shadow:0 24px 60px rgba(0,0,0,0.3);transform:scale(0.96);transition:transform .22s cubic-bezier(.3,1.2,.5,1)">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:4px">
+        <button data-act="close-article" aria-label="סגירה" style="width:38px;height:38px;border:none;border-radius:10px;background:#EFEBE0;color:#1C2620;font-size:20px;cursor:pointer">✕</button>
+      </div>
+      <div id="articleBody" style="line-height:1.7;color:#3A463F;font-size:15.5px"></div>
+      <button data-act="close-article" style="margin-top:22px;border:none;background:#14442F;color:#fff;font-weight:800;font-size:14.5px;padding:12px 24px;border-radius:13px;cursor:pointer">← חזרה לאתר</button>
+    </div>
+  </div>
+
   <!-- REVIEW MODAL -->
   <div id="reviewModal" style="position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(20,32,28,0.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;transition:opacity .22s ease">
     <div id="reviewCard" style="background:#fff;border-radius:22px;width:min(420px,100%);padding:26px 24px;box-shadow:0 24px 60px rgba(0,0,0,0.3);transform:scale(0.94);transition:transform .22s cubic-bezier(.3,1.2,.5,1)">
@@ -662,7 +684,7 @@ const state = {
   products:[], loading:true, loadError:false,
   form:{ name:'', world:'garden', price:'', desc:'', status:'active', file:null, fileName:'' },
   saving:false, editingId:null, limit:60,
-  reviews:[], role:'', rvRating:5, contacts:[],
+  reviews:[], role:'', rvRating:5, contacts:[], activeCat:'all',
 };
 
 /* ===== עזרים ===== */
@@ -699,7 +721,7 @@ async function loadProducts(){
   } catch (e){
     console.error(e); state.loadError = true; state.products = [];
   } finally {
-    state.loading = false; renderGrid();
+    state.loading = false; renderCatChips(); renderGrid();
   }
 }
 
@@ -812,6 +834,52 @@ function playVideo(i){
   const p = v.play(); if(p && p.catch) p.catch(()=>{});
 }
 
+/* ===== מאמרים ===== */
+let ARTICLES = [];
+async function loadArticles(){
+  try{ const r = await fetch('articles.json?t=' + Date.now(), { cache:'no-store' }); ARTICLES = await r.json(); }
+  catch(e){ console.error(e); ARTICLES = []; }
+  renderArticles();
+}
+function renderArticles(){
+  const el = document.getElementById('articles'); if(!el) return;
+  if(!ARTICLES.length){ el.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#8A968D;padding:30px;font-weight:600">בקרוב מאמרים ומדריכים 📚</div>'; return; }
+  el.innerHTML = ARTICLES.map(a => `<div class="card" data-act="open-article" data-id="${esc(a.id)}" style="background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 18px rgba(20,68,47,0.06);border:1px solid rgba(20,68,47,0.05);cursor:pointer;display:flex;flex-direction:column">
+    <div style="background:linear-gradient(135deg,#1C5A3C,#14442F);padding:18px;color:#fff">
+      <span style="display:inline-block;background:rgba(255,255,255,0.16);color:#EAF6EE;font-size:11.5px;font-weight:800;padding:4px 10px;border-radius:999px">${esc(a.tag)}</span>
+      <h3 style="font-family:'Rubik',sans-serif;font-weight:700;font-size:16.5px;margin:12px 0 0;line-height:1.3">${esc(a.title)}</h3>
+    </div>
+    <div style="padding:14px 16px 16px;display:flex;flex-direction:column;flex:1">
+      <p style="font-size:13.5px;color:#6B7A70;font-weight:500;line-height:1.55;margin:0;flex:1">${esc(a.excerpt)}</p>
+      <span style="color:#B5683C;font-weight:800;font-size:13.5px;margin-top:12px">קראו עוד ←</span>
+    </div>
+  </div>`).join('');
+}
+function openArticle(id){
+  const a = ARTICLES.find(x => x.id === id); if(!a) return;
+  document.getElementById('articleBody').innerHTML =
+    `<span style="display:inline-block;background:#E7F0E9;color:#1E6B47;font-size:12px;font-weight:800;padding:5px 12px;border-radius:999px">${esc(a.tag)}</span>` +
+    `<h1 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:clamp(22px,4vw,28px);color:#14442F;line-height:1.2;margin:14px 0 16px">${esc(a.title)}</h1>` +
+    (a.bodyHtml || '');
+  const ov = document.getElementById('articleModal'); ov.style.display='flex'; ov.scrollTop=0;
+  requestAnimationFrame(()=>{ ov.style.opacity='1'; document.getElementById('articleCard').style.transform='scale(1)'; });
+}
+function closeArticle(){
+  const ov = document.getElementById('articleModal');
+  ov.style.opacity='0'; document.getElementById('articleCard').style.transform='scale(0.96)';
+  setTimeout(()=>{ ov.style.display='none'; }, 220);
+}
+
+/* ===== סינון קטגוריות ===== */
+function renderCatChips(){
+  const el = document.getElementById('catFilter'); if(!el) return;
+  const cats = [...new Set(state.products.filter(p => p.world===state.cat && !p.hidden).map(p => p.category).filter(Boolean))];
+  if (cats.length <= 1){ el.innerHTML = ''; return; }
+  const chip = (label,val) => { const on = state.activeCat===val;
+    return `<button data-act="pick-cat" data-cat="${esc(val)}" style="border:1.5px solid ${on?'#14442F':'#DCD7C9'};background:${on?'#14442F':'#fff'};color:${on?'#fff':'#4A574E'};font-weight:800;font-size:13px;padding:8px 15px;border-radius:999px;cursor:pointer;transition:all .15s ease">${esc(label)}</button>`; };
+  el.innerHTML = chip('הכל','all') + cats.map(c => chip(c,c)).join('');
+}
+
 /* ===== רינדור הגריד ===== */
 function renderGrid(){
   const el = document.getElementById('grid');
@@ -823,7 +891,7 @@ function renderGrid(){
     el.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#A12A20;font-weight:600">⚠️ שגיאה בטעינת המוצרים מהשרת.<br><button data-act="reload" style="margin-top:14px;border:none;background:#14442F;color:#fff;font-weight:800;padding:10px 20px;border-radius:12px;cursor:pointer">נסה שוב</button></div>';
     return;
   }
-  const items = state.products.filter(p => p.world === state.cat && !p.hidden);
+  const items = state.products.filter(p => p.world === state.cat && !p.hidden && (state.activeCat === 'all' || p.category === state.activeCat));
   if (!items.length){
     el.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#6B7A70;font-weight:600">אין מוצרים בעולם הזה עדיין 🌱</div>';
     return;
@@ -919,6 +987,7 @@ function update(){
   const pr = document.getElementById('pillRc');
   pr.style.background = !garden ? '#B5683C' : 'transparent'; pr.style.color = !garden ? '#fff' : '#5A6B60';
 
+  renderCatChips();
   renderGrid();
 
   // fab badge
@@ -1313,8 +1382,9 @@ document.addEventListener('click', e => {
     case 'remove': removeItem(id); break;
     case 'open-cart': state.open=true; update(); break;
     case 'close-cart': state.open=false; update(); break;
-    case 'pick-garden': state.cat='garden'; update(); break;
-    case 'pick-rc': state.cat='rc'; update(); break;
+    case 'pick-garden': state.cat='garden'; state.activeCat='all'; update(); break;
+    case 'pick-rc': state.cat='rc'; state.activeCat='all'; update(); break;
+    case 'pick-cat': state.activeCat=t.dataset.cat||'all'; update(); break;
     case 'set-pickup': state.delivery='pickup'; update(); break;
     case 'set-delivery': state.delivery='delivery'; update(); break;
     case 'checkout': if(t.dataset.disabled!=='1') checkout(); break;
@@ -1341,6 +1411,8 @@ document.addEventListener('click', e => {
     case 'send-contact': sendContact(); break;
     case 'del-contact': deleteContact(id); break;
     case 'play-video': playVideo(Number(t.dataset.vid)); break;
+    case 'open-article': openArticle(id); break;
+    case 'close-article': closeArticle(); break;
   }
 });
 
@@ -1364,7 +1436,8 @@ document.querySelectorAll('#rvStars span').forEach(s=>{
 });
 // סגירת מודאל המלצה בלחיצה על הרקע / Escape
 document.getElementById('reviewModal').addEventListener('click', e => { if(e.target.id==='reviewModal') closeReview(); });
-document.addEventListener('keydown', e => { if(e.key==='Escape') closeReview(); });
+document.getElementById('articleModal').addEventListener('click', e => { if(e.target.id==='articleModal') closeArticle(); });
+document.addEventListener('keydown', e => { if(e.key==='Escape'){ closeReview(); closeArticle(); } });
 
 // אנימציות גלילה — חשיפה הדרגתית של אזורים
 (function(){
@@ -1383,6 +1456,7 @@ renderVideos();
 update();
 loadProducts();
 loadReviews();
+loadArticles();
 </script>
 
 <script>
