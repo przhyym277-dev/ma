@@ -170,6 +170,15 @@
     </div>
   </section>
 
+  <!-- ===== VIDEOS (מוצרים בתפזורת) ===== -->
+  <section style="max-width:1200px;margin:22px auto 0;padding:0 14px">
+    <div style="text-align:center;margin-bottom:18px">
+      <div style="display:inline-flex;align-items:center;gap:7px;background:#FBEAD7;color:#C25E12;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:800">🎬 חומרים בתפזורת</div>
+      <h2 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:clamp(22px,4.5vw,32px);color:#14442F;margin:12px 0 0">משאיות מלאות — צפו במוצרים שלנו</h2>
+    </div>
+    <div id="videos" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px"></div>
+  </section>
+
   <!-- sticky mini switcher -->
   <div style="position:sticky;top:67px;z-index:30;background:rgba(246,244,238,0.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)">
     <div style="max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px">
@@ -619,6 +628,13 @@ const API = (location.hostname === 'localhost' || location.hostname === '127.0.0
   : 'https://ma-dsnz.onrender.com';
 const WA_NUMBER = '972525408113';     // ← מספר הוואטסאפ של העסק
 
+// ===== סרטוני מוצרים — מלאו את ה-src בקישור ישיר ל-mp4 (ו-poster לתמונת תצוגה, אופציונלי) =====
+const VIDEOS = [
+  { title: 'אדמת חמרה — משאית 20 טון',        src: '', poster: '' },
+  { title: 'רסק גזם — משאית 30 קוב',          src: '', poster: '' },
+  { title: 'פול קומפוסט אורגני — משאית 30 קוב', src: '', poster: '' },
+];
+
 /* ===== state ===== */
 const state = {
   view:'shop', cat:'garden', cart:{}, open:false, delivery:'pickup', pop:false,
@@ -736,6 +752,37 @@ function showToast(msg){
   t.style.opacity='1'; t.style.transform='translateX(-50%) translateY(0)';
   clearTimeout(window._toast);
   window._toast = setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateX(-50%) translateY(-24px)'; }, 3200);
+}
+
+/* ===== סרטונים ===== */
+function renderVideos(){
+  const el = document.getElementById('videos'); if(!el) return;
+  el.innerHTML = VIDEOS.map((v,i)=>{
+    const hasSrc = !!v.src;
+    const poster = v.poster ? ` poster="${esc(v.poster)}"` : '';
+    const media = hasSrc
+      ? `<video id="vid${i}" preload="none"${poster} playsinline style="width:100%;height:100%;object-fit:cover;display:block;background:#0E3322"><source src="${esc(v.src)}" type="video/mp4"></video>
+         <button data-act="play-video" data-vid="${i}" id="vidov${i}" aria-label="הפעלת הסרטון" style="position:absolute;inset:0;border:none;background:rgba(14,51,34,0.30);cursor:pointer;display:flex;align-items:center;justify-content:center">
+           <span style="width:74px;height:74px;border-radius:50%;background:rgba(232,116,30,0.96);color:#fff;font-size:30px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,0.3)">▶</span>
+         </button>`
+      : `<div style="position:absolute;inset:0;background:linear-gradient(150deg,#1C5A3C,#0E3322);color:#9DB7AB;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:16px"><span style="font-size:40px">🎬</span><span style="font-weight:700;font-size:13.5px">הסרטון יתווסף בקרוב</span></div>`;
+    const btn = hasSrc
+      ? `<button data-act="play-video" data-vid="${i}" style="width:100%;border:none;border-radius:13px;padding:12px;background:#14442F;color:#fff;font-weight:800;font-size:14.5px;cursor:pointer">▶ הפעלת הסרטון</button>`
+      : `<button disabled style="width:100%;border:none;border-radius:13px;padding:12px;background:#C9C2B4;color:#7A7466;font-weight:800;font-size:14.5px;cursor:not-allowed">בקרוב</button>`;
+    return `<div class="card" style="background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 18px rgba(20,68,47,0.06);border:1px solid rgba(20,68,47,0.05);display:flex;flex-direction:column">
+      <div style="position:relative;aspect-ratio:16/9;background:#0E3322">${media}</div>
+      <div style="padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;flex:1">
+        <h3 style="font-family:'Rubik',sans-serif;font-weight:700;font-size:15.5px;color:#1C2620;margin:0;line-height:1.3">${esc(v.title)}</h3>
+        ${btn}
+      </div>
+    </div>`;
+  }).join('');
+}
+function playVideo(i){
+  const v = document.getElementById('vid'+i); if(!v) return;
+  const ov = document.getElementById('vidov'+i); if(ov) ov.style.display='none';
+  v.setAttribute('controls','');
+  const p = v.play(); if(p && p.catch) p.catch(()=>{});
 }
 
 /* ===== רינדור הגריד ===== */
@@ -1266,6 +1313,7 @@ document.addEventListener('click', e => {
     case 'save-limit': saveLimit(); break;
     case 'send-contact': sendContact(); break;
     case 'del-contact': deleteContact(id); break;
+    case 'play-video': playVideo(Number(t.dataset.vid)); break;
   }
 });
 
@@ -1293,6 +1341,7 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeReview(); 
 
 /* ===== הפעלה ===== */
 state.role = getRole();
+renderVideos();
 update();
 loadProducts();
 loadReviews();
