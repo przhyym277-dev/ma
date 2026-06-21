@@ -196,7 +196,7 @@ app.get('/api/products', async (req, res) => {
 
 app.post('/api/products', requireAuth, upload.single('image'), async (req, res) => {
   try {
-    const { name, world, price, desc, status } = req.body;
+    const { name, world, price, desc, status, category } = req.body;
     if (!name || !String(name).trim() || !price) return res.status(400).json({ ok: false, error: 'חסר שם מוצר או מחיר' });
 
     const activeCount = await countActiveProducts();
@@ -209,7 +209,7 @@ app.post('/api/products', requireAuth, upload.single('image'), async (req, res) 
     const base = {
       id: 'p' + Date.now(),
       world: world === 'rc' ? 'rc' : 'garden',
-      category: world === 'rc' ? 'RC' : 'גינון',
+      category: (category && String(category).trim()) || (world === 'rc' ? 'RC' : 'גינון'),
       name: String(name).trim(),
       price: Number(price),
       desc: (desc || '').trim() || 'מוצר חדש במחסן.',

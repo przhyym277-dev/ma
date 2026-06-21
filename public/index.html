@@ -503,6 +503,11 @@
             </div>
           </div>
           <div>
+            <label style="display:block;font-weight:800;font-size:13.5px;color:#1C2620;margin-bottom:7px">קטגוריה <span style="font-weight:600;color:#8A968D;font-size:12px">(לסינון — לדוגמה: אדמה, השקיה, כלים)</span></label>
+            <input id="fCat" list="catList" placeholder="קטגוריה" style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:13px 15px;font-size:15px;font-weight:600;background:#FBFAF6">
+            <datalist id="catList"><option value="אדמה"><option value="השקיה"><option value="צמחים"><option value="עציצים"><option value="דישון"><option value="כלים"><option value="זרעים"><option value="באגי"><option value="דריפט"><option value="טיפוס"></datalist>
+          </div>
+          <div>
             <label style="display:block;font-weight:800;font-size:13.5px;color:#1C2620;margin-bottom:7px">תיאור קצר של המוצר</label>
             <textarea id="fDesc" rows="3" placeholder="כתבו תיאור קצר ומזמין..." style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:13px 15px;font-size:15px;font-weight:500;background:#FBFAF6;resize:vertical;line-height:1.5"></textarea>
           </div>
@@ -716,7 +721,7 @@ const VIDEOS = [
 const state = {
   view:'shop', cat:'garden', cart:{}, open:false, delivery:'pickup', pop:false,
   products:[], loading:true, loadError:false,
-  form:{ name:'', world:'garden', price:'', desc:'', status:'active', file:null, fileName:'' },
+  form:{ name:'', world:'garden', price:'', desc:'', status:'active', cat:'', file:null, fileName:'' },
   saving:false, editingId:null, limit:60,
   reviews:[], role:'', rvRating:5, contacts:[], activeCat:'all',
 };
@@ -816,6 +821,7 @@ async function saveProduct(){
     const fd = new FormData();
     fd.append('name', f.name.trim());
     fd.append('world', f.world);
+    fd.append('category', f.cat || '');
     fd.append('price', f.price);
     fd.append('desc', f.desc.trim());
     fd.append('status', f.status);
@@ -828,7 +834,7 @@ async function saveProduct(){
 
     state.products.unshift(data.product);          // הוספה מקומית מיידית
     state.cat = f.world;                            // קופצים לעולם של המוצר שנוסף
-    state.form = { name:'', world:'garden', price:'', desc:'', status:'active', file:null, fileName:'' };
+    state.form = { name:'', world:'garden', price:'', desc:'', status:'active', cat:'', file:null, fileName:'' };
     resetFormInputs();
     showToast('המוצר נשמר בהצלחה ונוסף לקטלוג!');
   } catch (e){
@@ -1145,6 +1151,7 @@ function resetFormInputs(){
   document.getElementById('fPrice').value = '';
   document.getElementById('fDesc').value = '';
   document.getElementById('fWorld').value = 'garden';
+  document.getElementById('fCat').value = '';
   document.getElementById('fileInput').value = '';
 }
 
@@ -1470,6 +1477,7 @@ document.getElementById('fName').addEventListener('input', e => { state.form.nam
 document.getElementById('fPrice').addEventListener('input', e => { state.form.price = e.target.value; refreshSaveBtn(); });
 document.getElementById('fDesc').addEventListener('input', e => { state.form.desc = e.target.value; });
 document.getElementById('fWorld').addEventListener('change', e => { state.form.world = e.target.value; });
+document.getElementById('fCat').addEventListener('input', e => { state.form.cat = e.target.value; });
 document.getElementById('loginPw').addEventListener('keydown', e => { if(e.key==='Enter') submitLogin(); });
 document.getElementById('fileInput').addEventListener('change', e => {
   const f = e.target.files && e.target.files[0]; if(!f) return;
