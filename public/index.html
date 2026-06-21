@@ -653,7 +653,7 @@ const WA_NUMBER = '972525408113';     // ← מספר הוואטסאפ של הע
 const VIDEOS = [
   { title: 'אדמת חמרה — משאית 20 טון',         src: 'https://res.cloudinary.com/db0uk7duu/video/upload/v1782044091/mahsan-hagadol/videos/igsrbeglkzvjiavajypm.mp4', poster: 'https://res.cloudinary.com/db0uk7duu/video/upload/so_0/mahsan-hagadol/videos/igsrbeglkzvjiavajypm.jpg' },
   { title: 'רסק גזם — משאית 30 קוב',           src: 'https://res.cloudinary.com/db0uk7duu/video/upload/v1782044093/mahsan-hagadol/videos/xgisvoseayc8kokyjq9m.mp4', poster: 'https://res.cloudinary.com/db0uk7duu/video/upload/so_0/mahsan-hagadol/videos/xgisvoseayc8kokyjq9m.jpg' },
-  { title: 'פול קומפוסט אורגני — משאית 30 קוב', src: 'https://res.cloudinary.com/db0uk7duu/video/upload/v1782044094/mahsan-hagadol/videos/dxwvm04uejxhpcta9zrh.mp4', poster: 'https://res.cloudinary.com/db0uk7duu/video/upload/so_0/mahsan-hagadol/videos/dxwvm04uejxhpcta9zrh.jpg' },
+  { title: 'קומפוסט אורגני — משאית 30 קוב', note: 'יש אופציה להוסיף עגלה ולהזמין 60 קוב', src: 'https://res.cloudinary.com/db0uk7duu/video/upload/v1782044094/mahsan-hagadol/videos/dxwvm04uejxhpcta9zrh.mp4', poster: 'https://res.cloudinary.com/db0uk7duu/video/upload/so_0/mahsan-hagadol/videos/dxwvm04uejxhpcta9zrh.jpg' },
 ];
 
 /* ===== state ===== */
@@ -790,11 +790,17 @@ function renderVideos(){
     const btn = hasSrc
       ? `<button data-act="play-video" data-vid="${i}" style="width:100%;border:none;border-radius:13px;padding:12px;background:#14442F;color:#fff;font-weight:800;font-size:14.5px;cursor:pointer">▶ הפעלת הסרטון</button>`
       : `<button disabled style="width:100%;border:none;border-radius:13px;padding:12px;background:#C9C2B4;color:#7A7466;font-weight:800;font-size:14.5px;cursor:not-allowed">בקרוב</button>`;
+    const note = v.note ? `<div style="font-size:13px;color:#9E5429;font-weight:700;line-height:1.45;background:#F2E2D5;border-radius:10px;padding:8px 11px">✦ ${esc(v.note)}</div>` : '';
+    const quoteHref = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent('שלום, אשמח לקבל הצעת מחיר ל' + v.title);
     return `<div class="card" style="background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 18px rgba(20,68,47,0.06);border:1px solid rgba(20,68,47,0.05);display:flex;flex-direction:column">
       <div style="position:relative;aspect-ratio:16/9;background:#0E3322">${media}</div>
       <div style="padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;flex:1">
         <h3 style="font-family:'Rubik',sans-serif;font-weight:700;font-size:15.5px;color:#1C2620;margin:0;line-height:1.3">${esc(v.title)}</h3>
-        ${btn}
+        ${note}
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px">
+          ${btn}
+          <a href="${quoteHref}" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;border-radius:13px;padding:12px;background:#25A65A;color:#fff;font-weight:800;font-size:14.5px">💬 לקבלת הצעת מחיר</a>
+        </div>
       </div>
     </div>`;
   }).join('');
