@@ -612,16 +612,9 @@
             </div>
           </div>
           <div>
-            <label style="display:block;font-weight:800;font-size:13.5px;color:#1C2620;margin-bottom:7px">תמונות מוצר <span style="color:#8A968D;font-weight:600">(עד 6 תמונות)</span></label>
-            <label id="dropzone" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:2px dashed #C9C2B4;background:#F8F6F0;border-radius:16px;padding:26px 16px;cursor:pointer;text-align:center;transition:all .2s ease;background-size:cover;background-position:center;min-height:140px;position:relative;overflow:hidden">
-              <span id="dropNoImg" style="display:flex;flex-direction:column;align-items:center;gap:8px">
-                <span style="font-size:34px">📸</span>
-                <span style="font-weight:800;font-size:14.5px;color:#14442F">העלאת תמונות / צילום מהיר</span>
-                <span style="font-size:12.5px;color:#8A968D;font-weight:600">גררו לכאן או הקישו — אפשר לבחור כמה תמונות יחד</span>
-              </span>
-              <span id="dropHasImg" style="display:none;position:absolute;bottom:10px;background:rgba(20,68,47,0.92);color:#fff;font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px">✓ <span id="dropFileName"></span> — הקישו להחלפה</span>
-              <input id="fileInput" type="file" accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer"/>
-            </label>
+            <label style="display:block;font-weight:800;font-size:13.5px;color:#1C2620;margin-bottom:7px">תמונות מוצר <span style="color:#8A968D;font-weight:600">(עד 6 — הראשונה היא הראשית)</span></label>
+            <div id="imgThumbs" style="display:flex;flex-wrap:wrap;gap:10px"></div>
+            <input id="fileInput" type="file" accept="image/*" multiple style="display:none"/>
           </div>
           <button id="saveBtn" data-act="save" style="width:100%;border:none;border-radius:15px;padding:16px;font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:16.5px;color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;transition:filter .18s ease,transform .1s ease;box-shadow:0 10px 24px rgba(20,68,47,0.22)">
             <span id="saveSaving" style="display:none;align-items:center;gap:10px">
@@ -1241,19 +1234,8 @@ function update(){
   bh.style.border = '2px solid ' + (!fActive ? '#9A9176' : '#DCD7C9');
   bh.style.background = !fActive ? '#EFEBE0' : '#FBFAF6'; bh.style.color = !fActive ? '#5A5240' : '#6B7A70';
 
-  // dropzone preview
-  const dz = document.getElementById('dropzone');
-  if (state.form.files && state.form.files.length){
-    dz.style.backgroundImage = 'linear-gradient(rgba(20,68,47,0.12),rgba(20,68,47,0.12)), url("'+(state.form.previews[0]||'')+'")';
-    dz.style.borderColor = '#14442F';
-    document.getElementById('dropNoImg').style.display = 'none';
-    document.getElementById('dropHasImg').style.display = 'block';
-    document.getElementById('dropFileName').textContent = state.form.files.length>1 ? (state.form.files.length+' תמונות נבחרו') : '1 תמונה נבחרה';
-  } else {
-    dz.style.backgroundImage = 'none'; dz.style.borderColor = '#C9C2B4';
-    document.getElementById('dropNoImg').style.display = 'flex';
-    document.getElementById('dropHasImg').style.display = 'none';
-  }
+  // תמונות מוצר (תצוגת thumbnails)
+  renderImgThumbs();
 
   // save button
   refreshSaveBtn();
@@ -1283,6 +1265,20 @@ function update(){
     const dl = document.getElementById('devLimit'); if (dl && document.activeElement !== dl) dl.value = state.limit;
   }
   if (state.view === 'admin'){ renderAdminList(); renderAdminReviews(); renderAdminContacts(); }
+}
+
+function renderImgThumbs(){
+  const el = document.getElementById('imgThumbs'); if(!el) return;
+  const prev = state.form.previews || [];
+  let html = prev.map((src,i)=>`
+    <div style="position:relative;width:84px;height:84px;border-radius:12px;background-image:url('${src}');background-size:cover;background-position:center;border:1px solid #DCD7C9">
+      <button type="button" data-act="rm-img" data-idx="${i}" aria-label="הסרת תמונה" style="position:absolute;top:-7px;left:-7px;width:22px;height:22px;border:none;border-radius:50%;background:#C8372B;color:#fff;font-size:11px;font-weight:800;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center">✕</button>
+      ${i===0?`<span style="position:absolute;bottom:5px;right:5px;background:rgba(20,68,47,0.88);color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:999px">ראשי</span>`:''}
+    </div>`).join('');
+  if(prev.length < 6){
+    html += `<button type="button" data-act="add-img" style="width:84px;height:84px;border-radius:12px;border:2px dashed #C9C2B4;background:#F8F6F0;color:#14442F;font-size:12.5px;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:24px">➕</span>${prev.length?'הוסף עוד':'הוסף תמונה'}</button>`;
+  }
+  el.innerHTML = html;
 }
 
 function refreshSaveBtn(){
@@ -1606,6 +1602,8 @@ document.addEventListener('click', e => {
     case 'login-cancel': closeLogin(); break;
     case 'set-active': state.form.status='active'; update(); break;
     case 'set-hidden': state.form.status='hidden'; update(); break;
+    case 'add-img': document.getElementById('fileInput').click(); break;
+    case 'rm-img': { const i=Number(t.dataset.idx); state.form.files.splice(i,1); state.form.previews.splice(i,1); renderImgThumbs(); refreshSaveBtn(); break; }
     case 'save': if(t.dataset.disabled!=='1') saveProduct(); break;
     case 'reload': loadProducts(); loadReviews(); loadContacts(); break;
     case 'open-review': openReview(); break;
@@ -1634,14 +1632,14 @@ document.getElementById('fCat').addEventListener('input', e => { state.form.cat 
 document.getElementById('loginPw').addEventListener('keydown', e => { if(e.key==='Enter') submitLogin(); });
 document.getElementById('fileInput').addEventListener('change', e => {
   const files = Array.from(e.target.files || []); if(!files.length) return;
-  state.form.files = files.slice(0, 6);
-  state.form.previews = [];
-  let loaded = 0;
-  state.form.files.forEach((file, idx) => {
+  const room = 6 - state.form.files.length;
+  if(room <= 0){ showToast('ניתן עד 6 תמונות למוצר'); e.target.value=''; return; }
+  files.slice(0, room).forEach(file => {
     const r = new FileReader();
-    r.onload = () => { state.form.previews[idx] = r.result; if(++loaded === state.form.files.length) update(); };
+    r.onload = () => { state.form.files.push(file); state.form.previews.push(r.result); renderImgThumbs(); refreshSaveBtn(); };
     r.readAsDataURL(file);
   });
+  e.target.value = '';
 });
 
 // בורר כוכבים במודאל ההמלצה
