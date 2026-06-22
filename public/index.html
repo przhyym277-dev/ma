@@ -40,11 +40,10 @@
   "description": "המרכז למוצרי גינון — אדמה, צמחים, מערכות השקיה, כלי גינון וצעצועי שלט רחוק (RC).",
   "telephone": "+972-52-540-8113",
   "address": { "@type": "PostalAddress", "addressLocality": "מושב רמת צבי", "addressCountry": "IL" },
-  "openingHoursSpecification": [{
-    "@type": "OpeningHoursSpecification",
-    "dayOfWeek": ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday"],
-    "opens": "09:00", "closes": "18:00"
-  }],
+  "openingHoursSpecification": [
+    { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Sunday","Monday","Tuesday","Wednesday","Thursday"], "opens": "09:00", "closes": "16:00" },
+    { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Friday"], "opens": "09:00", "closes": "12:00" }
+  ],
   "url": "https://ct-vr6l.onrender.com/"
 }
 </script>
@@ -166,7 +165,7 @@
   <div style="background:#0E3322;color:#C9DBD0">
     <div style="max-width:1200px;margin:0 auto;padding:7px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12.5px;font-weight:600">
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-        <span style="display:inline-flex;align-items:center;gap:5px"><i data-lucide="clock"></i> א׳–ו׳ · 09:00–18:00</span>
+        <span style="display:inline-flex;align-items:center;gap:5px"><i data-lucide="clock"></i> א׳-ה׳ 09:00–16:00 · ו׳ 09:00–12:00</span>
         <span style="opacity:.4">|</span>
         <a href="tel:+972525408113" dir="ltr" style="color:#C9DBD0;text-decoration:none;display:inline-flex;align-items:center;gap:5px"><i data-lucide="phone"></i> 052-540-8113</a>
       </div>
@@ -434,7 +433,7 @@
       </details>
       <details style="background:#fff;border-radius:16px;padding:4px 18px;box-shadow:0 4px 14px rgba(20,68,47,0.05);border:1px solid rgba(20,68,47,0.05)">
         <summary style="cursor:pointer;list-style:none;padding:14px 0;font-weight:800;font-size:15.5px;color:#14442F;display:flex;justify-content:space-between;align-items:center">מתי אפשר לאסוף מהמחסן?<span style="color:#B5683C;font-size:20px">＋</span></summary>
-        <p style="font-size:14px;color:#6B7A70;line-height:1.6;margin:0 0 14px;font-weight:500">בשעות הפעילות: כל יום 09:00–18:00 (שבת סגור). מומלץ לתאם מראש בוואטסאפ כדי שנכין לכם את ההזמנה.</p>
+        <p style="font-size:14px;color:#6B7A70;line-height:1.6;margin:0 0 14px;font-weight:500">שעות פעילות: א׳-ה׳ 09:00–16:00, ו׳ 09:00–12:00 (שבת סגור). <strong style="color:#9E5429">האיסוף בתיאום מראש</strong> בוואטסאפ או בטלפון — כדי שנכין את ההזמנה ויהיה מי שיקבל אתכם.</p>
       </details>
       <details style="background:#fff;border-radius:16px;padding:4px 18px;box-shadow:0 4px 14px rgba(20,68,47,0.05);border:1px solid rgba(20,68,47,0.05)">
         <summary style="cursor:pointer;list-style:none;padding:14px 0;font-weight:800;font-size:15.5px;color:#14442F;display:flex;justify-content:space-between;align-items:center">אפשר לקבל ייעוץ לפני קנייה?<span style="color:#B5683C;font-size:20px">＋</span></summary>
@@ -477,9 +476,10 @@
           <h3 style="font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:19px;color:#14442F;margin:0 0 12px">איפה אנחנו</h3>
           <div style="font-size:14.5px;color:#3A463F;font-weight:600;line-height:2.1">
             <span style="display:inline-flex;align-items:center;gap:8px"><i data-lucide="map-pin" style="color:#B5683C;width:17px;height:17px"></i> מושב רמת צבי</span><br>
-            <span style="display:inline-flex;align-items:center;gap:8px"><i data-lucide="clock" style="color:#B5683C;width:17px;height:17px"></i> כל יום 09:00–18:00 · שבת סגור</span><br>
+            <span style="display:inline-flex;align-items:center;gap:8px"><i data-lucide="clock" style="color:#B5683C;width:17px;height:17px"></i> א׳-ה׳ 09:00–16:00 · ו׳ 09:00–12:00 · שבת סגור</span><br>
             <span style="display:inline-flex;align-items:center;gap:8px"><i data-lucide="phone" style="color:#B5683C;width:17px;height:17px"></i> <a href="tel:+972525408113" dir="ltr" style="color:#14442F;font-weight:700">052‑540‑8113</a></span>
           </div>
+          <div style="margin-top:12px;background:#F2E2D5;color:#9E5429;border-radius:12px;padding:10px 13px;font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:8px"><i data-lucide="calendar-clock" style="width:18px;height:18px;flex-shrink:0"></i> האיסוף בתיאום מראש — צרו קשר לפני הגעה למחסן 🙏</div>
           <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px">
             <a href="https://waze.com/ul?q=מושב רמת צבי&navigate=yes" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#33CCFF;color:#0A2540;font-weight:800;font-size:14.5px;padding:11px 20px;border-radius:999px;text-decoration:none;box-shadow:0 8px 20px rgba(51,204,255,0.35)"><i data-lucide="navigation" style="width:17px;height:17px"></i> ניווט ב‑Waze</a>
             <a href="https://www.google.com/maps/dir/?api=1&destination=מושב רמת צבי" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#B5683C;color:#fff;font-weight:800;font-size:14.5px;padding:11px 20px;border-radius:999px;text-decoration:none;box-shadow:0 8px 20px rgba(181,104,60,0.32)"><i data-lucide="map-pin" style="width:17px;height:17px"></i> Google Maps</a>
@@ -507,7 +507,7 @@
       </div>
       <div>
         <div style="font-weight:800;color:#fff;font-size:15px;margin-bottom:10px">שעות פעילות</div>
-        <div style="font-size:14px;line-height:1.8;color:#9DB7AB">כל יום · 09:00–18:00<br>שבת · סגור</div>
+        <div style="font-size:14px;line-height:1.8;color:#9DB7AB">א׳-ה׳ · 09:00–16:00<br>ו׳ · 09:00–12:00 · שבת סגור<br><span style="color:#E8BBA0;font-weight:700">איסוף בתיאום מראש</span></div>
       </div>
       <div>
         <div style="font-weight:800;color:#fff;font-size:15px;margin-bottom:10px">צרו קשר</div>
