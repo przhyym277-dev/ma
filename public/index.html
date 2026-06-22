@@ -612,15 +612,15 @@
             </div>
           </div>
           <div>
-            <label style="display:block;font-weight:800;font-size:13.5px;color:#1C2620;margin-bottom:7px">תמונת מוצר</label>
+            <label style="display:block;font-weight:800;font-size:13.5px;color:#1C2620;margin-bottom:7px">תמונות מוצר <span style="color:#8A968D;font-weight:600">(עד 6 תמונות)</span></label>
             <label id="dropzone" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:2px dashed #C9C2B4;background:#F8F6F0;border-radius:16px;padding:26px 16px;cursor:pointer;text-align:center;transition:all .2s ease;background-size:cover;background-position:center;min-height:140px;position:relative;overflow:hidden">
               <span id="dropNoImg" style="display:flex;flex-direction:column;align-items:center;gap:8px">
                 <span style="font-size:34px">📸</span>
-                <span style="font-weight:800;font-size:14.5px;color:#14442F">העלאת תמונה / צילום מהיר</span>
-                <span style="font-size:12.5px;color:#8A968D;font-weight:600">גררו לכאן או הקישו לבחירה מהגלריה</span>
+                <span style="font-weight:800;font-size:14.5px;color:#14442F">העלאת תמונות / צילום מהיר</span>
+                <span style="font-size:12.5px;color:#8A968D;font-weight:600">גררו לכאן או הקישו — אפשר לבחור כמה תמונות יחד</span>
               </span>
               <span id="dropHasImg" style="display:none;position:absolute;bottom:10px;background:rgba(20,68,47,0.92);color:#fff;font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px">✓ <span id="dropFileName"></span> — הקישו להחלפה</span>
-              <input id="fileInput" type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer"/>
+              <input id="fileInput" type="file" accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer"/>
             </label>
           </div>
           <button id="saveBtn" data-act="save" style="width:100%;border:none;border-radius:15px;padding:16px;font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:16.5px;color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;transition:filter .18s ease,transform .1s ease;box-shadow:0 10px 24px rgba(20,68,47,0.22)">
@@ -732,6 +732,15 @@
     </div>
   </div>
 
+  <!-- GALLERY LIGHTBOX -->
+  <div id="galleryModal" style="position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;background:rgba(10,24,18,0.93);opacity:0;transition:opacity .2s ease;padding:20px">
+    <button data-act="gal-close" aria-label="סגירה" style="position:absolute;top:18px;left:18px;width:44px;height:44px;border:none;border-radius:50%;background:rgba(255,255,255,0.16);color:#fff;font-size:22px;cursor:pointer;z-index:2">✕</button>
+    <button data-act="gal-prev" aria-label="הקודם" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);width:50px;height:50px;border:none;border-radius:50%;background:rgba(255,255,255,0.16);color:#fff;font-size:26px;cursor:pointer;z-index:2">›</button>
+    <button data-act="gal-next" aria-label="הבא" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);width:50px;height:50px;border:none;border-radius:50%;background:rgba(255,255,255,0.16);color:#fff;font-size:26px;cursor:pointer;z-index:2">‹</button>
+    <img id="galleryImg" alt="תמונת מוצר" style="max-width:92vw;max-height:80vh;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.5);object-fit:contain"/>
+    <div id="galleryCount" style="position:absolute;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.5);color:#fff;font-weight:700;font-size:13px;padding:6px 14px;border-radius:999px"></div>
+  </div>
+
   <!-- MOBILE MENU -->
   <div class="mm-overlay" id="mmOverlay"></div>
   <aside class="mobilemenu" id="mobileMenu" aria-label="תפריט ניווט">
@@ -829,7 +838,8 @@ const VIDEOS = [
 const state = {
   view:'shop', cat:'garden', cart:{}, open:false, delivery:'pickup', pop:false,
   products:[], loading:true, loadError:false,
-  form:{ name:'', world:'garden', price:'', desc:'', status:'active', cat:'', file:null, fileName:'' },
+  form:{ name:'', world:'garden', price:'', desc:'', status:'active', cat:'', files:[], previews:[] },
+  gallery:{ images:[], idx:0 },
   saving:false, editingId:null, limit:60,
   reviews:[], role:'', rvRating:5, contacts:[], activeCat:'all', page:'home',
 };
@@ -945,7 +955,7 @@ async function saveProduct(){
     fd.append('price', f.price);
     fd.append('desc', f.desc.trim());
     fd.append('status', f.status);
-    if (f.file) fd.append('image', f.file);
+    (f.files || []).forEach(file => fd.append('images', file));
 
     const res = await fetch(API + '/api/products', { method:'POST', headers:authHeaders(), body:fd });
     if (res.status === 401){ handle401(); return; }
@@ -954,7 +964,7 @@ async function saveProduct(){
 
     state.products.unshift(data.product);          // הוספה מקומית מיידית
     state.cat = f.world;                            // קופצים לעולם של המוצר שנוסף
-    state.form = { name:'', world:'garden', price:'', desc:'', status:'active', cat:'', file:null, fileName:'' };
+    state.form = { name:'', world:'garden', price:'', desc:'', status:'active', cat:'', files:[], previews:[] };
     resetFormInputs();
     showToast('המוצר נשמר בהצלחה ונוסף לקטלוג!');
   } catch (e){
@@ -1002,6 +1012,32 @@ function renderVideos(){
     </div>`;
   }).join('');
 }
+/* ===== גלריית תמונות מוצר (לייטבוקס) ===== */
+function openGallery(id){
+  const p = state.products.find(x=>x.id===id); if(!p) return;
+  const imgs = (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
+  if(!imgs.length) return;
+  state.gallery = { images: imgs, idx: 0 };
+  paintGallery();
+  const ov = document.getElementById('galleryModal');
+  ov.style.display='flex';
+  requestAnimationFrame(()=>{ ov.style.opacity='1'; });
+}
+function paintGallery(){
+  const g = state.gallery; if(!g || !g.images.length) return;
+  document.getElementById('galleryImg').src = g.images[g.idx];
+  document.getElementById('galleryCount').textContent = (g.idx+1) + ' / ' + g.images.length;
+}
+function galNav(d){
+  const g = state.gallery; if(!g || !g.images.length) return;
+  g.idx = (g.idx + d + g.images.length) % g.images.length;
+  paintGallery();
+}
+function closeGallery(){
+  const ov = document.getElementById('galleryModal');
+  ov.style.opacity='0'; setTimeout(()=>{ ov.style.display='none'; }, 200);
+}
+
 function playVideo(i){
   const v = document.getElementById('vid'+i); if(!v) return;
   const ov = document.getElementById('vidov'+i); if(ov) ov.style.display='none';
@@ -1077,9 +1113,13 @@ function renderGrid(){
     const tagColor = g ? '#1E6B47' : '#9E5429';
     const btnLabel = inCart ? ('✓ בסל · '+qty) : '🛒 הוספה לסל';
     const btnBg = inCart ? '#14442F' : '#B5683C';
+    const nImg = (p.images && p.images.length) ? p.images.length : (p.image ? 1 : 0);
+    const galAttr = nImg>1 ? ` data-act="open-gallery" data-id="${esc(p.id)}"` : '';
+    const galBadge = nImg>1 ? `<span style="position:absolute;bottom:10px;left:10px;background:rgba(20,68,47,0.82);color:#fff;font-size:11px;font-weight:800;padding:4px 9px;border-radius:999px;backdrop-filter:blur(4px);pointer-events:none">📷 ${nImg}</span>` : '';
     return `<div class="card" style="background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 18px rgba(20,68,47,0.06);border:1px solid rgba(20,68,47,0.05);display:flex;flex-direction:column">
-      <div class="prodimg" style="position:relative;aspect-ratio:4/3;background-image:${imgFor(p)};background-size:cover;background-position:center">
+      <div class="prodimg"${galAttr} style="position:relative;aspect-ratio:4/3;background-image:${imgFor(p)};background-size:cover;background-position:center;${nImg>1?'cursor:pointer':''}">
         <span style="position:absolute;top:10px;right:10px;background:${tagBg};color:${tagColor};font-size:11px;font-weight:800;padding:5px 10px;border-radius:999px;backdrop-filter:blur(4px)">${esc(p.category)}</span>
+        ${galBadge}
       </div>
       <div style="padding:14px 14px 16px;display:flex;flex-direction:column;flex:1">
         <h3 style="font-family:'Frank Ruhl Libre',serif;font-weight:700;font-size:16px;margin:0;line-height:1.2;color:#1C2620">${esc(p.name)}</h3>
@@ -1203,12 +1243,12 @@ function update(){
 
   // dropzone preview
   const dz = document.getElementById('dropzone');
-  if (state.form.fileName){
-    dz.style.backgroundImage = 'linear-gradient(rgba(20,68,47,0.12),rgba(20,68,47,0.12)), url("'+state.form._preview+'")';
+  if (state.form.files && state.form.files.length){
+    dz.style.backgroundImage = 'linear-gradient(rgba(20,68,47,0.12),rgba(20,68,47,0.12)), url("'+(state.form.previews[0]||'')+'")';
     dz.style.borderColor = '#14442F';
     document.getElementById('dropNoImg').style.display = 'none';
     document.getElementById('dropHasImg').style.display = 'block';
-    document.getElementById('dropFileName').textContent = state.form.fileName;
+    document.getElementById('dropFileName').textContent = state.form.files.length>1 ? (state.form.files.length+' תמונות נבחרו') : '1 תמונה נבחרה';
   } else {
     dz.style.backgroundImage = 'none'; dz.style.borderColor = '#C9C2B4';
     document.getElementById('dropNoImg').style.display = 'flex';
@@ -1576,6 +1616,10 @@ document.addEventListener('click', e => {
     case 'send-contact': sendContact(); break;
     case 'del-contact': deleteContact(id); break;
     case 'play-video': playVideo(Number(t.dataset.vid)); break;
+    case 'open-gallery': openGallery(id); break;
+    case 'gal-prev': galNav(-1); break;
+    case 'gal-next': galNav(1); break;
+    case 'gal-close': closeGallery(); break;
     case 'open-article': openArticle(id); break;
     case 'close-article': closeArticle(); break;
   }
@@ -1589,11 +1633,15 @@ document.getElementById('fWorld').addEventListener('change', e => { state.form.w
 document.getElementById('fCat').addEventListener('input', e => { state.form.cat = e.target.value; });
 document.getElementById('loginPw').addEventListener('keydown', e => { if(e.key==='Enter') submitLogin(); });
 document.getElementById('fileInput').addEventListener('change', e => {
-  const f = e.target.files && e.target.files[0]; if(!f) return;
-  state.form.file = f; state.form.fileName = f.name;
-  const r = new FileReader();
-  r.onload = () => { state.form._preview = r.result; update(); };
-  r.readAsDataURL(f);
+  const files = Array.from(e.target.files || []); if(!files.length) return;
+  state.form.files = files.slice(0, 6);
+  state.form.previews = [];
+  let loaded = 0;
+  state.form.files.forEach((file, idx) => {
+    const r = new FileReader();
+    r.onload = () => { state.form.previews[idx] = r.result; if(++loaded === state.form.files.length) update(); };
+    r.readAsDataURL(file);
+  });
 });
 
 // בורר כוכבים במודאל ההמלצה
@@ -1612,6 +1660,15 @@ document.getElementById('hamBtn').addEventListener('click', openMobileMenu);
 document.getElementById('mmClose').addEventListener('click', closeMobileMenu);
 document.getElementById('mmOverlay').addEventListener('click', closeMobileMenu);
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeMobileMenu(); });
+
+// גלריית מוצר — סגירה ברקע + ניווט במקלדת
+document.getElementById('galleryModal').addEventListener('click', e => { if(e.target.id==='galleryModal') closeGallery(); });
+document.addEventListener('keydown', e => {
+  if(document.getElementById('galleryModal').style.display!=='flex') return;
+  if(e.key==='Escape') closeGallery();
+  else if(e.key==='ArrowLeft') galNav(1);
+  else if(e.key==='ArrowRight') galNav(-1);
+});
 
 // ניווט עמודים — תגובה לכפתור Back/Forward
 window.addEventListener('hashchange', () => showPage((location.hash||'').replace('#','') || 'home'));

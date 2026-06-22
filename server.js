@@ -77,6 +77,8 @@ async function getNamedSheet(doc, title, headers) {
 
 function rowToProduct(row) {
   const hiddenRaw = String(row.get('hidden') ?? '').trim().toLowerCase();
+  const rawImg = row.get('imageUrl') || row.get('imageurl') || '';
+  const images = String(rawImg).split('|').map(s => s.trim()).filter(Boolean);
   return {
     id: row.get('id') || ('row-' + row.rowNumber),
     world: (row.get('world') || 'garden').trim(),
@@ -84,7 +86,8 @@ function rowToProduct(row) {
     name: row.get('name') || '',
     desc: row.get('desc') || '',
     price: Number(row.get('price')) || 0,
-    image: row.get('imageUrl') || row.get('imageurl') || '',
+    image: images[0] || '',
+    images,
     hidden: hiddenRaw === 'true' || hiddenRaw === '1' || hiddenRaw === 'כן',
   };
 }
@@ -194,7 +197,7 @@ app.get('/api/products', async (req, res) => {
   }
 });
 
-app.post('/api/products', requireAuth, upload.single('image'), async (req, res) => {
+app.post('/api/products', requireAuth, upload.array('images', 6), async (req, res) => {
   try {
     const { name, world, price, desc, status, category } = req.body;
     if (!name || !String(name).trim() || !price) return res.status(400).json({ ok: false, error: 'חסר שם מוצר או מחיר' });
@@ -205,7 +208,11 @@ app.post('/api/products', requireAuth, upload.single('image'), async (req, res) 
         error: `הגעת למגבלה של ${runtimeLimit} מוצרים פעילים. כדי להוסיף מוצר חדש — הסתר מוצר קיים, או שדרג את החבילה.` });
     }
 
-    const imageUrl = await uploadImage(req.file);
+    // העלאת כל התמונות שנבחרו (עד 6) ושמירתן מופרדות ב-|
+    const files = (req.files && req.files.length) ? req.files : (req.file ? [req.file] : []);
+    const urls = [];
+    for (const file of files) { const u = await uploadImage(file); if (u) urls.push(u); }
+    const imageUrl = urls.join(' | ');
     const base = {
       id: 'p' + Date.now(),
       world: world === 'rc' ? 'rc' : 'garden',
@@ -224,9 +231,9 @@ app.post('/api/products', requireAuth, upload.single('image'), async (req, res) 
       rowObj[imgCol] = imageUrl;
       await sheet.addRow(rowObj);
     } else {
-      memProducts.unshift({ ...base, image: imageUrl, hidden: isHidden });
+      memProducts.unshift({ ...base, image: urls[0] || '', images: urls, hidden: isHidden });
     }
-    res.json({ ok: true, product: { ...base, image: imageUrl, hidden: isHidden } });
+    res.json({ ok: true, product: { ...base, image: urls[0] || '', images: urls, hidden: isHidden } });
   } catch (err) {
     console.error('POST /api/products:', err.message);
     res.status(500).json({ ok: false, error: 'נכשלה שמירת המוצר' });
