@@ -136,6 +136,31 @@ async function saveLimitToSheet(val) {
   else await cfg.addRow({ key: 'maxProducts', value: String(val) });
 }
 
+/* ---------- קטגוריות מנוהלות (נשמרות בגיליון config, key=categories) ---------- */
+let runtimeCategories = [];
+async function loadCategoriesFromSheet() {
+  if (!SHEETS_ENABLED) return;
+  try {
+    const doc = await getDoc();
+    const cfg = doc.sheetsByTitle['config'];
+    if (!cfg) return;
+    const rows = await cfg.getRows();
+    const r = rows.find(x => x.get('key') === 'categories');
+    if (r) runtimeCategories = String(r.get('value') || '').split('|').map(s => s.trim()).filter(Boolean);
+  } catch (e) { console.error('loadCategories:', e.message); }
+}
+async function saveCategoriesToSheet(arr) {
+  runtimeCategories = arr;
+  if (!SHEETS_ENABLED) return;
+  const doc = await getDoc();
+  const cfg = await getNamedSheet(doc, 'config', ['key', 'value']);
+  const rows = await cfg.getRows();
+  const r = rows.find(x => x.get('key') === 'categories');
+  const val = arr.join('|');
+  if (r) { r.set('value', val); await r.save(); }
+  else await cfg.addRow({ key: 'categories', value: val });
+}
+
 async function countActiveProducts() {
   if (!SHEETS_ENABLED) return memProducts.filter(p => !p.hidden).length;
   const sheet = await getSheet();
@@ -426,9 +451,30 @@ app.put('/api/config', requireDev, async (req, res) => {
   }
 });
 
+/* ---------- קטגוריות ---------- */
+app.get('/api/categories', async (req, res) => {
+  res.json({ ok: true, categories: runtimeCategories });
+});
+app.post('/api/categories', requireAuth, async (req, res) => {
+  try {
+    const name = String((req.body || {}).name || '').trim();
+    if (!name) return res.status(400).json({ ok: false, error: 'שם קטגוריה ריק' });
+    if (!runtimeCategories.includes(name)) await saveCategoriesToSheet([...runtimeCategories, name]);
+    res.json({ ok: true, categories: runtimeCategories });
+  } catch (err) { console.error('POST /api/categories:', err.message); res.status(500).json({ ok: false, error: 'שמירת קטגוריה נכשלה' }); }
+});
+app.delete('/api/categories/:name', requireAuth, async (req, res) => {
+  try {
+    const name = decodeURIComponent(req.params.name);
+    await saveCategoriesToSheet(runtimeCategories.filter(c => c !== name));
+    res.json({ ok: true, categories: runtimeCategories });
+  } catch (err) { console.error('DELETE /api/categories:', err.message); res.status(500).json({ ok: false, error: 'מחיקת קטגוריה נכשלה' }); }
+});
+
 /* ---------- start ---------- */
 app.listen(PORT, async () => {
   await loadLimitFromSheet();
+  await loadCategoriesFromSheet();
   console.log(`🌿 צרפתי שיווק רץ על http://localhost:${PORT}`);
   console.log(`   מקור מוצרים: ${SHEETS_ENABLED ? 'Google Sheets ✅' : 'זיכרון (דמו)'}`);
   console.log(`   תמונות: ${CLOUDINARY_ENABLED ? 'Cloudinary ✅' : 'data-URL'}`);

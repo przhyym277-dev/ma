@@ -602,9 +602,10 @@
             </div>
           </div>
           <div>
-            <label style="display:block;font-weight:800;font-size:13.5px;color:#1C2620;margin-bottom:7px">קטגוריה <span style="font-weight:600;color:#8A968D;font-size:12px">(לסינון — לדוגמה: אדמה, השקיה, כלים)</span></label>
-            <input id="fCat" list="catList" placeholder="קטגוריה" style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:13px 15px;font-size:15px;font-weight:600;background:#FBFAF6">
-            <datalist id="catList"><option value="אדמה"><option value="השקיה"><option value="צמחים"><option value="עציצים"><option value="דישון"><option value="כלים"><option value="זרעים"><option value="באגי"><option value="דריפט"><option value="טיפוס"></datalist>
+            <label style="display:block;font-weight:800;font-size:13.5px;color:#1C2620;margin-bottom:7px">קטגוריה <span style="font-weight:600;color:#8A968D;font-size:12px">(בחרו מהרשימה — לניהול הרשימה גללו למטה)</span></label>
+            <select id="fCat" style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:13px 12px;font-size:15px;font-weight:600;background:#FBFAF6;cursor:pointer;color:#1C2620">
+              <option value="">— בחרו קטגוריה —</option>
+            </select>
           </div>
           <div>
             <label style="display:block;font-weight:800;font-size:13.5px;color:#1C2620;margin-bottom:7px">תיאור קצר של המוצר</label>
@@ -632,6 +633,21 @@
         </div>
       </div>
       <div style="text-align:center;font-size:12.5px;color:#8A968D;font-weight:600;margin-top:16px">המוצרים שתוסיפו כאן יישמרו בגוגל שיטס ויופיעו מיד בקטלוג 👆</div>
+
+      <!-- category manager -->
+      <div style="background:#fff;border-radius:22px;box-shadow:0 8px 30px rgba(20,68,47,0.08);overflow:hidden;margin-top:22px">
+        <div style="padding:20px 22px 16px;border-bottom:1px solid #EFEBE0">
+          <h2 style="font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:20px;margin:0;color:#14442F;display:flex;align-items:center;gap:8px"><i data-lucide="tags"></i> ניהול קטגוריות</h2>
+          <p style="font-size:13px;color:#6B7A70;margin:5px 0 0;font-weight:500">הקטגוריות שתוסיפו יופיעו בבחירה בטופס המוצר ובסינון בחנות</p>
+        </div>
+        <div style="padding:18px 22px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <input id="newCatInput" placeholder="שם קטגוריה חדשה (למשל: אדמה)" style="flex:1;min-width:180px;border:1.5px solid #DCD7C9;border-radius:12px;padding:11px 14px;font-size:14.5px;font-weight:600;background:#FBFAF6">
+            <button data-act="add-category" style="display:inline-flex;align-items:center;gap:6px;border:none;background:#14442F;color:#fff;font-weight:800;font-size:14px;padding:11px 18px;border-radius:12px;cursor:pointer"><i data-lucide="plus"></i> הוסף קטגוריה</button>
+          </div>
+          <div id="catManagerList" style="display:flex;flex-wrap:wrap;gap:9px;margin-top:16px"></div>
+        </div>
+      </div>
 
       <!-- admin product list -->
       <div style="background:#fff;border-radius:22px;box-shadow:0 8px 30px rgba(20,68,47,0.08);overflow:hidden;margin-top:22px">
@@ -842,6 +858,7 @@ const state = {
   products:[], loading:true, loadError:false,
   form:{ name:'', world:'garden', price:'', desc:'', status:'active', cat:'', files:[], previews:[] },
   gallery:{ images:[], idx:0 },
+  categories:[],
   saving:false, editingId:null, limit:60,
   reviews:[], role:'', rvRating:5, contacts:[], activeCat:'all', page:'home',
 };
@@ -1589,6 +1606,39 @@ function renderAdminList(){
   }).join('');
 }
 
+/* ===== ניהול קטגוריות ===== */
+async function loadCategories(){
+  try{ const r=await fetch(API+'/api/categories?t='+Date.now(),{cache:'no-store'}); const d=await r.json(); if(d.ok) state.categories=d.categories||[]; }
+  catch(e){ console.error(e); }
+  renderCatSelect(); renderCatManager();
+}
+function renderCatSelect(){
+  const sel=document.getElementById('fCat'); if(!sel) return;
+  const cur=state.form.cat||sel.value||'';
+  sel.innerHTML='<option value="">— בחרו קטגוריה —</option>'+state.categories.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  if(state.categories.includes(cur)) sel.value=cur;
+}
+function renderCatManager(){
+  const el=document.getElementById('catManagerList'); if(!el) return;
+  if(!state.categories.length){ el.innerHTML='<div style="color:#8A968D;font-weight:600;font-size:13.5px">אין קטגוריות עדיין — הוסיפו את הראשונה למעלה ☝️</div>'; return; }
+  el.innerHTML=state.categories.map(c=>`<span style="display:inline-flex;align-items:center;gap:8px;background:#EAF2EB;color:#14442F;font-weight:700;font-size:13.5px;padding:7px 8px 7px 14px;border-radius:999px">${esc(c)}<button data-act="del-category" data-name="${esc(c)}" aria-label="מחיקת קטגוריה" style="width:22px;height:22px;border:none;border-radius:50%;background:#fff;color:#C8372B;cursor:pointer;display:flex;align-items:center;justify-content:center"><i data-lucide="x" style="width:13px;height:13px"></i></button></span>`).join('');
+  drawIcons();
+}
+async function addCategory(){
+  const inp=document.getElementById('newCatInput'); const name=(inp.value||'').trim();
+  if(!name){ showToast('⚠️ הקלידו שם קטגוריה'); return; }
+  const res=await adminFetch(API+'/api/categories',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})});
+  if(!res) return; const d=await res.json();
+  if(d.ok){ state.categories=d.categories||[]; inp.value=''; showToast('הקטגוריה נוספה ✓'); renderCatSelect(); renderCatManager(); }
+  else showToast('⚠️ '+(d.error||'נכשל'));
+}
+async function deleteCategory(name){
+  const res=await adminFetch(API+'/api/categories/'+encodeURIComponent(name),{method:'DELETE'});
+  if(!res) return; const d=await res.json();
+  if(d.ok){ state.categories=d.categories||[]; showToast('הקטגוריה נמחקה'); renderCatSelect(); renderCatManager(); }
+  else showToast('⚠️ '+(d.error||'נכשל'));
+}
+
 /* ===== חיווט אירועים ===== */
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-act]'); if(!t) return;
@@ -1629,6 +1679,8 @@ document.addEventListener('click', e => {
     case 'submit-review': submitReview(); break;
     case 'del-review': deleteReview(id); break;
     case 'save-limit': saveLimit(); break;
+    case 'add-category': addCategory(); break;
+    case 'del-category': deleteCategory(t.dataset.name); break;
     case 'send-contact': sendContact(); break;
     case 'del-contact': deleteContact(id); break;
     case 'play-video': playVideo(Number(t.dataset.vid)); break;
@@ -1646,7 +1698,8 @@ document.getElementById('fName').addEventListener('input', e => { state.form.nam
 document.getElementById('fPrice').addEventListener('input', e => { state.form.price = e.target.value; refreshSaveBtn(); });
 document.getElementById('fDesc').addEventListener('input', e => { state.form.desc = e.target.value; });
 document.getElementById('fWorld').addEventListener('change', e => { state.form.world = e.target.value; });
-document.getElementById('fCat').addEventListener('input', e => { state.form.cat = e.target.value; });
+document.getElementById('fCat').addEventListener('change', e => { state.form.cat = e.target.value; });
+document.getElementById('newCatInput').addEventListener('keydown', e => { if(e.key==='Enter'){ e.preventDefault(); addCategory(); } });
 document.getElementById('loginPw').addEventListener('keydown', e => { if(e.key==='Enter') submitLogin(); });
 document.getElementById('fileInput').addEventListener('change', e => {
   const files = Array.from(e.target.files || []); if(!files.length) return;
@@ -1696,6 +1749,7 @@ update();
 loadProducts();
 loadReviews();
 loadArticles();
+loadCategories();
 showPage((location.hash||'').replace('#','') || 'home');
 drawIcons();
 window.addEventListener('load', drawIcons);
