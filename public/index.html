@@ -87,6 +87,16 @@
   @keyframes pageIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
   .pagefade{animation:pageIn .45s cubic-bezier(.2,.7,.3,1)}
   html.a11y-noanim .pagefade{animation:none}
+  /* mobile hamburger menu */
+  .hamburger{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border:1px solid rgba(20,68,47,0.14);background:#fff;border-radius:12px;font-size:20px;color:#14442F;cursor:pointer;flex-shrink:0}
+  @media(min-width:780px){.hamburger{display:none}}
+  @media(max-width:779px){.hide-mobile{display:none !important}}
+  .mm-overlay{position:fixed;inset:0;background:rgba(20,32,28,0.5);z-index:74;opacity:0;pointer-events:none;transition:opacity .3s ease}
+  .mm-overlay.open{opacity:1;pointer-events:auto}
+  .mobilemenu{position:fixed;top:0;bottom:0;right:0;width:min(290px,82%);background:#F6F4EE;z-index:75;transform:translateX(102%);transition:transform .32s cubic-bezier(.22,.8,.28,1);box-shadow:-14px 0 40px rgba(0,0,0,0.22);display:flex;flex-direction:column;overflow-y:auto}
+  .mobilemenu.open{transform:translateX(0)}
+  .mobilemenu a,.mobilemenu .mm-link{display:flex;align-items:center;gap:12px;padding:15px 22px;font-family:'Assistant',sans-serif;font-weight:800;font-size:16px;color:#14442F;text-decoration:none;border:none;background:none;cursor:pointer;width:100%;text-align:right;border-bottom:1px solid rgba(20,68,47,0.07)}
+  .mobilemenu a:active,.mobilemenu .mm-link:active{background:#E7F0E9}
 
   /* ===== נגישות (IS 5568) ===== */
   .skip-link{position:fixed;top:-80px;right:16px;z-index:200;background:#14442F;color:#fff;padding:12px 20px;border-radius:0 0 12px 12px;font-weight:800;font-size:15px;text-decoration:none;transition:top .2s ease}
@@ -171,7 +181,8 @@
         <a href="#contact" data-act="nav" data-nav="contact">צור קשר</a>
       </nav>
       <div style="display:flex;align-items:center;gap:8px">
-        <button data-act="go-admin" class="hbtn" style="display:flex;align-items:center;gap:6px;background:#fff;color:#4A574E;border:1px solid rgba(20,68,47,0.14);border-radius:999px;padding:9px 13px;font-weight:700;font-size:13px;cursor:pointer">ניהול 🛠️</button>
+        <button class="hamburger" id="hamBtn" aria-label="פתיחת תפריט">☰</button>
+        <button data-act="go-admin" class="hbtn hide-mobile" style="display:flex;align-items:center;gap:6px;background:#fff;color:#4A574E;border:1px solid rgba(20,68,47,0.14);border-radius:999px;padding:9px 13px;font-weight:700;font-size:13px;cursor:pointer">ניהול 🛠️</button>
         <button data-act="open-cart" class="hbtn" style="display:flex;align-items:center;gap:8px;background:#14442F;color:#fff;border:none;border-radius:999px;padding:9px 14px;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 8px 20px rgba(20,68,47,0.22);white-space:nowrap">
           <span style="font-size:17px">🛒</span>
           <span>הסל שלי (<span id="hdrCount">0</span>)</span>
@@ -718,6 +729,21 @@
     </div>
   </div>
 
+  <!-- MOBILE MENU -->
+  <div class="mm-overlay" id="mmOverlay"></div>
+  <aside class="mobilemenu" id="mobileMenu" aria-label="תפריט ניווט">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:#14442F;color:#fff">
+      <span style="font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:18px">צרפתי שיווק</span>
+      <button id="mmClose" aria-label="סגירת התפריט" style="width:34px;height:34px;border:none;border-radius:9px;background:rgba(255,255,255,0.15);color:#fff;font-size:18px;cursor:pointer">✕</button>
+    </div>
+    <a href="#home" data-act="nav" data-nav="home">🏠 בית</a>
+    <a href="#shop" data-act="nav" data-nav="shop">🛒 מוצרים</a>
+    <a href="#articles" data-act="nav" data-nav="articles">📚 מאמרים</a>
+    <a href="#about" data-act="nav" data-nav="about">📖 אודות</a>
+    <a href="#contact" data-act="nav" data-nav="contact">📞 צור קשר</a>
+    <button class="mm-link" data-act="go-admin" style="margin-top:auto;border-top:1px solid rgba(20,68,47,0.12);color:#6B7A70">🛠️ כניסת ניהול</button>
+  </aside>
+
   <!-- TOAST -->
   <div id="toast" style="position:fixed;top:20px;left:50%;z-index:90;transform:translateX(-50%) translateY(-24px);opacity:0;transition:all .4s cubic-bezier(.22,.8,.28,1);pointer-events:none">
     <div style="display:flex;align-items:center;gap:10px;background:#14442F;color:#fff;padding:13px 20px;border-radius:14px;box-shadow:0 14px 36px rgba(20,68,47,0.34);font-weight:700;font-size:14.5px;white-space:nowrap">
@@ -950,10 +976,10 @@ function renderVideos(){
     const hasSrc = !!v.src;
     const poster = v.poster ? ` poster="${esc(v.poster)}"` : '';
     const media = hasSrc
-      ? `<video id="vid${i}" controls preload="metadata"${poster} playsinline style="width:100%;height:100%;object-fit:contain;display:block;background:#0E3322"><source src="${esc(v.src)}" type="video/mp4"></video>
-         <button data-act="play-video" data-vid="${i}" id="vidov${i}" aria-label="הפעלת הסרטון" style="position:absolute;inset:0;border:none;background:rgba(14,51,34,0.30);cursor:pointer;display:flex;align-items:center;justify-content:center">
-           <span style="width:74px;height:74px;border-radius:50%;background:rgba(181,104,60,0.96);color:#fff;font-size:30px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,0.3)">▶</span>
-         </button>`
+      ? `<video id="vid${i}" controls preload="metadata"${poster} playsinline onplay="var o=document.getElementById('vidov${i}');if(o)o.style.display='none'" style="width:100%;height:100%;object-fit:contain;display:block;background:#0E3322"><source src="${esc(v.src)}" type="video/mp4"></video>
+         <div id="vidov${i}" aria-hidden="true" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;background:rgba(14,51,34,0.22)">
+           <span style="width:72px;height:72px;border-radius:50%;background:rgba(181,104,60,0.96);color:#fff;font-size:30px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,0.3)">▶</span>
+         </div>`
       : `<div style="position:absolute;inset:0;background:linear-gradient(150deg,#1C5A3C,#0E3322);color:#9DB7AB;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:16px"><span style="font-size:40px">🎬</span><span style="font-weight:700;font-size:13.5px">הסרטון יתווסף בקרוב</span></div>`;
     const btn = hasSrc
       ? `<button data-act="play-video" data-vid="${i}" style="width:100%;border:1.5px solid #14442F;border-radius:13px;padding:11px;background:transparent;color:#14442F;font-weight:800;font-size:14.5px;cursor:pointer">▶ הפעלת הסרטון</button>`
@@ -1517,14 +1543,14 @@ document.addEventListener('click', e => {
     case 'remove': removeItem(id); break;
     case 'open-cart': state.open=true; update(); break;
     case 'close-cart': state.open=false; update(); break;
-    case 'nav': e.preventDefault(); showPage(t.dataset.nav); break;
+    case 'nav': e.preventDefault(); showPage(t.dataset.nav); closeMobileMenu(); break;
     case 'pick-garden': state.cat='garden'; state.activeCat='all'; update(); showPage('shop'); break;
     case 'pick-rc': state.cat='rc'; state.activeCat='all'; update(); showPage('shop'); break;
     case 'pick-cat': state.activeCat=t.dataset.cat||'all'; update(); break;
     case 'set-pickup': state.delivery='pickup'; update(); break;
     case 'set-delivery': state.delivery='delivery'; update(); break;
     case 'checkout': if(t.dataset.disabled!=='1') checkout(); break;
-    case 'go-admin': enterAdmin(); break;
+    case 'go-admin': closeMobileMenu(); enterAdmin(); break;
     case 'go-shop': state.view='shop'; update(); break;
     case 'logout': clearPw(); state.view='shop'; state.editingId=null; update(); showToast('התנתקת מהפאנל'); break;
     case 'admin-edit': state.editingId=id; update(); break;
@@ -1575,6 +1601,14 @@ document.querySelectorAll('#rvStars span').forEach(s=>{
 document.getElementById('reviewModal').addEventListener('click', e => { if(e.target.id==='reviewModal') closeReview(); });
 document.getElementById('articleModal').addEventListener('click', e => { if(e.target.id==='articleModal') closeArticle(); });
 document.addEventListener('keydown', e => { if(e.key==='Escape'){ closeReview(); closeArticle(); } });
+
+// תפריט המבורגר (נייד)
+function openMobileMenu(){ document.getElementById('mobileMenu').classList.add('open'); document.getElementById('mmOverlay').classList.add('open'); }
+function closeMobileMenu(){ document.getElementById('mobileMenu').classList.remove('open'); document.getElementById('mmOverlay').classList.remove('open'); }
+document.getElementById('hamBtn').addEventListener('click', openMobileMenu);
+document.getElementById('mmClose').addEventListener('click', closeMobileMenu);
+document.getElementById('mmOverlay').addEventListener('click', closeMobileMenu);
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeMobileMenu(); });
 
 // ניווט עמודים — תגובה לכפתור Back/Forward
 window.addEventListener('hashchange', () => showPage((location.hash||'').replace('#','') || 'home'));
