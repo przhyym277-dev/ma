@@ -83,6 +83,10 @@
   @media(min-width:780px){.navlinks{display:flex;gap:2px;align-items:center}}
   .navlinks a{color:#3A493F;font-weight:700;font-size:14px;text-decoration:none;padding:8px 13px;border-radius:10px;transition:background .15s ease,color .15s ease}
   .navlinks a:hover{background:#E7F0E9;color:#14442F}
+  .navlinks a.navactive{background:#14442F;color:#fff}
+  @keyframes pageIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  .pagefade{animation:pageIn .45s cubic-bezier(.2,.7,.3,1)}
+  html.a11y-noanim .pagefade{animation:none}
 
   /* ===== נגישות (IS 5568) ===== */
   .skip-link{position:fixed;top:-80px;right:16px;z-index:200;background:#14442F;color:#fff;padding:12px 20px;border-radius:0 0 12px 12px;font-weight:800;font-size:15px;text-decoration:none;transition:top .2s ease}
@@ -152,7 +156,7 @@
   <!-- HEADER -->
   <header role="banner" style="position:sticky;top:0;z-index:40;background:rgba(246,244,238,0.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(20,68,47,0.10)">
     <div style="max-width:1200px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px">
-      <div style="display:flex;align-items:center;gap:10px;min-width:0">
+      <div data-act="nav" data-nav="home" style="display:flex;align-items:center;gap:10px;min-width:0;cursor:pointer">
         <div style="width:42px;height:42px;flex-shrink:0;background:#14442F;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 6px 16px rgba(20,68,47,0.28)">🌿</div>
         <div style="line-height:1.05;min-width:0">
           <div style="font-family:'Rubik',sans-serif;font-weight:900;font-size:17px;color:#14442F;letter-spacing:-0.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">צרפתי שיווק</div>
@@ -160,10 +164,11 @@
         </div>
       </div>
       <nav class="navlinks" aria-label="ניווט ראשי">
-        <a href="#main-content">מוצרים</a>
-        <a href="#articles-sec">מאמרים</a>
-        <a href="#about">אודות</a>
-        <a href="#contact">צור קשר</a>
+        <a href="#home" data-act="nav" data-nav="home">בית</a>
+        <a href="#shop" data-act="nav" data-nav="shop">מוצרים</a>
+        <a href="#articles" data-act="nav" data-nav="articles">מאמרים</a>
+        <a href="#about" data-act="nav" data-nav="about">אודות</a>
+        <a href="#contact" data-act="nav" data-nav="contact">צור קשר</a>
       </nav>
       <div style="display:flex;align-items:center;gap:8px">
         <button data-act="go-admin" class="hbtn" style="display:flex;align-items:center;gap:6px;background:#fff;color:#4A574E;border:1px solid rgba(20,68,47,0.14);border-radius:999px;padding:9px 13px;font-weight:700;font-size:13px;cursor:pointer">ניהול 🛠️</button>
@@ -176,7 +181,7 @@
   </header>
 
   <!-- HERO -->
-  <section style="position:relative;max-width:1200px;margin:14px auto 0;padding:0 14px">
+  <section data-page="home" style="position:relative;max-width:1200px;margin:14px auto 0;padding:0 14px">
     <div style="position:relative;overflow:hidden;border-radius:30px;padding:42px 26px 32px;background:linear-gradient(150deg,rgba(28,90,60,0.90) 0%,rgba(20,63,44,0.88) 58%,rgba(14,51,34,0.86) 100%),url('https://res.cloudinary.com/db0uk7duu/video/upload/so_2,f_auto,q_auto,w_1400/mahsan-hagadol/videos/igsrbeglkzvjiavajypm.jpg');background-size:cover;background-position:center;box-shadow:0 26px 54px rgba(14,46,30,0.34)">
       <div style="position:absolute;top:-60px;right:-30px;width:280px;height:280px;background:radial-gradient(circle,rgba(181,104,60,0.5),transparent 66%);animation:blob 16s ease-in-out infinite;z-index:0"></div>
       <div style="position:absolute;bottom:-80px;left:-50px;width:260px;height:260px;background:radial-gradient(circle,rgba(70,210,140,0.34),transparent 68%);animation:blob 20s ease-in-out infinite;z-index:0"></div>
@@ -212,7 +217,7 @@
   </section>
 
   <!-- TRUST STRIP -->
-  <section style="max-width:1200px;margin:20px auto 0;padding:0 14px">
+  <section data-page="home" style="max-width:1200px;margin:20px auto 0;padding:0 14px">
     <div style="background:#fff;border:1px solid rgba(20,68,47,0.07);border-radius:18px;box-shadow:0 4px 18px rgba(20,68,47,0.05);padding:6px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
       <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 12px;text-align:right">
         <span style="font-size:24px">🚚</span>
@@ -234,7 +239,7 @@
   </section>
 
   <!-- ===== VIDEOS (מוצרים בתפזורת) ===== -->
-  <section style="max-width:1200px;margin:22px auto 0;padding:0 14px">
+  <section data-page="home" style="max-width:1200px;margin:22px auto 0;padding:0 14px">
     <div style="text-align:center;margin-bottom:18px">
       <div style="display:inline-flex;align-items:center;gap:7px;background:#F2E2D5;color:#9E5429;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:800">🚚 אספקה עד בית הלקוח</div>
       <h2 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:clamp(22px,4.5vw,32px);color:#14442F;margin:12px 0 0;line-height:1.15">אדמת חמרה · רסק גזם · קומפוסט אורגני<br>במשאית, ישירות עד אליכם</h2>
@@ -244,7 +249,7 @@
   </section>
 
   <!-- sticky mini switcher -->
-  <div style="position:sticky;top:67px;z-index:30;background:rgba(246,244,238,0.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)">
+  <div data-page="shop" style="position:sticky;top:67px;z-index:30;background:rgba(246,244,238,0.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)">
     <div style="max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px">
       <h2 id="sectionTitle" style="font-family:'Rubik',sans-serif;font-weight:800;font-size:clamp(19px,4vw,26px);margin:0;color:#14442F">🌿 עולם הגינון</h2>
       <div style="display:inline-flex;background:#EAE6DB;border-radius:999px;padding:4px;gap:2px">
@@ -255,13 +260,13 @@
   </div>
 
   <!-- PRODUCT GRID -->
-  <section id="main-content" role="main" tabindex="-1" aria-label="קטלוג המוצרים" style="max-width:1200px;margin:0 auto;padding:18px 20px 90px;outline:none">
+  <section id="main-content" data-page="shop" role="main" tabindex="-1" aria-label="קטלוג המוצרים" style="max-width:1200px;margin:0 auto;padding:18px 20px 90px;outline:none">
     <div id="catFilter" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:20px"></div>
     <div id="grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,180px),1fr));gap:16px"></div>
   </section>
 
   <!-- ===== ABOUT ===== -->
-  <section id="about" style="max-width:1100px;margin:10px auto 0;padding:30px 20px 12px">
+  <section id="about" data-page="about" style="max-width:1100px;margin:10px auto 0;padding:30px 20px 12px">
     <div style="position:relative;overflow:hidden;border-radius:28px;padding:42px 30px;background:linear-gradient(150deg,#1C5A3C 0%,#143F2C 60%,#0E3322 100%);color:#fff;box-shadow:0 22px 48px rgba(14,46,30,0.30)">
       <div style="position:absolute;top:-50px;left:-40px;width:230px;height:230px;background:radial-gradient(circle,rgba(181,104,60,0.35),transparent 68%);animation:blob 18s ease-in-out infinite"></div>
       <div style="position:relative;z-index:1;max-width:680px">
@@ -303,7 +308,7 @@
   </section>
 
   <!-- ===== WHY US ===== -->
-  <section style="max-width:1200px;margin:0 auto;padding:30px 20px 12px">
+  <section data-page="about" style="max-width:1200px;margin:0 auto;padding:30px 20px 12px">
     <div style="text-align:center;margin-bottom:24px">
       <div style="display:inline-flex;align-items:center;gap:7px;background:#E7F0E9;color:#1E6B47;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:800">⭐ למה אנחנו</div>
       <h2 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:clamp(22px,4.5vw,32px);color:#14442F;margin:12px 0 0">היתרונות שאתם מקבלים</h2>
@@ -333,7 +338,7 @@
   </section>
 
   <!-- ===== TESTIMONIALS (dynamic) ===== -->
-  <section style="max-width:1200px;margin:0 auto;padding:30px 20px 12px">
+  <section data-page="home" style="max-width:1200px;margin:0 auto;padding:30px 20px 12px">
     <div style="text-align:center;margin-bottom:20px">
       <div style="display:inline-flex;align-items:center;gap:7px;background:#F2E2D5;color:#9E5429;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:800">💬 לקוחות מספרים</div>
       <h2 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:clamp(22px,4.5vw,32px);color:#14442F;margin:12px 0 14px">מה אומרים עלינו</h2>
@@ -343,7 +348,7 @@
   </section>
 
   <!-- ===== FAQ ===== -->
-  <section style="max-width:780px;margin:0 auto;padding:30px 20px 40px">
+  <section data-page="contact" style="max-width:780px;margin:0 auto;padding:30px 20px 40px">
     <div style="text-align:center;margin-bottom:24px">
       <div style="display:inline-flex;align-items:center;gap:7px;background:#E7F0E9;color:#1E6B47;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:800">❓ שאלות נפוצות</div>
       <h2 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:clamp(22px,4.5vw,32px);color:#14442F;margin:12px 0 0">כל מה שרציתם לדעת</h2>
@@ -369,7 +374,7 @@
   </section>
 
   <!-- ===== ARTICLES ===== -->
-  <section id="articles-sec" style="max-width:1200px;margin:0 auto;padding:34px 20px 12px">
+  <section id="articles-sec" data-page="articles" style="max-width:1200px;margin:0 auto;padding:34px 20px 12px">
     <div style="text-align:center;margin-bottom:24px">
       <div style="display:inline-flex;align-items:center;gap:7px;background:#E7F0E9;color:#1E6B47;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:800">📚 מאמרים ומדריכים</div>
       <h2 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:clamp(22px,4.5vw,32px);color:#14442F;margin:12px 0 6px">הידע שלנו — לרשותכם</h2>
@@ -379,7 +384,7 @@
   </section>
 
   <!-- ===== CONTACT ===== -->
-  <section id="contact" style="max-width:1100px;margin:0 auto;padding:30px 20px 40px">
+  <section id="contact" data-page="contact" style="max-width:1100px;margin:0 auto;padding:30px 20px 40px">
     <div style="text-align:center;margin-bottom:22px">
       <div style="display:inline-flex;align-items:center;gap:7px;background:#F2E2D5;color:#9E5429;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:800">📍 צור קשר</div>
       <h2 style="font-family:'Rubik',sans-serif;font-weight:800;font-size:clamp(22px,4.5vw,32px);color:#14442F;margin:12px 0 0">נשמח לשמוע מכם</h2>
@@ -753,8 +758,20 @@ const state = {
   products:[], loading:true, loadError:false,
   form:{ name:'', world:'garden', price:'', desc:'', status:'active', cat:'', file:null, fileName:'' },
   saving:false, editingId:null, limit:60,
-  reviews:[], role:'', rvRating:5, contacts:[], activeCat:'all',
+  reviews:[], role:'', rvRating:5, contacts:[], activeCat:'all', page:'home',
 };
+
+/* ===== ניווט בין עמודים ===== */
+function showPage(page){
+  const pages = ['home','shop','about','articles','contact'];
+  page = pages.includes(page) ? page : 'home';
+  state.page = page;
+  document.querySelectorAll('[data-page]').forEach(el => { el.style.display = (el.getAttribute('data-page')===page) ? '' : 'none'; });
+  document.querySelectorAll('.navlinks a').forEach(a => a.classList.toggle('navactive', a.dataset.nav===page));
+  document.querySelectorAll('[data-page="'+page+'"]').forEach(el => { el.classList.remove('pagefade'); void el.offsetWidth; el.classList.add('pagefade'); });
+  try{ window.scrollTo(0,0); }catch(e){}
+  try{ if((location.hash||'').replace('#','') !== page) history.replaceState(null,'', page==='home' ? (location.pathname+location.search) : ('#'+page)); }catch(e){}
+}
 
 /* ===== עזרים ===== */
 const nf = n => Number(n||0).toLocaleString('he-IL');
@@ -1468,8 +1485,9 @@ document.addEventListener('click', e => {
     case 'remove': removeItem(id); break;
     case 'open-cart': state.open=true; update(); break;
     case 'close-cart': state.open=false; update(); break;
-    case 'pick-garden': state.cat='garden'; state.activeCat='all'; update(); break;
-    case 'pick-rc': state.cat='rc'; state.activeCat='all'; update(); break;
+    case 'nav': e.preventDefault(); showPage(t.dataset.nav); break;
+    case 'pick-garden': state.cat='garden'; state.activeCat='all'; update(); showPage('shop'); break;
+    case 'pick-rc': state.cat='rc'; state.activeCat='all'; update(); showPage('shop'); break;
     case 'pick-cat': state.activeCat=t.dataset.cat||'all'; update(); break;
     case 'set-pickup': state.delivery='pickup'; update(); break;
     case 'set-delivery': state.delivery='delivery'; update(); break;
@@ -1526,16 +1544,8 @@ document.getElementById('reviewModal').addEventListener('click', e => { if(e.tar
 document.getElementById('articleModal').addEventListener('click', e => { if(e.target.id==='articleModal') closeArticle(); });
 document.addEventListener('keydown', e => { if(e.key==='Escape'){ closeReview(); closeArticle(); } });
 
-// אנימציות גלילה — חשיפה הדרגתית של אזורים
-(function(){
-  if(!('IntersectionObserver' in window)) return;
-  const secs = [...document.querySelectorAll('#shopView > section')].slice(1); // דילוג על ה-hero
-  secs.forEach(s=>s.classList.add('reveal'));
-  const io = new IntersectionObserver((entries)=>{
-    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
-  }, { threshold:0.06, rootMargin:'0px 0px -30px 0px' });
-  secs.forEach(s=>io.observe(s));
-})();
+// ניווט עמודים — תגובה לכפתור Back/Forward
+window.addEventListener('hashchange', () => showPage((location.hash||'').replace('#','') || 'home'));
 
 /* ===== הפעלה ===== */
 state.role = getRole();
@@ -1544,6 +1554,7 @@ update();
 loadProducts();
 loadReviews();
 loadArticles();
+showPage((location.hash||'').replace('#','') || 'home');
 </script>
 
 <script>
