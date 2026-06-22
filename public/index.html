@@ -61,6 +61,8 @@
   @keyframes blob{0%,100%{border-radius:42% 58% 63% 37%/42% 45% 55% 58%}50%{border-radius:58% 42% 38% 62%/55% 58% 42% 45%}}
   @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-4px)}40%,80%{transform:translateX(4px)}}
   @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes heroRise{from{opacity:0;transform:translateY(42px)}to{opacity:1;transform:translateY(0)}}
+  html.a11y-noanim [style*="heroRise"]{animation:none !important}
   ::-webkit-scrollbar{width:10px;height:10px}
   ::-webkit-scrollbar-thumb{background:#cdbfa9;border-radius:10px}
   .card{transition:transform .22s cubic-bezier(.2,.7,.3,1),box-shadow .22s ease}
@@ -199,35 +201,32 @@
   </header>
 
   <!-- HERO -->
-  <section data-page="home" style="position:relative;max-width:1200px;margin:14px auto 0;padding:0 14px">
-    <div class="grain" style="position:relative;overflow:hidden;border-radius:30px;padding:clamp(52px,7vw,82px) clamp(28px,4vw,52px);background:linear-gradient(to left,rgba(14,51,34,0.92) 0%,rgba(20,63,44,0.70) 55%,rgba(20,63,44,0.46) 100%),url('https://res.cloudinary.com/db0uk7duu/image/upload/f_auto,q_auto,w_1500/v1782104400/mahsan-hagadol/hero/bll2mupuisbw9bsqvvb7.jpg');background-size:cover;background-position:center;box-shadow:0 26px 54px rgba(14,46,30,0.34)">
-      <div style="position:absolute;top:-60px;right:-30px;width:280px;height:280px;background:radial-gradient(circle,rgba(181,104,60,0.5),transparent 66%);animation:blob 16s ease-in-out infinite;z-index:0"></div>
-      <div style="position:absolute;bottom:-80px;left:-50px;width:260px;height:260px;background:radial-gradient(circle,rgba(70,210,140,0.34),transparent 68%);animation:blob 20s ease-in-out infinite;z-index:0"></div>
-      <div style="position:relative;z-index:1;animation:floatUp .7s ease both">
-        <div style="display:flex;flex-wrap:wrap;gap:8px">
-          <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.22);padding:6px 13px;border-radius:999px;font-size:13px;font-weight:700;color:#EAF6EE"><i data-lucide="star" style="fill:currentColor;width:14px;height:14px"></i> 5 שנות ניסיון</div>
-          <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.22);padding:6px 13px;border-radius:999px;font-size:13px;font-weight:700;color:#EAF6EE">
-            <span style="width:8px;height:8px;background:#3CA46A;border-radius:50%;box-shadow:0 0 0 4px rgba(60,164,106,0.18)"></span>
-            המחסן פתוח עכשיו
-          </div>
+  <section data-page="home" style="position:relative;max-width:1280px;margin:14px auto 0;padding:0 14px">
+    <div class="grain" style="position:relative;overflow:hidden;border-radius:32px;min-height:clamp(540px,82vh,768px);display:flex;align-items:flex-end;padding:clamp(34px,5vw,68px);background:linear-gradient(to top,rgba(9,36,24,0.93) 0%,rgba(11,40,27,0.55) 45%,rgba(11,40,27,0.18) 76%,rgba(11,40,27,0.34) 100%),url('https://res.cloudinary.com/db0uk7duu/image/upload/f_auto,q_auto,w_1700/mahsan-hagadol/hero/mv8iluygiatuozgbw80b.jpg');background-size:cover;background-position:center;box-shadow:0 40px 90px -34px rgba(11,40,27,0.7)">
+      <!-- monogram -->
+      <div style="position:absolute;top:clamp(22px,4vw,40px);right:clamp(22px,4vw,40px);z-index:3;font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:18px;letter-spacing:1px;color:#fff;border:1.5px solid rgba(255,255,255,0.45);border-radius:12px;padding:7px 12px;backdrop-filter:blur(4px)">צ״ש</div>
+      <!-- vertical editorial label -->
+      <div style="position:absolute;top:50%;left:clamp(14px,3vw,32px);transform:translateY(-50%);writing-mode:vertical-rl;text-orientation:mixed;font-size:11.5px;font-weight:800;letter-spacing:4px;color:rgba(255,255,255,0.55);z-index:3">EST. 2019 — מושב רמת צבי</div>
+      <!-- content -->
+      <div style="position:relative;z-index:3;max-width:800px;animation:heroRise 1.05s cubic-bezier(.2,.7,.2,1) both">
+        <div style="display:inline-flex;align-items:center;gap:11px;margin-bottom:20px">
+          <span style="width:42px;height:2px;background:#E0966A"></span>
+          <span style="font-size:12.5px;font-weight:800;letter-spacing:3.5px;color:#E8BBA0">המרכז למוצרי גינון</span>
         </div>
-        <h1 style="font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:clamp(34px,7vw,60px);line-height:1.04;letter-spacing:-1.2px;margin:18px 0 0;max-width:13ch;color:#fff">
-          כל הגינה שלך<br><span style="color:#7FE0A8">במקום אחד</span> <span style="color:#E0966A">.</span>
+        <h1 style="font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:clamp(46px,8.5vw,100px);line-height:0.95;letter-spacing:-2px;color:#fff;margin:0;text-shadow:0 2px 34px rgba(0,0,0,0.34)">
+          מהאדמה <span style="font-style:italic;font-weight:700;color:#9FE6BE">שלנו</span><br>לגינה <span style="color:#E0966A">שלך</span>
         </h1>
-        <p style="font-size:clamp(16px,2.4vw,19px);font-weight:500;color:rgba(233,242,236,0.88);line-height:1.55;margin:16px 0 0;max-width:48ch">
-          מוצרי גינון איכותיים לצד עולם שלם של מכוניות וצעצועים על שלט. <strong style="color:#E8BBA0">איסוף עצמי מהמחסן</strong> או <strong style="color:#E8BBA0">משלוח עד הבית</strong> — אתם בוחרים.
-        </p>
-        <!-- HERO CTAs -->
-        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:30px">
-          <a href="#shop" data-act="nav" data-nav="shop" class="hbtn" style="display:inline-flex;align-items:center;gap:9px;background:#B5683C;color:#fff;font-family:'Assistant',sans-serif;font-weight:800;font-size:16px;padding:15px 30px;border-radius:14px;text-decoration:none;box-shadow:0 12px 28px rgba(181,104,60,0.42)"><i data-lucide="shopping-cart" class="ic-lg"></i> לצפייה בכל המוצרים</a>
-          <a href="#contact" data-act="nav" data-nav="contact" class="hbtn" style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.34);color:#fff;font-family:'Assistant',sans-serif;font-weight:800;font-size:16px;padding:15px 28px;border-radius:14px;text-decoration:none"><i data-lucide="phone" class="ic-lg"></i> צור קשר</a>
+        <p style="font-size:clamp(16px,2vw,20px);font-weight:500;color:rgba(233,242,236,0.92);line-height:1.6;margin:24px 0 0;max-width:44ch">אדמה, קומפוסט, טוף ומוצרי גינון איכותיים — בתפזורת, ישירות עד בית הלקוח, ובמחיר הוגן.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:13px;margin-top:32px">
+          <a href="#shop" data-act="nav" data-nav="shop" class="hbtn" style="display:inline-flex;align-items:center;gap:9px;background:#B5683C;color:#fff;font-family:'Assistant',sans-serif;font-weight:800;font-size:16px;padding:16px 32px;border-radius:14px;text-decoration:none;box-shadow:0 14px 34px rgba(181,104,60,0.5)"><i data-lucide="shopping-cart" class="ic-lg"></i> לצפייה בכל המוצרים</a>
+          <a href="#contact" data-act="nav" data-nav="contact" class="hbtn" style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.38);color:#fff;font-family:'Assistant',sans-serif;font-weight:800;font-size:16px;padding:16px 30px;border-radius:14px;text-decoration:none;backdrop-filter:blur(6px)"><i data-lucide="phone" class="ic-lg"></i> דברו איתנו</a>
         </div>
       </div>
     </div>
   </section>
 
   <!-- TRUST STRIP -->
-  <section data-page="home" style="max-width:1200px;margin:20px auto 0;padding:0 14px">
+  <section data-page="home" class="reveal" style="max-width:1200px;margin:20px auto 0;padding:0 14px">
     <div style="background:#fff;border:1px solid rgba(20,68,47,0.07);border-radius:18px;box-shadow:0 4px 18px rgba(20,68,47,0.05);padding:6px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
       <div style="display:flex;align-items:center;justify-content:center;gap:11px;padding:14px 12px;text-align:right">
         <span style="display:inline-flex;width:42px;height:42px;border-radius:12px;background:#F2E2D5;color:#9E5429;align-items:center;justify-content:center"><i data-lucide="truck" class="ic-lg"></i></span>
@@ -249,7 +248,7 @@
   </section>
 
   <!-- ===== VIDEOS (מוצרים בתפזורת) ===== -->
-  <section data-page="home" style="max-width:1200px;margin:22px auto 0;padding:0 14px">
+  <section data-page="home" class="reveal" style="max-width:1200px;margin:22px auto 0;padding:0 14px">
     <div style="text-align:center;margin-bottom:18px">
       <div style="display:inline-flex;align-items:center;gap:7px;background:#F2E2D5;color:#9E5429;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:800"><i data-lucide="truck"></i> אספקה עד בית הלקוח</div>
       <h2 style="font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:clamp(22px,4.5vw,32px);color:#14442F;margin:12px 0 0;line-height:1.15">אדמת חמרה · רסק גזם · קומפוסט אורגני<br>במשאית, ישירות עד אליכם</h2>
@@ -368,7 +367,7 @@
   </section>
 
   <!-- ===== WHY US ===== -->
-  <section data-page="home" style="max-width:1200px;margin:0 auto;padding:30px 20px 12px">
+  <section data-page="home" class="reveal" style="max-width:1200px;margin:0 auto;padding:30px 20px 12px">
     <div style="text-align:center;margin-bottom:24px">
       <div style="display:inline-flex;align-items:center;gap:7px;background:#E7F0E9;color:#1E6B47;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:800"><i data-lucide="sparkles"></i> למה אנחנו</div>
       <h2 style="font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:clamp(22px,4.5vw,32px);color:#14442F;margin:12px 0 0">היתרונות שאתם מקבלים</h2>
@@ -398,7 +397,7 @@
   </section>
 
   <!-- ===== TESTIMONIALS (dynamic) — full-bleed green band ===== -->
-  <section data-page="home" class="grain" style="background:linear-gradient(160deg,#1C5A3C 0%,#14442F 55%,#0E3322 100%);margin:48px 0;padding:clamp(48px,7vw,80px) 0">
+  <section data-page="home" class="grain reveal" style="background:linear-gradient(160deg,#1C5A3C 0%,#14442F 55%,#0E3322 100%);margin:48px 0;padding:clamp(48px,7vw,80px) 0">
     <div style="max-width:1200px;margin:0 auto;padding:0 20px">
       <div style="text-align:center;margin-bottom:26px">
         <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.2);color:#EAF6EE;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:800"><i data-lucide="message-circle"></i> לקוחות מספרים</div>
@@ -848,6 +847,12 @@ const state = {
 };
 
 /* ===== ניווט בין עמודים ===== */
+// חשיפה בגלילה (scroll reveal)
+const _revObs = ('IntersectionObserver' in window) ? new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); _revObs.unobserve(e.target); } });
+}, { threshold:0.12, rootMargin:'0px 0px -7% 0px' }) : null;
+function initReveal(){ if(!_revObs) return; document.querySelectorAll('.reveal:not(.in)').forEach(el=>{ if(el.offsetParent!==null || el.getBoundingClientRect().height>0) _revObs.observe(el); }); }
+
 function showPage(page){
   const pages = ['home','shop','about','articles','contact'];
   page = pages.includes(page) ? page : 'home';
@@ -857,6 +862,7 @@ function showPage(page){
   document.querySelectorAll('[data-page="'+page+'"]').forEach(el => { el.classList.remove('pagefade'); void el.offsetWidth; el.classList.add('pagefade'); });
   try{ window.scrollTo(0,0); }catch(e){}
   try{ if((location.hash||'').replace('#','') !== page) history.replaceState(null,'', page==='home' ? (location.pathname+location.search) : ('#'+page)); }catch(e){}
+  requestAnimationFrame(initReveal);
 }
 
 /* ===== עזרים ===== */
