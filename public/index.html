@@ -199,18 +199,10 @@
         <p style="font-size:clamp(16px,2.4vw,19px);font-weight:500;color:rgba(233,242,236,0.88);line-height:1.55;margin:16px 0 0;max-width:48ch">
           מוצרי גינון איכותיים לצד עולם שלם של מכוניות וצעצועים על שלט. <strong style="color:#E8BBA0">איסוף עצמי מהמחסן</strong> או <strong style="color:#E8BBA0">משלוח עד הבית</strong> — אתם בוחרים.
         </p>
-        <!-- BIG TABS -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:28px;max-width:660px">
-          <button id="tabGarden" data-act="pick-garden" class="tab" style="position:relative;border-radius:20px;padding:20px 16px;cursor:pointer;font-family:'Frank Ruhl Libre',serif;text-align:right;transition:transform .2s ease,box-shadow .2s ease,background .2s ease">
-            <div style="font-size:30px;line-height:1">🌿</div>
-            <div style="font-weight:800;font-size:19px;margin-top:8px">לעולם הגינון</div>
-            <div style="font-size:12.5px;font-weight:500;opacity:0.72;font-family:'Assistant'">אדמה · צמחים · השקיה · כלים</div>
-          </button>
-          <button id="tabRc" data-act="pick-rc" class="tab" style="position:relative;border-radius:20px;padding:20px 16px;cursor:pointer;font-family:'Frank Ruhl Libre',serif;text-align:right;transition:transform .2s ease,box-shadow .2s ease,background .2s ease">
-            <div style="font-size:30px;line-height:1">🏎️</div>
-            <div style="font-weight:800;font-size:19px;margin-top:8px">עולם ה‑RC</div>
-            <div style="font-size:12.5px;font-weight:500;opacity:0.72;font-family:'Assistant'">מכוניות · באגי · דריפט · חלקים</div>
-          </button>
+        <!-- HERO CTAs -->
+        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:30px">
+          <a href="#shop" data-act="nav" data-nav="shop" class="hbtn" style="display:inline-flex;align-items:center;gap:9px;background:#B5683C;color:#fff;font-family:'Assistant',sans-serif;font-weight:800;font-size:16px;padding:15px 30px;border-radius:14px;text-decoration:none;box-shadow:0 12px 28px rgba(181,104,60,0.42)">🛒 לצפייה בכל המוצרים</a>
+          <a href="#contact" data-act="nav" data-nav="contact" class="hbtn" style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.34);color:#fff;font-family:'Assistant',sans-serif;font-weight:800;font-size:16px;padding:15px 28px;border-radius:14px;text-decoration:none">📞 צור קשר</a>
         </div>
       </div>
     </div>
@@ -1120,18 +1112,6 @@ function update(){
   document.getElementById('hdrCount').textContent   = count;
   document.getElementById('drawerCount').textContent = count;
   document.getElementById('fabCount').textContent   = count;
-
-  // hero tabs
-  const tg = document.getElementById('tabGarden');
-  tg.style.border = '2px solid ' + (garden ? '#FFFFFF' : 'rgba(255,255,255,0.22)');
-  tg.style.background = garden ? '#FFFFFF' : 'rgba(255,255,255,0.10)';
-  tg.style.color = garden ? '#14442F' : '#EAF6EE';
-  tg.style.boxShadow = garden ? '0 16px 32px rgba(0,0,0,0.3)' : 'none';
-  const tr = document.getElementById('tabRc');
-  tr.style.border = '2px solid ' + (!garden ? '#E0966A' : 'rgba(255,255,255,0.22)');
-  tr.style.background = !garden ? '#B5683C' : 'rgba(255,255,255,0.10)';
-  tr.style.color = !garden ? '#fff' : '#EAF6EE';
-  tr.style.boxShadow = !garden ? '0 16px 32px rgba(181,104,60,0.42)' : 'none';
 
   document.getElementById('sectionTitle').textContent = garden ? '🌿 עולם הגינון' : '🏎️ עולם ה‑RC';
 
