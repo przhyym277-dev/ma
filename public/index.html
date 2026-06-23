@@ -1184,33 +1184,40 @@ const cartTotal = () => lines().reduce((s,i)=>s+i.line,0);
    • RC/צעצועים → דמי משלוח בדואר ₪60, אספקה עד 10 ימי עסקים            */
 const GARDEN_MIN = 2000, GARDEN_FEE = 250, RC_FEE = 60;
 const isPkgCat = c => /חביל/.test(c || '');
-function computeShipping(){
+function pkgThreshold(pkgs){
+  let t = 80;
+  pkgs.forEach(i => { const n=i.name||''; let z=80;
+    if(/גזם|רסק/.test(n)) z=45; else if(/קומפוסט/.test(n) && /3/.test(n)) z=80; else if(/קומפוסט/.test(n) && /2/.test(n)) z=60;
+    t = Math.min(t, z); });
+  return t;
+}
+/* ===== החלטת משלוח לפי תוכן הסל + אזור (זמן נסיעה) =====
+   גינון:  <₪2,000 → איסוף בלבד | עד 45 דק' → חינם | 45–80 דק' + ₪3,000+ → ₪250 | מעל 80 דק' → אין משלוח
+   חבילות: משלוח חינם בתוך אזור החבילה (אחרת אין משלוח)
+   RC:     ₪60 בדואר (ללא תלות באזור)                                              */
+function shipDecision(){
   const ls = lines(); const subtotal = cartTotal();
-  if(!ls.length) return { empty:true, fee:0, deliveryAllowed:true, minOk:true, kind:'none' };
-  const allFree  = ls.every(i => isPkgCat(i.category));
+  const min = state.shipCheck ? state.shipCheck.minutes : null;
+  if(!ls.length) return { kind:'none', fee:0, status:'ok' };
+  const pkgs = ls.filter(i => isPkgCat(i.category));
+  if(pkgs.length === ls.length){                         // סל חבילות בלבד
+    const thr = pkgThreshold(pkgs);
+    if(min==null) return { kind:'pkg', status:'need-address', thr };
+    if(min<=thr)  return { kind:'pkg', status:'ok', fee:0, free:true };
+    return { kind:'pkg', status:'too-far', thr };
+  }
   const hasGarden = ls.some(i => i.world==='garden' && !isPkgCat(i.category));
   const hasRc     = ls.some(i => i.world==='rc' && !isPkgCat(i.category));
-  if(allFree)   return { fee:0, free:true, deliveryAllowed:true, minOk:true, kind:'pkg' };
-  if(hasGarden){ const minOk = subtotal >= GARDEN_MIN; return { fee:GARDEN_FEE, free:false, deliveryAllowed:minOk, minOk, minRequired:GARDEN_MIN, kind:'garden' }; }
-  if(hasRc)     return { fee:RC_FEE, free:false, deliveryAllowed:true, minOk:true, kind:'rc' };
-  return { fee:0, free:false, deliveryAllowed:true, minOk:true, kind:'none' };
-}
-
-/* סף זמן נסיעה (דקות) למשלוח חינם לפי תוכן הסל — null אם לא רלוונטי */
-function freeShipThreshold(){
-  const ls = lines(); const subtotal = cartTotal();
-  const pkgs = ls.filter(i => isPkgCat(i.category));
-  if(ls.length && pkgs.length===ls.length){      // סל חבילות בלבד — אזור לפי החבילה המחמירה
-    let t = 80;
-    pkgs.forEach(i => { const n=i.name||''; let z=80;
-      if(/גזם|רסק/.test(n)) z=45;
-      else if(/קומפוסט/.test(n) && /3/.test(n)) z=80;
-      else if(/קומפוסט/.test(n) && /2/.test(n)) z=60;
-      t = Math.min(t, z); });
-    return t;
+  if(hasGarden){
+    if(subtotal < GARDEN_MIN) return { kind:'garden', status:'below-min' };
+    if(min==null)             return { kind:'garden', status:'need-address' };
+    if(min<=45)               return { kind:'garden', status:'ok', fee:0, free:true };
+    if(min<=80){ if(subtotal>=3000) return { kind:'garden', status:'ok', fee:GARDEN_FEE, free:false };
+                 return { kind:'garden', status:'need-3000' }; }
+    return { kind:'garden', status:'too-far' };
   }
-  if(ls.some(i => i.world==='garden' && !isPkgCat(i.category))){ if(subtotal>=3000) return 80; if(subtotal>=2000) return 45; }
-  return null;
+  if(hasRc) return { kind:'rc', status:'ok', fee:RC_FEE, free:false };
+  return { kind:'none', status:'ok', fee:0 };
 }
 
 /* בדיקת זמן נסיעה מול השרת (OpenRouteService) */
@@ -1218,14 +1225,12 @@ async function checkShipping(){
   const addr = (document.getElementById('shipAddr').value||'').trim();
   const out = document.getElementById('shipResult');
   if(!addr){ out.innerHTML = '<span style="color:#9E4A1E">נא להזין כתובת או עיר</span>'; return; }
-  const thr = freeShipThreshold();
   out.innerHTML = '<span style="color:#6B7A70">בודק מרחק... ⏳</span>';
   try{
     const r = await fetch(API+'/api/shipping/check',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({address:addr}) });
     const d = await r.json();
     if(!d.ok){ state.shipCheck=null; out.innerHTML = '<span style="color:#9E4A1E">⚠️ '+(d.error||'לא הצלחנו לבדוק')+'</span>'; update(); return; }
-    const free = (thr!=null) && (d.minutes <= thr);
-    state.shipCheck = { address:addr, label:d.label, minutes:d.minutes, km:d.km, free, threshold:thr };
+    state.shipCheck = { address:addr, label:d.label, minutes:d.minutes, km:d.km };
     update();
   }catch(e){ state.shipCheck=null; out.innerHTML = '<span style="color:#9E4A1E">⚠️ שגיאה — נאשר בוואטסאפ</span>'; }
 }
@@ -1243,31 +1248,31 @@ function removeItem(id){ delete state.cart[id]; update(); }
 function checkout(){
   const ls = lines(); if(!ls.length) return;
   const subtotal = cartTotal();
-  const ship = computeShipping();
+  const dec = shipDecision();
+  const chk = state.shipCheck;
   let isDelivery = state.delivery==='delivery';
-  // גינון מתחת למינימום → לא ניתן משלוח, מעבר לאיסוף עצמי + התראה
-  if (isDelivery && ship.kind==='garden' && !ship.minOk){
-    showToast('למשלוח נדרשת הזמנה מעל ₪'+nf(GARDEN_MIN)+' — ההזמנה תישלח כאיסוף עצמי');
+  // משלוח לא אפשרי → טיפול לפי סיבה
+  if (isDelivery && dec.status!=='ok'){
+    if (dec.status==='need-address'){ showToast('הזינו כתובת ולחצו "בדיקה" כדי לחשב את המשלוח'); document.getElementById('shipAddr').focus(); return; }
+    if (dec.status==='below-min') showToast('למשלוח נדרשת הזמנה מעל ₪'+nf(GARDEN_MIN)+' — תישלח כאיסוף עצמי');
+    else if (dec.status==='need-3000') showToast('אזור זה זמין למשלוח רק מעל ₪3,000 — תישלח כאיסוף עצמי');
+    else showToast('האזור מחוץ לטווח המשלוח — ההזמנה תישלח כאיסוף עצמי');
     state.delivery='pickup'; isDelivery=false; update();
   }
-  const thr = freeShipThreshold();
-  const chk = state.shipCheck;
-  const inZone = !!(chk && thr!=null && chk.minutes <= thr);
-  let fee = isDelivery ? ship.fee : 0;
-  if (isDelivery && ship.kind==='garden' && inZone) fee = 0;
+  const fee = isDelivery ? (dec.fee || 0) : 0;
   const grand = subtotal + fee;
   let m = '🛒 *הזמנה חדשה — צרפתי שיווק*\n\n';
   ls.forEach(it => { m += '▪️ '+it.name+'\n   '+it.qty+' × ₪'+nf(it.price)+' = *₪'+nf(it.line)+'*\n'; });
   m += '\n———————————\n';
   if (isDelivery){
     m += 'סכום מוצרים: ₪'+nf(subtotal)+'\n';
-    if (ship.free || (ship.kind==='garden' && inZone)) m += '🎁 משלוח: חינם'+(inZone?' (בטווח האזור)':'')+'\n';
-    else if (ship.kind==='rc') m += '📦 דמי משלוח בדואר: ₪'+nf(fee)+' (עד 10 ימי עסקים)\n';
+    if (dec.free) m += '🎁 משלוח: חינם\n';
+    else if (dec.kind==='rc') m += '📦 דמי משלוח בדואר: ₪'+nf(fee)+' (עד 10 ימי עסקים)\n';
     else m += '🚚 דמי משלוח עד הבית: ₪'+nf(fee)+'\n';
   }
   m += '💰 *סה״כ לתשלום: ₪'+nf(grand)+'*\n';
   m += isDelivery ? '🚚 משלוח עד הבית\n' : '🏬 איסוף עצמי מהמחסן\n';
-  if (isDelivery && chk) m += '📍 כתובת שנבדקה: '+chk.label+' (כ‑'+chk.minutes+' דק׳ נסיעה — '+(inZone?'בטווח משלוח חינם':'מחוץ לטווח, לאישור')+')\n';
+  if (isDelivery && chk) m += '📍 כתובת: '+chk.label+' (כ‑'+chk.minutes+' דק׳ נסיעה)\n';
   m += '\nשם מלא: \nכתובת / איסוף: \nטלפון: ';
   window.open('https://wa.me/'+WA_NUMBER+'?text='+encodeURIComponent(m), '_blank');
 }
@@ -1568,13 +1573,10 @@ function update(){
   const garden = state.cat === 'garden';
   const total = cartTotal(), count = cartCount(), hasItems = count>0;
   const isDelivery = state.delivery === 'delivery';
-  const ship = computeShipping();
-  const effDelivery = isDelivery && ship.deliveryAllowed;     // משלוח בפועל (אם מותר)
-  const thr = freeShipThreshold();                            // סף דקות למשלוח חינם
+  const dec = shipDecision();                                 // החלטת המשלוח לפי הסל + אזור
   const chk = state.shipCheck;
-  const inZone = !!(chk && thr!=null && chk.minutes <= thr);  // בטווח משלוח חינם
-  let fee = effDelivery ? ship.fee : 0;
-  if (effDelivery && ship.kind==='garden' && inZone) fee = 0; // גינון באזור → חינם
+  const canDeliver = dec.status === 'ok';                     // משלוח אפשרי בפועל
+  const fee = (isDelivery && canDeliver) ? (dec.fee || 0) : 0;
   const grand = total + fee;
 
   // תצוגות
@@ -1631,30 +1633,31 @@ function update(){
   const feeLabel = document.getElementById('feeLabel');
   const feeAmount = document.getElementById('feeAmount');
   const note = document.getElementById('shipNote');
-  const gardenFree = ship.kind==='garden' && inZone;
-  if (isDelivery && effDelivery && ship.kind!=='none'){
+  if (isDelivery && canDeliver && dec.kind!=='none'){
     feeRow.style.display = 'flex';
-    if (ship.free || gardenFree){ feeLabel.innerHTML = '<i data-lucide="truck" style="width:15px;height:15px;color:#1E8E4E"></i> משלוח'; feeAmount.textContent = 'חינם'; feeAmount.style.color='#1E8E4E'; }
-    else if (ship.kind==='rc'){ feeLabel.innerHTML = '<i data-lucide="truck" style="width:15px;height:15px;color:#9E5429"></i> דמי משלוח בדואר'; feeAmount.textContent = '₪'+nf(ship.fee); feeAmount.style.color='#14442F'; }
-    else { feeLabel.innerHTML = '<i data-lucide="truck" style="width:15px;height:15px;color:#9E5429"></i> דמי משלוח עד הבית'; feeAmount.textContent = '₪'+nf(ship.fee); feeAmount.style.color='#14442F'; }
+    if (dec.free){ feeLabel.innerHTML = '<i data-lucide="truck" style="width:15px;height:15px;color:#1E8E4E"></i> משלוח'; feeAmount.textContent='חינם'; feeAmount.style.color='#1E8E4E'; }
+    else if (dec.kind==='rc'){ feeLabel.innerHTML = '<i data-lucide="truck" style="width:15px;height:15px;color:#9E5429"></i> דמי משלוח בדואר'; feeAmount.textContent='₪'+nf(dec.fee); feeAmount.style.color='#14442F'; }
+    else { feeLabel.innerHTML = '<i data-lucide="truck" style="width:15px;height:15px;color:#9E5429"></i> דמי משלוח עד הבית'; feeAmount.textContent='₪'+nf(dec.fee); feeAmount.style.color='#14442F'; }
   } else { feeRow.style.display = 'none'; }
 
-  // אזהרת מינימום / הערת משלוח כללית
-  if (isDelivery && ship.kind==='garden' && !ship.minOk){
+  // הערות / אזהרות
+  if (isDelivery && dec.kind==='garden' && dec.status==='below-min'){
     note.style.display='block'; note.style.background='#FBEDE3'; note.style.color='#9E4A1E';
     note.innerHTML = '⚠️ למשלוח נדרשת הזמנה מעל ₪'+nf(GARDEN_MIN)+'. בהזמנה קטנה יותר — איסוף עצמי בלבד.';
-  } else if (isDelivery && effDelivery && ship.kind==='rc'){
+  } else if (isDelivery && canDeliver && dec.kind==='rc'){
     note.style.display='block'; note.style.background='#EAF2EB'; note.style.color='#1E6B47';
     note.innerHTML = '📦 משלוח בדואר — אספקה עד 10 ימי עסקים.';
   } else { note.style.display='none'; }
 
-  // בדיקת כתובת (משלוח חינם לפי אזור) — לגינון מעל מינימום ולחבילות
-  const showAddr = isDelivery && effDelivery && (thr!=null);
+  // בדיקת כתובת — לגינון מעל מינימום ולחבילות
+  const showAddr = isDelivery && ((dec.kind==='garden' && total>=GARDEN_MIN) || dec.kind==='pkg');
   document.getElementById('addrCheck').style.display = showAddr ? 'block' : 'none';
   if (showAddr && chk){
-    const out = document.getElementById('shipResult');
-    if (inZone) out.innerHTML = '<span style="color:#1E8E4E">✅ '+esc(chk.label)+' · כ‑'+chk.minutes+' דק׳ נסיעה — אתם בטווח משלוח חינם! 🎉</span>';
-    else out.innerHTML = '<span style="color:#9E4A1E">📍 '+esc(chk.label)+' · כ‑'+chk.minutes+' דק׳ (מעבר ל‑'+thr+' דק׳) — '+(ship.kind==='garden'?'דמי משלוח ₪'+GARDEN_FEE+', או צרו קשר לתיאום.':'מחוץ לאזור החלוקה — צרו קשר לתיאום.')+'</span>';
+    const out = document.getElementById('shipResult'); const m = chk.minutes;
+    if (dec.status==='ok' && dec.free) out.innerHTML = '<span style="color:#1E8E4E">✅ '+esc(chk.label)+' · כ‑'+m+' דק׳ נסיעה — משלוח חינם! 🎉</span>';
+    else if (dec.status==='ok') out.innerHTML = '<span style="color:#14442F">✅ '+esc(chk.label)+' · כ‑'+m+' דק׳ — משלוח עד הבית בעלות ₪'+nf(dec.fee)+'</span>';
+    else if (dec.status==='need-3000') out.innerHTML = '<span style="color:#9E4A1E">📍 '+esc(chk.label)+' · כ‑'+m+' דק׳ — אזור זה זמין למשלוח רק בהזמנה מעל ₪3,000. הוסיפו לסל או בחרו איסוף עצמי.</span>';
+    else if (dec.status==='too-far') out.innerHTML = '<span style="color:#9E4A1E">📍 '+esc(chk.label)+' · כ‑'+m+' דק׳ — מחוץ לאזור החלוקה (עד 1:20 שעה). בחרו איסוף עצמי או צרו קשר.</span>';
   }
 
   // checkout button
