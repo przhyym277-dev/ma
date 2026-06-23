@@ -459,6 +459,20 @@ app.post('/api/shipping/check', async (req, res) => {
 });
 
 /* ============================================================
+ *  גולשים מחוברים (online presence) — אמיתי + בסיס עדין
+ * ============================================================ */
+const onlineMap = new Map(); // id -> lastSeen(ms)
+app.get('/api/online', (req, res) => {
+  const id = String(req.query.id || '').slice(0, 40) || ('x' + Math.random());
+  const now = Date.now();
+  onlineMap.set(id, now);
+  for (const [k, t] of onlineMap) if (now - t > 40000) onlineMap.delete(k); // ניקוי לא-פעילים (40 שנ')
+  const real = onlineMap.size;
+  const base = 6 + (Math.floor(now / 60000) % 8); // 6–13, משתנה בהדרגה
+  res.json({ ok: true, online: base + real });
+});
+
+/* ============================================================
  *  צור קשר — פניות מהאתר (ציבורי לשליחה, מנהל לצפייה/מחיקה)
  * ============================================================ */
 const CONTACT_HEADERS = ['id', 'name', 'phone', 'message', 'createdAt'];
