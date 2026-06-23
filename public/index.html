@@ -114,7 +114,7 @@
   html.a11y-readable *{font-family:Arial,'Assistant',sans-serif !important;letter-spacing:.4px;line-height:1.7 !important}
   @media (prefers-reduced-motion:reduce){*{animation:none !important;transition-duration:.001ms !important}}
   /* כפתור + פאנל נגישות */
-  .a11y-fab{position:fixed;bottom:22px;right:22px;z-index:72;width:56px;height:56px;border:none;border-radius:50%;background:#1559B0;color:#fff;font-size:28px;cursor:pointer;box-shadow:0 10px 26px rgba(21,89,176,0.45);display:flex;align-items:center;justify-content:center;transition:transform .2s ease}
+  .a11y-fab{position:fixed;bottom:22px;right:22px;z-index:72;width:56px;height:56px;border:none;border-radius:50%;background:#1559B0;color:#fff;font-size:28px;cursor:pointer;box-shadow:0 10px 26px rgba(21,89,176,0.45);display:none;align-items:center;justify-content:center;transition:transform .2s ease}
   .a11y-fab:hover{transform:scale(1.08)}
   .a11y-panel{position:fixed;bottom:88px;right:22px;z-index:73;width:290px;max-width:calc(100vw - 44px);background:#fff;border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,0.28);padding:16px;display:none;border:1px solid rgba(0,0,0,0.08);max-height:calc(100vh - 120px);overflow-y:auto}
   .a11y-panel.open{display:block}
@@ -2011,6 +2011,37 @@ window.addEventListener('load', drawIcons);
 
   apply();
 })();
+</script>
+<!-- Accessibility Code for "zarfatimarketing.info" (נגיש בקליק / EqualWeb) -->
+<script>
+window.interdeal = {
+    get sitekey (){ return "766b78ae83ee01d14b45b400bf293d82"} ,
+    get domains(){
+        return {
+            "js": "https://cdn.nagich.co.il/",
+            "acc": "https://access.nagich.co.il/"
+        }
+    },
+    "Position": "left",
+    "Menulang": "HE",
+    "draggable": true,
+    "btnStyle": {
+        "vPosition": [ "80%", "80%" ],
+        "margin": [ "0", "0" ],
+        "scale": [ "0.5", "0.5" ],
+        "color": { "main": "#14442f", "second": "#ffffff" },
+        "icon": { "outline": true, "outlineColor": "#ffffff", "type": 11, "shape": "circle" }
+    },
+};
+(function(doc, head, body){
+    var coreCall             = doc.createElement('script');
+    coreCall.src             = interdeal.domains.js + 'core/5.2.5/accessibility.js';
+    coreCall.defer           = true;
+    coreCall.integrity       = 'sha512-Zamp30ps601kXvZTcIYv1sytUc090mrEJD9rLuoWzEGqmB6t0XdLRgC/g5TznUleEBIMm6T3c6Baf/ExIYh/Hw==';
+    coreCall.crossOrigin     = 'anonymous';
+    coreCall.setAttribute('data-cfasync', true );
+    body? body.appendChild(coreCall) : head.appendChild(coreCall);
+})(document, document.head, document.body);
 </script>
 </body>
 </html>
