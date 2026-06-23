@@ -198,6 +198,7 @@
         <a href="#shop" data-act="nav" data-nav="shop">מוצרים</a>
         <a href="#articles" data-act="nav" data-nav="articles">מאמרים</a>
         <a href="#about" data-act="nav" data-nav="about">אודות</a>
+        <a href="#gallery" data-act="nav" data-nav="gallery">גלריה</a>
         <a href="#contact" data-act="nav" data-nav="contact">צור קשר</a>
       </nav>
       <div style="display:flex;align-items:center;gap:8px">
@@ -465,6 +466,16 @@
       <p style="font-size:clamp(14px,2.2vw,16px);color:#6B7A70;font-weight:500;margin:0">מדריכים מקצועיים שיעזרו לכם להפיק את המקסימום מהגינה</p>
     </div>
     <div id="articles" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:16px"></div>
+  </section>
+
+  <!-- ===== GALLERY ===== -->
+  <section data-page="gallery" style="max-width:1200px;margin:10px auto 0;padding:30px 20px 44px;display:none">
+    <div style="text-align:center;margin-bottom:26px">
+      <div style="display:inline-flex;align-items:center;gap:7px;background:#E7F0E9;color:#1E6B47;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:800"><i data-lucide="image"></i> גלריה</div>
+      <h2 style="font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:clamp(27px,5.2vw,43px);letter-spacing:-0.8px;color:#14442F;margin:12px 0 6px">קצת מאיתנו</h2>
+      <p style="font-size:15px;color:#4A574E;font-weight:500;max-width:48ch;margin:0 auto;line-height:1.55">הכירו את צרפתי שיווק מקרוב — תמונות מהמחסן, מהמוצרים ומהשטח, לאורך השנים.</p>
+    </div>
+    <div id="galleryGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:12px"></div>
   </section>
 
   <!-- ===== CONTACT ===== -->
@@ -880,6 +891,19 @@
         </div>
       </div>
 
+      <!-- gallery manager -->
+      <div style="background:#fff;border-radius:22px;box-shadow:0 8px 30px rgba(20,68,47,0.08);overflow:hidden;margin-top:22px">
+        <div style="padding:20px 22px 16px;border-bottom:1px solid #EFEBE0;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <div>
+            <h2 style="font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:20px;margin:0;color:#14442F;display:flex;align-items:center;gap:8px"><i data-lucide="image"></i> ניהול גלריה</h2>
+            <p style="font-size:13px;color:#6B7A70;margin:5px 0 0;font-weight:500">תמונות שתעלו יופיעו בעמוד "גלריה" באתר</p>
+          </div>
+          <input id="galleryFileInput" type="file" accept="image/*" multiple aria-label="העלאת תמונות לגלריה" style="display:none"/>
+          <button data-act="add-gallery" style="display:inline-flex;align-items:center;gap:6px;border:none;background:#14442F;color:#fff;font-weight:800;font-size:14px;padding:11px 18px;border-radius:12px;cursor:pointer"><i data-lucide="upload"></i> העלאת תמונות</button>
+        </div>
+        <div id="galleryAdminList" style="display:flex;flex-wrap:wrap;gap:10px;padding:18px 22px"></div>
+      </div>
+
       <!-- admin product list -->
       <div style="background:#fff;border-radius:22px;box-shadow:0 8px 30px rgba(20,68,47,0.08);overflow:hidden;margin-top:22px">
         <div style="padding:20px 22px 16px;border-bottom:1px solid #EFEBE0;display:flex;align-items:center;justify-content:space-between;gap:10px">
@@ -998,6 +1022,7 @@
     <a href="#shop" data-act="nav" data-nav="shop"><i data-lucide="shopping-bag"></i> מוצרים</a>
     <a href="#articles" data-act="nav" data-nav="articles"><i data-lucide="book-open"></i> מאמרים</a>
     <a href="#about" data-act="nav" data-nav="about"><i data-lucide="info"></i> אודות</a>
+    <a href="#gallery" data-act="nav" data-nav="gallery"><i data-lucide="image"></i> גלריה</a>
     <a href="#contact" data-act="nav" data-nav="contact"><i data-lucide="phone"></i> צור קשר</a>
     <button class="mm-link" data-act="go-admin" style="margin-top:auto;border-top:1px solid rgba(20,68,47,0.12);color:#6B7A70"><i data-lucide="settings"></i> כניסת ניהול</button>
   </aside>
@@ -1038,6 +1063,7 @@ const state = {
   form:{ name:'', world:'garden', price:'', desc:'', status:'active', cat:'', files:[], previews:[] },
   gallery:{ images:[], idx:0 },
   categories:[],
+  galleryPhotos:[],
   saving:false, editingId:null, limit:60,
   reviews:[], role:'', rvRating:5, contacts:[], activeCat:'all', page:'home',
 };
@@ -1062,7 +1088,7 @@ const _countObs = ('IntersectionObserver' in window) ? new IntersectionObserver(
 function initCount(){ if(!_countObs) return; document.querySelectorAll('[data-count]:not([data-counted])').forEach(el=>{ if(el.offsetParent!==null || el.getBoundingClientRect().height>0) _countObs.observe(el); }); }
 
 function showPage(page){
-  const pages = ['home','shop','about','articles','contact','terms','privacy','returns','usage','accessibility'];
+  const pages = ['home','shop','about','articles','contact','gallery','terms','privacy','returns','usage','accessibility'];
   page = pages.includes(page) ? page : 'home';
   state.page = page;
   document.querySelectorAll('[data-page]').forEach(el => { el.style.display = (el.getAttribute('data-page')===page) ? '' : 'none'; });
@@ -1257,6 +1283,44 @@ function galNav(d){
 function closeGallery(){
   const ov = document.getElementById('galleryModal');
   ov.style.opacity='0'; setTimeout(()=>{ ov.style.display='none'; }, 200);
+}
+
+/* ===== גלריית תמונות העסק (ניהול + תצוגה) ===== */
+async function loadGalleryPhotos(){
+  try{ const r=await fetch(API+'/api/gallery?t='+Date.now(),{cache:'no-store'}); const d=await r.json(); if(d.ok) state.galleryPhotos=d.images||[]; }
+  catch(e){ console.error(e); }
+  renderGalleryPublic(); renderGalleryAdmin();
+}
+function renderGalleryPublic(){
+  const el=document.getElementById('galleryGrid'); if(!el) return;
+  if(!state.galleryPhotos.length){ el.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#8A968D;font-weight:600;padding:30px">תמונות יתווספו בקרוב 📸</div>'; return; }
+  el.innerHTML=state.galleryPhotos.map((p,i)=>`<button data-act="open-gallery-photo" data-idx="${i}" class="cat-tile" style="position:relative;border:none;cursor:pointer;border-radius:14px;overflow:hidden;aspect-ratio:1/1;background:#EAE6DB;padding:0"><div class="cat-tile-img" style="position:absolute;inset:0;background-image:url('${optImg(p.url)}');background-size:cover;background-position:center"></div></button>`).join('');
+}
+function openPhotoGallery(idx){
+  const imgs=state.galleryPhotos.map(p=>p.url); if(!imgs.length) return;
+  state.gallery={ images: imgs, idx: Number(idx)||0 };
+  paintGallery();
+  const ov=document.getElementById('galleryModal'); ov.style.display='flex'; requestAnimationFrame(()=>{ ov.style.opacity='1'; });
+}
+function renderGalleryAdmin(){
+  const el=document.getElementById('galleryAdminList'); if(!el) return;
+  if(!state.galleryPhotos.length){ el.innerHTML='<div style="color:#8A968D;font-weight:600;font-size:13.5px">אין תמונות בגלריה — העלו את הראשונות בלחיצה על "העלאת תמונות" ☝️</div>'; return; }
+  el.innerHTML=state.galleryPhotos.map(p=>`<div style="position:relative;width:96px;height:96px;border-radius:12px;background-image:url('${optImg(p.url)}');background-size:cover;background-position:center;border:1px solid #DCD7C9"><button data-act="del-gallery" data-id="${esc(p.id)}" aria-label="מחיקת תמונה" style="position:absolute;top:-7px;left:-7px;width:22px;height:22px;border:none;border-radius:50%;background:#C8372B;color:#fff;font-size:11px;font-weight:800;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center">✕</button></div>`).join('');
+}
+async function addGalleryPhotos(files){
+  if(!files || !files.length) return;
+  const fd=new FormData(); Array.from(files).slice(0,12).forEach(f=>fd.append('images',f));
+  showToast('מעלה תמונות לגלריה...');
+  const res=await adminFetch(API+'/api/gallery',{method:'POST',body:fd});
+  if(!res) return; const d=await res.json();
+  if(d.ok){ showToast('התמונות נוספו לגלריה ✓'); loadGalleryPhotos(); }
+  else showToast('⚠️ '+(d.error||'העלאה נכשלה'));
+}
+async function deleteGalleryPhoto(id){
+  const res=await adminFetch(API+'/api/gallery/'+encodeURIComponent(id),{method:'DELETE'});
+  if(!res) return; const d=await res.json();
+  if(d.ok){ state.galleryPhotos=state.galleryPhotos.filter(p=>p.id!==id); showToast('התמונה נמחקה'); renderGalleryPublic(); renderGalleryAdmin(); }
+  else showToast('⚠️ '+(d.error||'נכשל'));
 }
 
 function playVideo(i){
@@ -1911,6 +1975,9 @@ document.addEventListener('click', e => {
     case 'del-contact': deleteContact(id); break;
     case 'play-video': playVideo(Number(t.dataset.vid)); break;
     case 'open-gallery': openGallery(id); break;
+    case 'open-gallery-photo': openPhotoGallery(t.dataset.idx); break;
+    case 'add-gallery': document.getElementById('galleryFileInput').click(); break;
+    case 'del-gallery': deleteGalleryPhoto(id); break;
     case 'gal-prev': galNav(-1); break;
     case 'gal-next': galNav(1); break;
     case 'gal-close': closeGallery(); break;
@@ -1926,6 +1993,7 @@ document.getElementById('fDesc').addEventListener('input', e => { state.form.des
 document.getElementById('fWorld').addEventListener('change', e => { state.form.world = e.target.value; });
 document.getElementById('fCat').addEventListener('change', e => { state.form.cat = e.target.value; });
 document.getElementById('newCatInput').addEventListener('keydown', e => { if(e.key==='Enter'){ e.preventDefault(); addCategory(); } });
+document.getElementById('galleryFileInput').addEventListener('change', e => { addGalleryPhotos(e.target.files); e.target.value=''; });
 document.getElementById('loginPw').addEventListener('keydown', e => { if(e.key==='Enter') submitLogin(); });
 document.getElementById('fileInput').addEventListener('change', e => {
   const files = Array.from(e.target.files || []); if(!files.length) return;
@@ -1976,6 +2044,7 @@ loadProducts();
 loadReviews();
 loadArticles();
 loadCategories();
+loadGalleryPhotos();
 showPage((location.hash||'').replace('#','') || 'home');
 drawIcons();
 window.addEventListener('load', drawIcons);

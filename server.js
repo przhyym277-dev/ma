@@ -378,6 +378,52 @@ app.delete('/api/reviews/:id', requireAuth, async (req, res) => {
 });
 
 /* ============================================================
+ *  גלריה — תמונות העסק (ציבורי לצפייה, מנהל להעלאה/מחיקה)
+ * ============================================================ */
+const GALLERY_HEADERS = ['id', 'imageUrl', 'createdAt'];
+let memGallery = [];
+
+app.get('/api/gallery', async (req, res) => {
+  try {
+    if (!SHEETS_ENABLED) return res.json({ ok: true, images: memGallery });
+    const doc = await getDoc();
+    const sheet = await getNamedSheet(doc, 'gallery', GALLERY_HEADERS);
+    const rows = await sheet.getRows();
+    const images = rows.map(r => ({ id: r.get('id'), url: r.get('imageUrl') || r.get('imageurl') || '' })).filter(x => x.url);
+    res.json({ ok: true, images });
+  } catch (err) { console.error('GET /api/gallery:', err.message); res.json({ ok: true, images: [] }); }
+});
+
+app.post('/api/gallery', requireAuth, upload.array('images', 12), async (req, res) => {
+  try {
+    const files = (req.files && req.files.length) ? req.files : [];
+    if (!files.length) return res.status(400).json({ ok: false, error: 'לא נבחרו תמונות' });
+    const added = [];
+    for (const file of files) {
+      const url = await uploadImage(file);
+      if (!url) continue;
+      const id = 'g' + Date.now() + Math.floor(Math.random() * 1000);
+      if (SHEETS_ENABLED) { const doc = await getDoc(); const sheet = await getNamedSheet(doc, 'gallery', GALLERY_HEADERS); await sheet.addRow({ id, imageUrl: url, createdAt: new Date().toISOString() }); }
+      else memGallery.unshift({ id, url });
+      added.push({ id, url });
+    }
+    res.json({ ok: true, images: added });
+  } catch (err) { console.error('POST /api/gallery:', err.message); res.status(500).json({ ok: false, error: 'העלאת תמונות נכשלה' }); }
+});
+
+app.delete('/api/gallery/:id', requireAuth, async (req, res) => {
+  try {
+    if (!SHEETS_ENABLED) { memGallery = memGallery.filter(x => x.id !== req.params.id); return res.json({ ok: true }); }
+    const doc = await getDoc();
+    const sheet = await getNamedSheet(doc, 'gallery', GALLERY_HEADERS);
+    const rows = await sheet.getRows();
+    const r = rows.find(x => String(x.get('id')) === String(req.params.id));
+    if (r) await r.delete();
+    res.json({ ok: true });
+  } catch (err) { console.error('DELETE /api/gallery:', err.message); res.status(500).json({ ok: false, error: 'מחיקה נכשלה' }); }
+});
+
+/* ============================================================
  *  צור קשר — פניות מהאתר (ציבורי לשליחה, מנהל לצפייה/מחיקה)
  * ============================================================ */
 const CONTACT_HEADERS = ['id', 'name', 'phone', 'message', 'createdAt'];
