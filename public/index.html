@@ -138,6 +138,12 @@
   svg.lucide{width:1.05em;height:1.05em;stroke-width:2;flex-shrink:0;vertical-align:-0.16em;display:inline-block}
   .ic-lg svg.lucide,svg.lucide.ic-lg{width:22px;height:22px}
   .ic-xl svg.lucide,svg.lucide.ic-xl{width:30px;height:30px;stroke-width:1.7}
+  /* asymmetric editorial grid */
+  .editorial-grid{display:grid;grid-template-columns:1fr;gap:34px;align-items:center}
+  @media(min-width:820px){.editorial-grid{grid-template-columns:0.82fr 1.18fr;gap:clamp(38px,5vw,66px)}}
+  .num-row{display:flex;gap:18px;align-items:flex-start;padding:22px 0;border-top:1px solid #E7E1D0}
+  .num-row:first-child{border-top:none;padding-top:0}
+  .big-num{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:clamp(40px,6vw,58px);line-height:0.9;color:#B5683C;opacity:0.85;flex-shrink:0;min-width:1.4em}
   /* subtle grain texture overlay for depth */
   .grain{position:relative}
   .grain::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0.05;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
@@ -373,32 +379,22 @@
     </div>
   </section>
 
-  <!-- ===== WHY US ===== -->
-  <section data-page="home" class="reveal" style="max-width:1200px;margin:0 auto;padding:30px 20px 12px">
-    <div style="text-align:center;margin-bottom:24px">
-      <div style="display:inline-flex;align-items:center;gap:7px;background:#E7F0E9;color:#1E6B47;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:800"><i data-lucide="sparkles"></i> למה אנחנו</div>
-      <h2 style="font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:clamp(22px,4.5vw,32px);color:#14442F;margin:12px 0 0">היתרונות שאתם מקבלים</h2>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:16px">
-      <div style="background:#fff;border-radius:20px;padding:24px 20px;box-shadow:0 4px 18px rgba(20,68,47,0.06);border:1px solid rgba(20,68,47,0.05)">
-        <div style="width:52px;height:52px;border-radius:15px;background:#E7F0E9;display:flex;align-items:center;justify-content:center"><i data-lucide="leaf" style="width:26px;height:26px;color:#1E6B47"></i></div>
-        <h3 style="font-family:'Frank Ruhl Libre',serif;font-weight:700;font-size:17px;color:#1C2620;margin:14px 0 6px">איכות מובחרת</h3>
-        <p style="font-size:13.5px;color:#6B7A70;font-weight:500;line-height:1.5;margin:0">מוצרים נבחרים ביד, מהמותגים הטובים — שיחזיקו לאורך זמן.</p>
+  <!-- ===== WHY US (asymmetric editorial) ===== -->
+  <section data-page="home" class="reveal" style="max-width:1200px;margin:40px auto 0;padding:0 20px">
+    <div class="editorial-grid">
+      <!-- LEFT: heading + image -->
+      <div>
+        <div style="display:inline-flex;align-items:center;gap:9px;margin-bottom:16px"><span style="width:34px;height:2px;background:#B5683C"></span><span style="font-size:12.5px;font-weight:800;letter-spacing:2.5px;color:#9E5429">למה אנחנו</span></div>
+        <h2 style="font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:clamp(30px,5vw,50px);line-height:1.02;letter-spacing:-1px;color:#14442F;margin:0">היתרונות<br>שאתם מקבלים<br><span style="color:#B5683C">אצלנו.</span></h2>
+        <p style="font-size:15px;color:#4A574E;font-weight:500;line-height:1.65;margin:18px 0 0;max-width:34ch">חמש שנים של ניסיון, חומרי גלם מובחרים ושירות אישי — כל מה שצריך כדי שהגינה שלכם תפרח.</p>
+        <div style="margin-top:22px;border-radius:22px;overflow:hidden;aspect-ratio:16/11;background-image:url('https://res.cloudinary.com/db0uk7duu/image/upload/c_fill,g_auto,f_auto,q_auto,w_760/mahsan-hagadol/hero/mv8iluygiatuozgbw80b.jpg');background-size:cover;background-position:center;box-shadow:0 18px 40px -16px rgba(14,46,30,0.4)"></div>
       </div>
-      <div style="background:#fff;border-radius:20px;padding:24px 20px;box-shadow:0 4px 18px rgba(20,68,47,0.06);border:1px solid rgba(20,68,47,0.05)">
-        <div style="width:52px;height:52px;border-radius:15px;background:#F2E2D5;display:flex;align-items:center;justify-content:center"><i data-lucide="badge-percent" style="width:26px;height:26px;color:#9E5429"></i></div>
-        <h3 style="font-family:'Frank Ruhl Libre',serif;font-weight:700;font-size:17px;color:#1C2620;margin:14px 0 6px">מחירים הוגנים</h3>
-        <p style="font-size:13.5px;color:#6B7A70;font-weight:500;line-height:1.5;margin:0">מחיר ישיר מהמחסן, בלי תיווך — אתם משלמים פחות.</p>
-      </div>
-      <div style="background:#fff;border-radius:20px;padding:24px 20px;box-shadow:0 4px 18px rgba(20,68,47,0.06);border:1px solid rgba(20,68,47,0.05)">
-        <div style="width:52px;height:52px;border-radius:15px;background:#E7F0E9;display:flex;align-items:center;justify-content:center"><i data-lucide="package" style="width:26px;height:26px;color:#1E6B47"></i></div>
-        <h3 style="font-family:'Frank Ruhl Libre',serif;font-weight:700;font-size:17px;color:#1C2620;margin:14px 0 6px">איסוף או משלוח</h3>
-        <p style="font-size:13.5px;color:#6B7A70;font-weight:500;line-height:1.5;margin:0">בואו לאסוף מהמחסן, או קבלו עד הבית — אתם בוחרים.</p>
-      </div>
-      <div style="background:#fff;border-radius:20px;padding:24px 20px;box-shadow:0 4px 18px rgba(20,68,47,0.06);border:1px solid rgba(20,68,47,0.05)">
-        <div style="width:52px;height:52px;border-radius:15px;background:#F2E2D5;display:flex;align-items:center;justify-content:center"><i data-lucide="handshake" style="width:26px;height:26px;color:#9E5429"></i></div>
-        <h3 style="font-family:'Frank Ruhl Libre',serif;font-weight:700;font-size:17px;color:#1C2620;margin:14px 0 6px">ייעוץ אישי</h3>
-        <p style="font-size:13.5px;color:#6B7A70;font-weight:500;line-height:1.5;margin:0">צוות שמכיר כל מוצר וישמח לעזור לכם לבחור נכון.</p>
+      <!-- RIGHT: numbered list -->
+      <div>
+        <div class="num-row"><span class="big-num">01</span><div><h3 style="font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:clamp(18px,2.4vw,22px);color:#1C2620;margin:0 0 5px">איכות מובחרת</h3><p style="font-size:14.5px;color:#6B7A70;font-weight:500;line-height:1.6;margin:0">מוצרים נבחרים ביד, מהמותגים הטובים — שיחזיקו לאורך זמן.</p></div></div>
+        <div class="num-row"><span class="big-num">02</span><div><h3 style="font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:clamp(18px,2.4vw,22px);color:#1C2620;margin:0 0 5px">מחירים הוגנים</h3><p style="font-size:14.5px;color:#6B7A70;font-weight:500;line-height:1.6;margin:0">מחיר ישיר מהמחסן, בלי תיווך — אתם משלמים פחות.</p></div></div>
+        <div class="num-row"><span class="big-num">03</span><div><h3 style="font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:clamp(18px,2.4vw,22px);color:#1C2620;margin:0 0 5px">איסוף או משלוח</h3><p style="font-size:14.5px;color:#6B7A70;font-weight:500;line-height:1.6;margin:0">בואו לאסוף מהמחסן, או קבלו עד הבית — אתם בוחרים.</p></div></div>
+        <div class="num-row"><span class="big-num">04</span><div><h3 style="font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:clamp(18px,2.4vw,22px);color:#1C2620;margin:0 0 5px">ייעוץ אישי</h3><p style="font-size:14.5px;color:#6B7A70;font-weight:500;line-height:1.6;margin:0">צוות שמכיר כל מוצר וישמח לעזור לכם לבחור נכון.</p></div></div>
       </div>
     </div>
   </section>
