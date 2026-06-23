@@ -671,12 +671,15 @@
         <button id="btnPickup" data-act="set-pickup" style="border-radius:14px;padding:11px 8px;cursor:pointer;font-weight:800;font-size:13px;text-align:center;transition:all .2s ease;display:flex;flex-direction:column;align-items:center;gap:4px"><i data-lucide="store" style="width:19px;height:19px"></i>איסוף עצמי</button>
         <button id="btnDelivery" data-act="set-delivery" style="border-radius:14px;padding:11px 8px;cursor:pointer;font-weight:800;font-size:13px;text-align:center;transition:all .2s ease;display:flex;flex-direction:column;align-items:center;gap:4px"><i data-lucide="truck" style="width:19px;height:19px"></i>משלוח עד הבית</button>
       </div>
-      <div id="warning" style="display:none;gap:9px;background:#FCEBE9;border:1px solid #F1C4BE;border-radius:13px;padding:12px;margin-bottom:14px;animation:shake .4s ease">
-        <i data-lucide="alert-triangle" style="width:18px;height:18px;flex-shrink:0;color:#A12A20"></i>
-        <div style="font-size:12.5px;font-weight:600;line-height:1.45;color:#A12A20">מינימום הזמנה למשלוח הוא <strong>1,500 ש״ח</strong> בגלל מורכבות ההובלה. חסרים עוד <strong>₪<span id="remaining">0</span></strong> — ניתן להוסיף מוצרים או לבצע איסוף עצמי מהמחסן ללא הגבלה.</div>
+      <div id="subtotalRow" style="display:none;align-items:center;justify-content:space-between;font-size:13.5px;font-weight:600;color:#7E8A80;margin-bottom:7px">
+        <span>סכום מוצרים</span><span>₪<span id="cartSubtotal">0</span></span>
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <span style="font-size:15px;font-weight:600;color:#4A574E">סה״כ לתשלום</span>
+      <div id="deliveryFeeRow" style="display:none;align-items:center;justify-content:space-between;font-size:13.5px;font-weight:600;color:#4A574E;margin-bottom:7px">
+        <span style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="truck" style="width:15px;height:15px;color:#9E5429"></i> דמי משלוח דואר</span>
+        <span style="font-weight:800;color:#14442F">₪60</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:8px 0 14px;border-top:1px solid #EFEBE0;padding-top:12px">
+        <span style="font-size:15px;font-weight:700;color:#1C2620">סה״כ לתשלום</span>
         <span style="font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:26px;color:#14442F">₪<span id="cartTotal">0</span></span>
       </div>
       <button id="checkoutBtn" data-act="checkout" style="width:100%;border:none;border-radius:15px;padding:15px;font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;gap:9px;transition:filter .18s ease,transform .1s ease">
@@ -974,6 +977,7 @@ const API = (location.hostname === 'localhost' || location.hostname === '127.0.0
   ? ''
   : 'https://ma-dsnz.onrender.com';
 const WA_NUMBER = '972525408113';     // ← מספר הוואטסאפ של העסק
+const DELIVERY_FEE = 60;              // ← דמי משלוח דואר (₪)
 
 // ===== סרטוני מוצרים — מלאו את ה-src בקישור ישיר ל-mp4 (ו-poster לתמונת תצוגה, אופציונלי) =====
 const VIDEOS = [
@@ -1100,12 +1104,16 @@ function removeItem(id){ delete state.cart[id]; update(); }
 /* ===== checkout → וואטסאפ ===== */
 function checkout(){
   const ls = lines(); if(!ls.length) return;
-  const total = cartTotal();
-  if (state.delivery==='delivery' && total<1500) return;
+  const subtotal = cartTotal();
+  const isDelivery = state.delivery==='delivery';
+  const fee = isDelivery ? DELIVERY_FEE : 0;
+  const grand = subtotal + fee;
   let m = '🛒 *הזמנה חדשה — צרפתי שיווק*\n\n';
   ls.forEach(it => { m += '▪️ '+it.name+'\n   '+it.qty+' × ₪'+nf(it.price)+' = *₪'+nf(it.line)+'*\n'; });
-  m += '\n———————————\n💰 *סה״כ: ₪'+nf(total)+'*\n';
-  m += state.delivery==='delivery' ? '📦 משלוח עד הבית\n' : '🏬 איסוף עצמי מהמחסן\n';
+  m += '\n———————————\n';
+  if (isDelivery){ m += 'סכום מוצרים: ₪'+nf(subtotal)+'\n📦 דמי משלוח דואר: ₪'+nf(fee)+'\n'; }
+  m += '💰 *סה״כ לתשלום: ₪'+nf(grand)+'*\n';
+  m += isDelivery ? '📦 משלוח עד הבית (כולל דמי משלוח ₪'+nf(fee)+')\n' : '🏬 איסוף עצמי מהמחסן\n';
   m += '\nשם מלא: \nכתובת / איסוף: \nטלפון: ';
   window.open('https://wa.me/'+WA_NUMBER+'?text='+encodeURIComponent(m), '_blank');
 }
@@ -1344,7 +1352,8 @@ function update(){
   const garden = state.cat === 'garden';
   const total = cartTotal(), count = cartCount(), hasItems = count>0;
   const isDelivery = state.delivery === 'delivery';
-  const blocked = isDelivery && total<1500;
+  const fee = isDelivery ? DELIVERY_FEE : 0;
+  const grand = total + fee;
 
   // תצוגות
   document.getElementById('shopView').style.display  = state.view==='shop'  ? 'block' : 'none';
@@ -1389,16 +1398,16 @@ function update(){
   bd.style.border = '2px solid ' + (isDelivery ? '#14442F' : 'rgba(20,68,47,0.14)');
   bd.style.background = isDelivery ? '#14442F' : '#fff'; bd.style.color = isDelivery ? '#fff' : '#4A574E';
 
-  // warning
-  document.getElementById('warning').style.display = blocked ? 'flex' : 'none';
-  document.getElementById('remaining').textContent = nf(Math.max(0,1500-total));
-
-  document.getElementById('cartTotal').textContent = nf(total);
+  // סיכום הזמנה (מוצרים + דמי משלוח)
+  document.getElementById('subtotalRow').style.display = isDelivery ? 'flex' : 'none';
+  document.getElementById('deliveryFeeRow').style.display = isDelivery ? 'flex' : 'none';
+  document.getElementById('cartSubtotal').textContent = nf(total);
+  document.getElementById('cartTotal').textContent = nf(grand);
 
   // checkout button
   const cb = document.getElementById('checkoutBtn');
-  const off = blocked || !hasItems;
-  document.getElementById('checkoutLabel').textContent = blocked ? 'מינימום ₪1,500 למשלוח' : 'שליחת הזמנה לוואטסאפ';
+  const off = !hasItems;
+  document.getElementById('checkoutLabel').textContent = 'שליחת הזמנה לוואטסאפ';
   cb.style.background = off ? '#C9C2B4' : '#25A65A';
   cb.style.color = off ? '#7A7466' : '#fff';
   cb.style.cursor = off ? 'not-allowed' : 'pointer';
