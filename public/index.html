@@ -144,6 +144,11 @@
   .num-row{display:flex;gap:18px;align-items:flex-start;padding:22px 0;border-top:1px solid #E7E1D0}
   .num-row:first-child{border-top:none;padding-top:0}
   .big-num{font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:clamp(40px,6vw,58px);line-height:0.9;color:#B5683C;opacity:0.85;flex-shrink:0;min-width:1.4em}
+  /* category showcase tiles */
+  .cat-tile{transition:transform .25s ease,box-shadow .25s ease}
+  .cat-tile:hover{transform:translateY(-5px);box-shadow:0 20px 40px rgba(0,0,0,0.45)}
+  .cat-tile .cat-tile-img{transition:transform .55s cubic-bezier(.2,.7,.3,1)}
+  .cat-tile:hover .cat-tile-img{transform:scale(1.08)}
   /* subtle grain texture overlay for depth */
   .grain{position:relative}
   .grain::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0.05;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
@@ -254,6 +259,20 @@
         <span style="display:inline-flex;width:42px;height:42px;border-radius:12px;background:#E7F0E9;color:#1E6B47;align-items:center;justify-content:center"><i data-lucide="leaf" class="ic-lg"></i></span>
         <div><div style="font-weight:800;font-size:14px;color:#14442F">איכות מובטחת</div><div style="font-size:11.5px;color:#7E8A80;font-weight:600">חומרי גלם מובחרים</div></div>
       </div>
+    </div>
+  </section>
+
+  <!-- ===== SHOP BY CATEGORY (dark, dramatic) ===== -->
+  <section data-page="home" class="reveal grain" style="background:linear-gradient(165deg,#0F2E20 0%,#0A2016 55%,#05130D 100%);margin:40px 0 0;padding:clamp(50px,7vw,86px) 0">
+    <div style="max-width:1240px;margin:0 auto;padding:0 20px">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:30px">
+        <div>
+          <div style="display:inline-flex;align-items:center;gap:9px;margin-bottom:12px"><span style="width:34px;height:2px;background:#E0966A"></span><span style="font-size:12.5px;font-weight:800;letter-spacing:3px;color:#E8BBA0">קטגוריות</span></div>
+          <h2 style="font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:clamp(28px,5.2vw,46px);letter-spacing:-0.8px;color:#fff;margin:0">קנו לפי קטגוריה</h2>
+        </div>
+        <a href="#shop" data-act="nav" data-nav="shop" style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.3);color:#fff;font-weight:800;font-size:14.5px;padding:12px 22px;border-radius:13px;text-decoration:none">לכל המוצרים <i data-lucide="arrow-left" style="width:16px;height:16px"></i></a>
+      </div>
+      <div id="catTiles" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,232px),1fr));gap:16px"></div>
     </div>
   </section>
 
@@ -1077,7 +1096,7 @@ async function loadProducts(){
   } catch (e){
     console.error(e); state.loadError = true; state.products = [];
   } finally {
-    state.loading = false; renderCatChips(); renderGrid();
+    state.loading = false; renderCatChips(); renderCatShowcase(); renderGrid();
   }
 }
 
@@ -1268,6 +1287,30 @@ function renderCatChips(){
   el.innerHTML = chip('הכל','all') + cats.map(c => chip(c,c)).join('');
 }
 
+/* ===== רינדור אזור הקטגוריות (showcase) ===== */
+function renderCatShowcase(){
+  const el = document.getElementById('catTiles'); if(!el) return;
+  const prods = state.products.filter(p => p.world===state.cat && !p.hidden);
+  const cats = [];
+  prods.forEach(p => {
+    let c = cats.find(x => x.name===p.category);
+    if(!c){ c = { name:p.category, count:0, img:'' }; cats.push(c); }
+    c.count++;
+    if(!c.img && p.image) c.img = p.image;
+  });
+  if(!cats.length){ el.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#7FA08C;font-weight:600;padding:20px">הקטגוריות יופיעו כאן בקרוב</div>'; return; }
+  el.innerHTML = cats.map(c => `
+    <button data-act="pick-cat-showcase" data-cat="${esc(c.name)}" class="cat-tile" style="position:relative;border:none;cursor:pointer;border-radius:18px;overflow:hidden;aspect-ratio:4/5;display:block;background:#0E3322;padding:0">
+      <div class="cat-tile-img" style="position:absolute;inset:0;background-image:${c.img?("url('"+optImg(c.img)+"')"):'none'};background-size:cover;background-position:center"></div>
+      <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(5,19,13,0.94) 0%,rgba(5,19,13,0.35) 52%,rgba(5,19,13,0.12) 100%)"></div>
+      <div style="position:absolute;left:0;right:0;bottom:0;padding:16px 16px 18px;text-align:right">
+        <div style="font-size:11px;font-weight:800;color:#E0966A;letter-spacing:1px">${c.count} מוצרים</div>
+        <div style="font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:17px;color:#fff;line-height:1.25;margin-top:3px">${esc(c.name)}</div>
+      </div>
+    </button>`).join('');
+  drawIcons();
+}
+
 /* ===== רינדור הגריד ===== */
 function renderGrid(){
   const el = document.getElementById('grid');
@@ -1373,6 +1416,7 @@ function update(){
   pr.style.background = !garden ? '#B5683C' : 'transparent'; pr.style.color = !garden ? '#fff' : '#5A6B60';
 
   renderCatChips();
+  renderCatShowcase();
   renderGrid();
 
   // fab badge
@@ -1809,6 +1853,7 @@ document.addEventListener('click', e => {
     case 'pick-garden': state.cat='garden'; state.activeCat='all'; update(); showPage('shop'); break;
     case 'pick-rc': state.cat='rc'; state.activeCat='all'; update(); showPage('shop'); break;
     case 'pick-cat': state.activeCat=t.dataset.cat||'all'; update(); break;
+    case 'pick-cat-showcase': state.activeCat=t.dataset.cat||'all'; showPage('shop'); update(); break;
     case 'set-pickup': state.delivery='pickup'; update(); break;
     case 'set-delivery': state.delivery='delivery'; update(); break;
     case 'checkout': if(t.dataset.disabled!=='1') checkout(); break;
