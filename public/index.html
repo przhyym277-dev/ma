@@ -822,7 +822,7 @@
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
             <div>
               <label style="display:block;font-weight:800;font-size:13.5px;color:#1C2620;margin-bottom:7px">קטגוריה</label>
-              <select id="fWorld" style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:13px 12px;font-size:14.5px;font-weight:700;background:#FBFAF6;cursor:pointer;color:#1C2620">
+              <select id="fWorld" aria-label="עולם המוצר" style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:13px 12px;font-size:14.5px;font-weight:700;background:#FBFAF6;cursor:pointer;color:#1C2620">
                 <option value="garden">עולם הגינון 🌿</option>
                 <option value="rc">עולם ה‑RC והצעצועים 🏎️</option>
               </select>
@@ -834,7 +834,7 @@
           </div>
           <div>
             <label style="display:block;font-weight:800;font-size:13.5px;color:#1C2620;margin-bottom:7px">קטגוריה <span style="font-weight:600;color:#8A968D;font-size:12px">(בחרו מהרשימה — לניהול הרשימה גללו למטה)</span></label>
-            <select id="fCat" style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:13px 12px;font-size:15px;font-weight:600;background:#FBFAF6;cursor:pointer;color:#1C2620">
+            <select id="fCat" aria-label="קטגוריית המוצר" style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:13px 12px;font-size:15px;font-weight:600;background:#FBFAF6;cursor:pointer;color:#1C2620">
               <option value="">— בחרו קטגוריה —</option>
             </select>
           </div>
@@ -852,7 +852,7 @@
           <div>
             <label style="display:block;font-weight:800;font-size:13.5px;color:#1C2620;margin-bottom:7px">תמונות מוצר <span style="color:#8A968D;font-weight:600">(עד 6 — הראשונה היא הראשית)</span></label>
             <div id="imgThumbs" style="display:flex;flex-wrap:wrap;gap:10px"></div>
-            <input id="fileInput" type="file" accept="image/*" multiple style="display:none"/>
+            <input id="fileInput" type="file" accept="image/*" multiple aria-label="העלאת תמונות מוצר" style="display:none"/>
           </div>
           <button id="saveBtn" data-act="save" style="width:100%;border:none;border-radius:15px;padding:16px;font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:16.5px;color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;transition:filter .18s ease,transform .1s ease;box-shadow:0 10px 24px rgba(20,68,47,0.22)">
             <span id="saveSaving" style="display:none;align-items:center;gap:10px">
@@ -920,7 +920,7 @@
           <p style="font-size:13px;color:#9DB7AB;margin:5px 0 16px;font-weight:500">אזור זה גלוי רק למפתח (סיסמת על-מנהל)</p>
           <label style="display:block;font-weight:800;font-size:13.5px;color:#fff;margin-bottom:7px">מגבלת מספר מוצרים</label>
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-            <input id="devLimit" type="number" inputmode="numeric" min="1" max="5000" style="flex:1;min-width:120px;border:1.5px solid rgba(255,255,255,0.25);border-radius:12px;padding:12px 14px;font-size:16px;font-weight:800;background:rgba(255,255,255,0.10);color:#fff">
+            <input id="devLimit" type="number" aria-label="מגבלת מספר מוצרים" inputmode="numeric" min="1" max="5000" style="flex:1;min-width:120px;border:1.5px solid rgba(255,255,255,0.25);border-radius:12px;padding:12px 14px;font-size:16px;font-weight:800;background:rgba(255,255,255,0.10);color:#fff">
             <button data-act="save-limit" style="border:none;background:#B5683C;color:#fff;font-family:'Frank Ruhl Libre';font-weight:800;font-size:15px;padding:12px 22px;border-radius:12px;cursor:pointer">שמירת מגבלה</button>
           </div>
           <div style="font-size:12px;color:#9DB7AB;font-weight:600;margin-top:8px">המגבלה נשמרת לצמיתות ומשפיעה על כל הלקוחות.</div>
@@ -1806,8 +1806,8 @@ function renderAdminList(){
     const worldBadge = g ? '🌿 גינון' : '🏎️ RC';
     if (state.editingId === p.id){
       return `<div style="display:flex;gap:10px;align-items:center;padding:12px;border-bottom:1px solid #EFEBE0;flex-wrap:wrap">
-        <input id="edit-name-${esc(p.id)}" value="${esc(p.name)}" style="flex:1;min-width:140px;border:1.5px solid #14442F;border-radius:10px;padding:9px 11px;font-size:14px;font-weight:600;background:#FBFAF6">
-        <input id="edit-price-${esc(p.id)}" type="number" value="${esc(p.price)}" style="width:90px;border:1.5px solid #14442F;border-radius:10px;padding:9px 11px;font-size:14px;font-weight:700;background:#FBFAF6">
+        <input id="edit-name-${esc(p.id)}" aria-label="שם המוצר" value="${esc(p.name)}" style="flex:1;min-width:140px;border:1.5px solid #14442F;border-radius:10px;padding:9px 11px;font-size:14px;font-weight:600;background:#FBFAF6">
+        <input id="edit-price-${esc(p.id)}" aria-label="מחיר המוצר" type="number" value="${esc(p.price)}" style="width:90px;border:1.5px solid #14442F;border-radius:10px;padding:9px 11px;font-size:14px;font-weight:700;background:#FBFAF6">
         <button data-act="admin-edit-save" data-id="${esc(p.id)}" style="border:none;background:#25A65A;color:#fff;font-weight:800;font-size:13px;padding:9px 14px;border-radius:10px;cursor:pointer">שמירה ✓</button>
         <button data-act="admin-edit-cancel" data-id="${esc(p.id)}" style="border:none;background:#EFEBE0;color:#1C2620;font-weight:700;font-size:13px;padding:9px 12px;border-radius:10px;cursor:pointer">ביטול</button>
       </div>`;
