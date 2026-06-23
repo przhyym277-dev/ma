@@ -297,11 +297,11 @@
         <p style="font-size:clamp(15px,2.2vw,18px);font-weight:500;color:rgba(233,242,236,0.88);line-height:1.6;margin:14px 0 0">בית של איכות, שירות ומקצועיות בעולם הגינון.</p>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:26px;max-width:560px">
           <div style="background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.16);border-radius:16px;padding:16px 10px;text-align:center">
-            <div style="font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:28px;color:#7FE0A8">5+</div>
+            <div style="font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:28px;color:#7FE0A8"><span data-count="5">0</span>+</div>
             <div style="font-size:12.5px;font-weight:600;color:#C9DBD0;margin-top:2px">שנות ניסיון</div>
           </div>
           <div style="background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.16);border-radius:16px;padding:16px 10px;text-align:center">
-            <div style="font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:28px;color:#E0966A">50+</div>
+            <div style="font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:28px;color:#E0966A"><span data-count="50">0</span>+</div>
             <div style="font-size:12.5px;font-weight:600;color:#C9DBD0;margin-top:2px">מוצרי גינון</div>
           </div>
           <div style="background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.16);border-radius:16px;padding:16px 10px;text-align:center">
@@ -1000,6 +1000,18 @@ const _revObs = ('IntersectionObserver' in window) ? new IntersectionObserver((e
 }, { threshold:0.12, rootMargin:'0px 0px -7% 0px' }) : null;
 function initReveal(){ if(!_revObs) return; document.querySelectorAll('.reveal:not(.in)').forEach(el=>{ if(el.offsetParent!==null || el.getBoundingClientRect().height>0) _revObs.observe(el); }); }
 
+// ספירת מספרים עולה (count-up)
+const _countObs = ('IntersectionObserver' in window) ? new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting) return;
+    const el=e.target, target=Number(el.dataset.count)||0, dur=1100, t0=performance.now();
+    el.dataset.counted='1';
+    (function step(t){ const p=Math.min(1,(t-t0)/dur), eased=1-Math.pow(1-p,3); el.textContent=Math.round(eased*target); if(p<1) requestAnimationFrame(step); })(t0);
+    _countObs.unobserve(el);
+  });
+}, { threshold:0.6 }) : null;
+function initCount(){ if(!_countObs) return; document.querySelectorAll('[data-count]:not([data-counted])').forEach(el=>{ if(el.offsetParent!==null || el.getBoundingClientRect().height>0) _countObs.observe(el); }); }
+
 function showPage(page){
   const pages = ['home','shop','about','articles','contact','terms','privacy','returns','usage'];
   page = pages.includes(page) ? page : 'home';
@@ -1009,7 +1021,7 @@ function showPage(page){
   document.querySelectorAll('[data-page="'+page+'"]').forEach(el => { el.classList.remove('pagefade'); void el.offsetWidth; el.classList.add('pagefade'); });
   try{ window.scrollTo(0,0); }catch(e){}
   try{ if((location.hash||'').replace('#','') !== page) history.replaceState(null,'', page==='home' ? (location.pathname+location.search) : ('#'+page)); }catch(e){}
-  requestAnimationFrame(initReveal);
+  requestAnimationFrame(()=>{ initReveal(); initCount(); });
 }
 
 /* ===== עזרים ===== */
