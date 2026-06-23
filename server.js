@@ -426,21 +426,17 @@ app.delete('/api/gallery/:id', requireAuth, async (req, res) => {
 /* ============================================================
  *  בדיקת זמן נסיעה למשלוח חינם (OpenRouteService)
  * ============================================================ */
-const ORS_KEY = process.env.ORS_API_KEY || '';
+const ORS_KEY = (process.env.ORS_API_KEY || '').replace(/\s+/g, ''); // ניקוי רווחים/שורות חדשות מהמפתח
 const SHIP_ORIGIN = [35.414178, 32.590999]; // מושב רמת צבי [lng, lat]
 
 app.post('/api/shipping/check', async (req, res) => {
-  let step = 'init';
   try {
     const address = String((req.body && req.body.address) || '').trim();
     if (!address) return res.json({ ok: false, error: 'נא להזין כתובת' });
-    if (typeof fetch !== 'function') return res.json({ ok: false, error: 'fetch לא זמין בשרת', _node: process.version });
     if (!ORS_KEY) return res.json({ ok: false, error: 'בדיקת מרחק אינה זמינה כרגע — נאשר בוואטסאפ' });
     // 1) המרת כתובת לקואורדינטות — Photon (OSM, תמיכה טובה בעברית, ידידותי לענן)
-    step = 'geocode';
     const gUrl = 'https://photon.komoot.io/api/?lang=default&limit=1&osm_tag=place&q=' + encodeURIComponent(address);
-    const gResp = await fetch(gUrl);
-    const gJson = await gResp.json();
+    const gJson = await (await fetch(gUrl)).json();
     const feat = gJson.features && gJson.features[0];
     if (!feat) return res.json({ ok: false, error: 'לא מצאנו את היישוב — נסו שם עיר/מושב בישראל' });
     const props = feat.properties || {};
@@ -448,19 +444,17 @@ app.post('/api/shipping/check', async (req, res) => {
     const dest = feat.geometry.coordinates; // [lng,lat]
     const label = [props.name, props.state].filter(Boolean).join(', ') || address;
     // 2) חישוב זמן נסיעה ממושב רמת צבי
-    step = 'route';
-    const rResp = await fetch('https://api.openrouteservice.org/v2/directions/driving-car', {
+    const rJson = await (await fetch('https://api.openrouteservice.org/v2/directions/driving-car', {
       method: 'POST',
       headers: { 'Authorization': ORS_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ coordinates: [SHIP_ORIGIN, dest] })
-    });
-    const rJson = await rResp.json();
+    })).json();
     const sum = rJson.routes && rJson.routes[0] && rJson.routes[0].summary;
-    if (!sum) return res.json({ ok: false, error: 'לא הצלחנו לחשב מסלול לכתובת זו', _rstatus: rResp.status });
+    if (!sum) return res.json({ ok: false, error: 'לא הצלחנו לחשב מסלול לכתובת זו' });
     res.json({ ok: true, minutes: Math.round(sum.duration / 60), km: +(sum.distance / 1000).toFixed(1), label });
   } catch (err) {
     console.error('POST /api/shipping/check:', err.message);
-    res.json({ ok: false, error: 'שגיאה בבדיקת המרחק — נאשר בוואטסאפ', _step: step, _detail: String(err && err.message).slice(0, 200) });
+    res.json({ ok: false, error: 'שגיאה בבדיקת המרחק — נאשר בוואטסאפ' });
   }
 });
 
