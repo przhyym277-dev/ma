@@ -424,6 +424,39 @@ app.delete('/api/gallery/:id', requireAuth, async (req, res) => {
 });
 
 /* ============================================================
+ *  בדיקת זמן נסיעה למשלוח חינם (OpenRouteService)
+ * ============================================================ */
+const ORS_KEY = process.env.ORS_API_KEY || '';
+const SHIP_ORIGIN = [35.414178, 32.590999]; // מושב רמת צבי [lng, lat]
+
+app.post('/api/shipping/check', async (req, res) => {
+  try {
+    const address = String((req.body && req.body.address) || '').trim();
+    if (!address) return res.json({ ok: false, error: 'נא להזין כתובת' });
+    if (!ORS_KEY) return res.json({ ok: false, error: 'בדיקת מרחק אינה זמינה כרגע — נאשר בוואטסאפ' });
+    // 1) המרת כתובת לקואורדינטות — Nominatim (תמיכה טובה בעברית/ישראל)
+    const gUrl = 'https://nominatim.openstreetmap.org/search?format=json&countrycodes=il&limit=1&q=' + encodeURIComponent(address);
+    const gJson = await (await fetch(gUrl, { headers: { 'User-Agent': 'tsarfati-shop/1.0 (przyyr233@gmail.com)' } })).json();
+    const feat = Array.isArray(gJson) && gJson[0];
+    if (!feat) return res.json({ ok: false, error: 'לא מצאנו את הכתובת — נסו שם עיר/יישוב' });
+    const dest = [parseFloat(feat.lon), parseFloat(feat.lat)]; // [lng,lat]
+    const label = feat.display_name ? feat.display_name.split(',').slice(0, 2).join(',').trim() : address;
+    // 2) חישוב זמן נסיעה ממושב רמת צבי
+    const rJson = await (await fetch('https://api.openrouteservice.org/v2/directions/driving-car', {
+      method: 'POST',
+      headers: { 'Authorization': ORS_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ coordinates: [SHIP_ORIGIN, dest] })
+    })).json();
+    const sum = rJson.routes && rJson.routes[0] && rJson.routes[0].summary;
+    if (!sum) return res.json({ ok: false, error: 'לא הצלחנו לחשב מסלול לכתובת זו' });
+    res.json({ ok: true, minutes: Math.round(sum.duration / 60), km: +(sum.distance / 1000).toFixed(1), label });
+  } catch (err) {
+    console.error('POST /api/shipping/check:', err.message);
+    res.json({ ok: false, error: 'שגיאה בבדיקת המרחק — נאשר בוואטסאפ' });
+  }
+});
+
+/* ============================================================
  *  צור קשר — פניות מהאתר (ציבורי לשליחה, מנהל לצפייה/מחיקה)
  * ============================================================ */
 const CONTACT_HEADERS = ['id', 'name', 'phone', 'message', 'createdAt'];
