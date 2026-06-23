@@ -434,13 +434,15 @@ app.post('/api/shipping/check', async (req, res) => {
     const address = String((req.body && req.body.address) || '').trim();
     if (!address) return res.json({ ok: false, error: 'נא להזין כתובת' });
     if (!ORS_KEY) return res.json({ ok: false, error: 'בדיקת מרחק אינה זמינה כרגע — נאשר בוואטסאפ' });
-    // 1) המרת כתובת לקואורדינטות — Nominatim (תמיכה טובה בעברית/ישראל)
-    const gUrl = 'https://nominatim.openstreetmap.org/search?format=json&countrycodes=il&limit=1&q=' + encodeURIComponent(address);
-    const gJson = await (await fetch(gUrl, { headers: { 'User-Agent': 'tsarfati-shop/1.0 (przyyr233@gmail.com)' } })).json();
-    const feat = Array.isArray(gJson) && gJson[0];
-    if (!feat) return res.json({ ok: false, error: 'לא מצאנו את הכתובת — נסו שם עיר/יישוב' });
-    const dest = [parseFloat(feat.lon), parseFloat(feat.lat)]; // [lng,lat]
-    const label = feat.display_name ? feat.display_name.split(',').slice(0, 2).join(',').trim() : address;
+    // 1) המרת כתובת לקואורדינטות — Photon (OSM, תמיכה טובה בעברית, ידידותי לענן)
+    const gUrl = 'https://photon.komoot.io/api/?lang=default&limit=1&osm_tag=place&q=' + encodeURIComponent(address);
+    const gJson = await (await fetch(gUrl)).json();
+    const feat = gJson.features && gJson.features[0];
+    if (!feat) return res.json({ ok: false, error: 'לא מצאנו את היישוב — נסו שם עיר/מושב בישראל' });
+    const props = feat.properties || {};
+    if (props.countrycode && props.countrycode !== 'IL') return res.json({ ok: false, error: 'נא להזין יישוב בישראל' });
+    const dest = feat.geometry.coordinates; // [lng,lat]
+    const label = [props.name, props.state].filter(Boolean).join(', ') || address;
     // 2) חישוב זמן נסיעה ממושב רמת צבי
     const rJson = await (await fetch('https://api.openrouteservice.org/v2/directions/driving-car', {
       method: 'POST',
