@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ct-vr6l.onrender.com/sitemap.xml
+Sitemap: https://zarfatimarketing.info/sitemap.xml
