@@ -1180,9 +1180,9 @@ const cartTotal = () => lines().reduce((s,i)=>s+i.line,0);
 
 /* ===== חישוב משלוח לפי כללי צרפתי שיווק =====
    • חבילות (קטגוריה הכוללת "חביל") → משלוח חינם
-   • גינון → מינ' הזמנה ₪2,000 למשלוח, דמי משלוח ₪200 (חינם באזור — נאשר בוואטסאפ)
+   • גינון → מינ' הזמנה ₪2,000 למשלוח, דמי משלוח ₪250 (חינם באזור — נאשר בוואטסאפ)
    • RC/צעצועים → דמי משלוח בדואר ₪60, אספקה עד 10 ימי עסקים            */
-const GARDEN_MIN = 2000, GARDEN_FEE = 200, RC_FEE = 60;
+const GARDEN_MIN = 2000, GARDEN_FEE = 250, RC_FEE = 60;
 const isPkgCat = c => /חביל/.test(c || '');
 function computeShipping(){
   const ls = lines(); const subtotal = cartTotal();
