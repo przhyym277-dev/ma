@@ -588,12 +588,12 @@
       <p style="font-size:15px;line-height:1.7;color:#3A463F;font-weight:500;margin:0 0 14px">דמי משלוח עד הבית — <strong>250 ₪</strong>. זמינות המשלוח ומינימום ההזמנה נקבעים לפי זמן הנסיעה ממושב רמת צבי לכתובת הלקוח:</p>
       <div style="display:grid;gap:12px;margin-bottom:14px">
         <div style="background:#EAF2EB;border-radius:16px;padding:16px 18px;border-right:4px solid #1E6B47">
-          <div style="font-weight:800;font-size:16px;color:#14442F">עד 30 דקות נסיעה — הזמנה מ‑1,000 ₪</div>
-          <p style="font-size:14.5px;color:#3A463F;font-weight:500;line-height:1.6;margin:6px 0 0">כ‑25–30 ק"מ ממושב רמת צבי · דמי משלוח 250 ₪.</p>
+          <div style="font-weight:800;font-size:16px;color:#14442F">עד שעה נסיעה — הזמנה מ‑1,000 ₪</div>
+          <p style="font-size:14.5px;color:#3A463F;font-weight:500;line-height:1.6;margin:6px 0 0">כ‑50–60 ק"מ ממושב רמת צבי · דמי משלוח 250 ₪.</p>
         </div>
         <div style="background:#EAF2EB;border-radius:16px;padding:16px 18px;border-right:4px solid #1E6B47">
-          <div style="font-weight:800;font-size:16px;color:#14442F">עד 45 דקות נסיעה — הזמנה מ‑2,000 ₪</div>
-          <p style="font-size:14.5px;color:#3A463F;font-weight:500;line-height:1.6;margin:6px 0 0">כ‑40–50 ק"מ ממושב רמת צבי · דמי משלוח 250 ₪.</p>
+          <div style="font-weight:800;font-size:16px;color:#14442F">עד 70 דקות נסיעה — הזמנה מ‑2,000 ₪</div>
+          <p style="font-size:14.5px;color:#3A463F;font-weight:500;line-height:1.6;margin:6px 0 0">כ‑60–75 ק"מ ממושב רמת צבי · דמי משלוח 250 ₪.</p>
         </div>
         <div style="background:#F8F4EC;border-radius:16px;padding:16px 18px;border-right:4px solid #B5683C">
           <div style="font-weight:800;font-size:16px;color:#14442F">עד שעה ו‑20 דקות נסיעה — הזמנה מ‑3,000 ₪</div>
@@ -1266,10 +1266,10 @@ const cartTotal = () => lines().reduce((s,i)=>s+i.line,0);
 
 /* ===== חישוב משלוח לפי כללי צרפתי שיווק =====
    • חבילות (קטגוריה הכוללת "חביל") → משלוח חינם בתוך אזור החבילה
-   • גינון → דמי משלוח ₪250. מינ' הזמנה לפי אזור: עד 30 דק'→₪1,000 · עד 45 דק'→₪2,000 · עד 80 דק'→₪3,000 · מעל 80 דק'→אין
+   • גינון → דמי משלוח ₪250. מינ' הזמנה לפי אזור: עד 60 דק'→₪1,000 · עד 70 דק'→₪2,000 · עד 80 דק'→₪3,000 · מעל 80 דק'→אין
    • צעצועים → ₪60 בדואר לכל 3 צעצועים (אספקה עד 10 ימי עסקים)                       */
 const GARDEN_FEE = 250, RC_FEE = 60, RC_PER = 3;
-const GARDEN_TIERS = [ {maxMin:30, min:1000}, {maxMin:45, min:2000}, {maxMin:80, min:3000} ];
+const GARDEN_TIERS = [ {maxMin:60, min:1000}, {maxMin:70, min:2000}, {maxMin:80, min:3000} ];
 const GARDEN_MIN = 1000;  // המינימום הנמוך ביותר למשלוח (אזור קרוב)
 const isPkgCat = c => /חביל/.test(c || '');
 function pkgThreshold(pkgs){
