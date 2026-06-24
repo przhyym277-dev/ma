@@ -186,6 +186,31 @@ async function saveStockToSheet() {
 }
 const withStock = p => ({ ...p, stock: (p.id in runtimeStock) ? runtimeStock[p.id] : null });
 
+/* ---------- מוצרים משלימים (נשמר בגיליון config, key=related, JSON {id:[ids]}) ---------- */
+let runtimeRelated = {};
+async function loadRelatedFromSheet() {
+  if (!SHEETS_ENABLED) return;
+  try {
+    const doc = await getDoc();
+    const cfg = doc.sheetsByTitle['config'];
+    if (!cfg) return;
+    const rows = await cfg.getRows();
+    const r = rows.find(x => x.get('key') === 'related');
+    if (r) { try { runtimeRelated = JSON.parse(r.get('value') || '{}') || {}; } catch (e) { runtimeRelated = {}; } }
+  } catch (e) { console.error('loadRelated:', e.message); }
+}
+async function saveRelatedToSheet() {
+  if (!SHEETS_ENABLED) return;
+  const doc = await getDoc();
+  const cfg = await getNamedSheet(doc, 'config', ['key', 'value']);
+  const rows = await cfg.getRows();
+  const r = rows.find(x => x.get('key') === 'related');
+  const val = JSON.stringify(runtimeRelated);
+  if (r) { r.set('value', val); await r.save(); }
+  else await cfg.addRow({ key: 'related', value: val });
+}
+const withExtras = p => ({ ...p, stock: (p.id in runtimeStock) ? runtimeStock[p.id] : null, related: runtimeRelated[p.id] || [] });
+
 async function countActiveProducts() {
   if (!SHEETS_ENABLED) return memProducts.filter(p => !p.hidden).length;
   const sheet = await getSheet();
@@ -237,10 +262,10 @@ app.post('/api/admin/login', (req, res) => {
  * ============================================================ */
 app.get('/api/products', async (req, res) => {
   try {
-    if (!SHEETS_ENABLED) return res.json({ ok: true, products: memProducts.map(withStock), source: 'memory', limit: runtimeLimit });
+    if (!SHEETS_ENABLED) return res.json({ ok: true, products: memProducts.map(withExtras), source: 'memory', limit: runtimeLimit });
     const sheet = await getSheet();
     const rows = await sheet.getRows();
-    res.json({ ok: true, products: rows.map(rowToProduct).map(withStock), source: 'sheets', limit: runtimeLimit });
+    res.json({ ok: true, products: rows.map(rowToProduct).map(withExtras), source: 'sheets', limit: runtimeLimit });
   } catch (err) {
     console.error('GET /api/products:', err.message);
     res.status(500).json({ ok: false, error: 'נכשלה משיכת המוצרים מגוגל שיטס' });
@@ -618,11 +643,24 @@ app.post('/api/stock', requireAuth, async (req, res) => {
   } catch (err) { console.error('POST /api/stock:', err.message); res.status(500).json({ ok: false, error: 'עדכון מלאי נכשל' }); }
 });
 
+/* ---------- מוצרים משלימים ---------- */
+app.post('/api/related', requireAuth, async (req, res) => {
+  try {
+    const { id, related } = req.body || {};
+    if (!id) return res.status(400).json({ ok: false, error: 'חסר מזהה מוצר' });
+    const arr = Array.isArray(related) ? related.filter(Boolean).map(String).slice(0, 6) : [];
+    if (arr.length) runtimeRelated[id] = arr; else delete runtimeRelated[id];
+    await saveRelatedToSheet();
+    res.json({ ok: true, id, related: runtimeRelated[id] || [] });
+  } catch (err) { console.error('POST /api/related:', err.message); res.status(500).json({ ok: false, error: 'עדכון מוצרים משלימים נכשל' }); }
+});
+
 /* ---------- start ---------- */
 app.listen(PORT, async () => {
   await loadLimitFromSheet();
   await loadCategoriesFromSheet();
   await loadStockFromSheet();
+  await loadRelatedFromSheet();
   console.log(`🌿 צרפתי שיווק רץ על http://localhost:${PORT}`);
   console.log(`   מקור מוצרים: ${SHEETS_ENABLED ? 'Google Sheets ✅' : 'זיכרון (דמו)'}`);
   console.log(`   תמונות: ${CLOUDINARY_ENABLED ? 'Cloudinary ✅' : 'data-URL'}`);

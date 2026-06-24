@@ -1701,7 +1701,24 @@ function renderCart(){
         </div>
       </div>
     </div>`;
-  }).join('') + '</div>';
+  }).join('') + '</div>' + renderCartExtras(ls);
+  drawIcons();
+}
+/* מוצרים משלימים בסל */
+function renderCartExtras(ls){
+  const inCart = new Set(ls.map(l=>l.id));
+  const ids = [];
+  ls.forEach(l => { const p=state.products.find(x=>x.id===l.id); (p&&p.related||[]).forEach(r=>{ if(!inCart.has(r) && !ids.includes(r)) ids.push(r); }); });
+  const recs = ids.map(id=>state.products.find(x=>x.id===id)).filter(p=>p && !p.hidden && p.stock!==0).slice(0,4);
+  if(!recs.length) return '';
+  return '<div style="margin-top:16px;border-top:1px dashed #DCD7C9;padding-top:14px">'
+    + '<div style="font-weight:800;font-size:13.5px;color:#1C2620;margin-bottom:10px;display:flex;align-items:center;gap:6px"><i data-lucide="sparkles" style="width:15px;height:15px;color:#B5683C"></i> אולי תרצו להוסיף גם</div>'
+    + recs.map(p=>`<div style="display:flex;gap:10px;align-items:center;padding:7px 0">
+        <div style="width:46px;height:46px;border-radius:10px;flex-shrink:0;background-image:${imgFor(p)};background-size:cover;background-position:center"></div>
+        <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:13px;color:#1C2620;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.name)}</div><div style="font-size:12.5px;color:#14442F;font-weight:800">₪${nf(p.price)}</div></div>
+        <button data-act="add" data-id="${esc(p.id)}" style="border:none;background:#E7F0E9;color:#14442F;font-weight:800;font-size:12.5px;padding:8px 12px;border-radius:10px;cursor:pointer;white-space:nowrap">+ הוסף</button>
+      </div>`).join('')
+    + '</div>';
 }
 
 /* ===== עדכון כל החלקים הדינמיים ===== */
@@ -2107,6 +2124,7 @@ function startEdit(id){
   const p = state.products.find(x=>x.id===id);
   state.editingId = id;
   state.editImg = { keep:(p && p.images && p.images.length)?[...p.images]:((p && p.image)?[p.image]:[]), files:[], previews:[] };
+  state.editRelated = (p && p.related) ? [...p.related] : [];
   update();
 }
 async function saveEdit(id){
@@ -2129,7 +2147,10 @@ async function saveEdit(id){
   if (data.ok){
     const idx = state.products.findIndex(x=>x.id===id);
     if (idx>=0 && data.product) state.products[idx] = { ...state.products[idx], ...data.product };
-    state.editingId=null; state.editImg=null; showToast('המוצר עודכן ✓'); update();
+    // שמירת מוצרים משלימים
+    const relRes = await adminFetch(API+'/api/related', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id, related: state.editRelated||[] }) });
+    if (relRes){ const rd = await relRes.json(); if (rd.ok){ const pp=state.products.find(x=>x.id===id); if(pp) pp.related = rd.related; } }
+    state.editingId=null; state.editImg=null; state.editRelated=null; showToast('המוצר עודכן ✓'); update();
   } else showToast('⚠️ ' + (data.error||'נכשל'));
 }
 
@@ -2147,6 +2168,9 @@ function renderAdminList(){
       const catOpts = ['<option value="">— ללא קטגוריה —</option>'].concat((state.categories||[]).map(c=>`<option value="${esc(c)}"${c===p.category?' selected':''}>${esc(c)}</option>`)).join('');
       const keepThumbs = ei.keep.map((u,i)=>`<div style="position:relative;width:58px;height:58px;border-radius:10px;background-image:url('${optImg(u)}');background-size:cover;background-position:center;border:1px solid #DCD7C9"><button data-act="edit-img-del" data-idx="${i}" aria-label="מחיקה" style="position:absolute;top:-6px;left:-6px;width:20px;height:20px;border:none;border-radius:50%;background:#C8372B;color:#fff;font-size:11px;font-weight:800;cursor:pointer">✕</button></div>`).join('');
       const newThumbs = (ei.previews||[]).map((u,i)=>`<div style="position:relative;width:58px;height:58px;border-radius:10px;background-image:url('${u}');background-size:cover;background-position:center;border:2px solid #25A65A"><button data-act="edit-newimg-del" data-idx="${i}" aria-label="מחיקה" style="position:absolute;top:-6px;left:-6px;width:20px;height:20px;border:none;border-radius:50%;background:#C8372B;color:#fff;font-size:11px;font-weight:800;cursor:pointer">✕</button></div>`).join('');
+      const rel = state.editRelated || [];
+      const relChips = rel.map(rid=>{ const rp=state.products.find(x=>x.id===rid); return rp?`<span style="display:inline-flex;align-items:center;gap:5px;background:#E7F0E9;color:#14442F;font-weight:700;font-size:12.5px;padding:5px 10px;border-radius:999px">${esc(rp.name).slice(0,24)}<button data-act="edit-rel-del" data-rid="${esc(rid)}" aria-label="הסר" style="border:none;background:none;color:#C8372B;font-weight:800;cursor:pointer;font-size:13px;padding:0">✕</button></span>`:''; }).join('');
+      const relOptions = state.products.filter(x=>x.id!==p.id && !rel.includes(x.id)).map(x=>`<option value="${esc(x.id)}">${esc(x.name).slice(0,40)}</option>`).join('');
       return `<div style="padding:14px;border-bottom:1px solid #EFEBE0;background:#FBFAF6;display:grid;gap:10px">
         <input id="edit-name-${esc(p.id)}" aria-label="שם המוצר" value="${esc(p.name)}" placeholder="שם המוצר" style="${inp}">
         <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -2162,6 +2186,11 @@ function renderAdminList(){
             <input id="edit-file-${esc(p.id)}" type="file" accept="image/*" multiple style="display:none">
             <button data-act="edit-add-img" data-id="${esc(p.id)}" aria-label="הוסף תמונה" style="width:58px;height:58px;border:2px dashed #B5A98C;border-radius:10px;background:#fff;color:#9E5429;font-size:24px;font-weight:700;cursor:pointer">＋</button>
           </div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#6B7A70;margin-bottom:6px">מוצרים משלימים (יוצעו ללקוח בסל):</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${relChips || '<span style="font-size:12px;color:#A9B3AB;font-weight:600">לא נבחרו עדיין</span>'}</div>
+          <select id="edit-rel-${esc(p.id)}" aria-label="הוסף מוצר משלים" style="${inp};width:100%"><option value="">+ הוסף מוצר משלים...</option>${relOptions}</select>
         </div>
         <div style="display:flex;gap:8px">
           <button data-act="admin-edit-save" data-id="${esc(p.id)}" style="border:none;background:#25A65A;color:#fff;font-weight:800;font-size:14px;padding:11px 20px;border-radius:10px;cursor:pointer">שמירה ✓</button>
@@ -2262,6 +2291,7 @@ document.addEventListener('click', e => {
     case 'edit-add-img': { const fi=document.getElementById('edit-file-'+id); if(fi) fi.click(); break; }
     case 'edit-img-del': if(state.editImg){ state.editImg.keep.splice(Number(t.dataset.idx),1); update(); } break;
     case 'edit-newimg-del': if(state.editImg){ const i=Number(t.dataset.idx); state.editImg.files.splice(i,1); state.editImg.previews.splice(i,1); update(); } break;
+    case 'edit-rel-del': if(state.editRelated){ state.editRelated = state.editRelated.filter(x=>x!==t.dataset.rid); update(); } break;
     case 'admin-hide': hideProduct(id); break;
     case 'admin-show': showProduct(id); break;
     case 'admin-delete': removeProduct(id, t.dataset.name); break;
@@ -2315,6 +2345,7 @@ document.getElementById('galleryFileInput').addEventListener('change', e => { ad
 document.addEventListener('change', e => { const inp = e.target.closest && e.target.closest('input[data-qty]'); if(inp) setQty(inp.getAttribute('data-qty'), inp.value); });
 document.addEventListener('change', e => { const inp = e.target.closest && e.target.closest('input[data-stock]'); if(inp) saveStock(inp.getAttribute('data-stock'), inp.value.trim()); });
 document.addEventListener('change', e => { if(e.target && e.target.id && e.target.id.indexOf('edit-file-')===0 && state.editImg){ Array.from(e.target.files||[]).forEach(f=>{ state.editImg.files.push(f); state.editImg.previews.push(URL.createObjectURL(f)); }); e.target.value=''; update(); } });
+document.addEventListener('change', e => { if(e.target && e.target.id && e.target.id.indexOf('edit-rel-')===0 && e.target.value && state.editRelated){ if(!state.editRelated.includes(e.target.value)) state.editRelated.push(e.target.value); e.target.value=''; update(); } });
 document.addEventListener('keydown', e => { if(e.key==='Enter'){ const inp = e.target.closest && e.target.closest('input[data-qty],input[data-stock]'); if(inp) inp.blur(); } });
 document.getElementById('loginPw').addEventListener('keydown', e => { if(e.key==='Enter') submitLogin(); });
 document.getElementById('fileInput').addEventListener('change', e => {
