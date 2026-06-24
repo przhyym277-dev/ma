@@ -325,6 +325,15 @@
         <div id="calcResult" style="margin-top:14px;font-size:15px;font-weight:600;color:#1C2620;line-height:1.6"></div>
       </div>
     </details>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;margin-bottom:18px">
+      <select id="sortSelect" aria-label="מיון מוצרים" style="border:1.5px solid #DCD7C9;border-radius:11px;padding:9px 13px;font-size:13.5px;font-weight:700;background:#fff;color:#14442F;cursor:pointer">
+        <option value="default">⭐ מומלצים</option>
+        <option value="price-asc">₪ מחיר: מהזול ליקר</option>
+        <option value="price-desc">₪ מחיר: מהיקר לזול</option>
+        <option value="name">לפי שם (א‑ב)</option>
+      </select>
+      <label style="display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:700;color:#4A574E;cursor:pointer;background:#fff;border:1.5px solid #DCD7C9;border-radius:11px;padding:9px 13px"><input type="checkbox" id="inStockChk" style="width:16px;height:16px;accent-color:#14442F"> רק מה שיש במלאי</label>
+    </div>
     <div id="grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:24px"></div>
   </section>
 
@@ -1136,6 +1145,8 @@ const state = {
   categories:[],
   galleryPhotos:[],
   shipCheck:null,
+  sort:'default',
+  inStockOnly:false,
   saving:false, editingId:null, limit:60,
   reviews:[], role:'', rvRating:5, contacts:[], activeCat:'all', page:'home',
 };
@@ -1616,9 +1627,13 @@ function renderGrid(){
     el.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#A12A20;font-weight:600">⚠️ שגיאה בטעינת המוצרים מהשרת.<br><button data-act="reload" style="margin-top:14px;border:none;background:#14442F;color:#fff;font-weight:800;padding:10px 20px;border-radius:12px;cursor:pointer">נסה שוב</button></div>';
     return;
   }
-  const items = state.products.filter(p => p.world === state.cat && !p.hidden && (state.activeCat === 'all' || p.category === state.activeCat));
+  let items = state.products.filter(p => p.world === state.cat && !p.hidden && (state.activeCat === 'all' || p.category === state.activeCat));
+  if (state.inStockOnly) items = items.filter(p => p.stock !== 0);
+  if (state.sort === 'price-asc') items = items.slice().sort((a,b)=>a.price-b.price);
+  else if (state.sort === 'price-desc') items = items.slice().sort((a,b)=>b.price-a.price);
+  else if (state.sort === 'name') items = items.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name),'he'));
   if (!items.length){
-    el.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#6B7A70;font-weight:600">אין מוצרים בעולם הזה עדיין 🌱</div>';
+    el.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:#6B7A70;font-weight:600">'+(state.inStockOnly?'אין מוצרים במלאי בסינון הזה 🌱':'אין מוצרים בעולם הזה עדיין 🌱')+'</div>';
     return;
   }
   el.innerHTML = items.map(p => {
@@ -2338,6 +2353,8 @@ document.getElementById('fWorld').addEventListener('change', e => { state.form.w
 document.getElementById('fCat').addEventListener('change', e => { state.form.cat = e.target.value; });
 document.getElementById('newCatInput').addEventListener('keydown', e => { if(e.key==='Enter'){ e.preventDefault(); addCategory(); } });
 document.getElementById('searchInput').addEventListener('input', e => runSearch(e.target.value));
+document.getElementById('sortSelect').addEventListener('change', e => { state.sort = e.target.value; update(); });
+document.getElementById('inStockChk').addEventListener('change', e => { state.inStockOnly = e.target.checked; update(); });
 document.getElementById('searchOverlay').addEventListener('click', e => { if(e.target.id==='searchOverlay') closeSearch(); });
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeSearch(); });
 document.getElementById('galleryFileInput').addEventListener('change', e => { addGalleryPhotos(e.target.files); e.target.value=''; });
