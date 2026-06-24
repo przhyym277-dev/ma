@@ -298,11 +298,11 @@
 
   <!-- sticky mini switcher -->
   <div data-page="shop" style="position:sticky;top:67px;z-index:30;background:rgba(246,244,238,0.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)">
-    <div style="max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <h2 id="sectionTitle" style="font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:clamp(19px,4vw,26px);margin:0;color:#14442F">עולם הגינון</h2>
-      <div style="display:inline-flex;background:#EAE6DB;border-radius:999px;padding:5px;gap:3px">
-        <button id="pillGarden" data-act="pick-garden" style="display:inline-flex;align-items:center;gap:6px;border:none;border-radius:999px;padding:11px 20px;font-weight:800;font-size:15px;cursor:pointer;transition:all .2s ease"><i data-lucide="leaf"></i> גינון</button>
-        <button id="pillRc" data-act="pick-rc" style="display:inline-flex;align-items:center;gap:6px;border:none;border-radius:999px;padding:11px 20px;font-weight:800;font-size:15px;cursor:pointer;transition:all .2s ease"><i data-lucide="car"></i> צעצועים</button>
+    <div style="max-width:1200px;margin:0 auto;padding:13px 20px;display:flex;flex-direction:column;align-items:center;gap:9px">
+      <h2 id="sectionTitle" style="font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:clamp(18px,4vw,24px);margin:0;color:#14442F;text-align:center">עולם הגינון</h2>
+      <div style="display:inline-flex;background:#EAE6DB;border-radius:999px;padding:6px;gap:6px;box-shadow:0 4px 14px rgba(20,68,47,0.1)">
+        <button id="pillGarden" data-act="pick-garden" style="display:inline-flex;align-items:center;gap:7px;border:none;border-radius:999px;padding:13px 28px;font-weight:800;font-size:16px;cursor:pointer;transition:all .2s ease"><i data-lucide="leaf"></i> גינון</button>
+        <button id="pillRc" data-act="pick-rc" style="display:inline-flex;align-items:center;gap:7px;border:none;border-radius:999px;padding:13px 28px;font-weight:800;font-size:16px;cursor:pointer;transition:all .2s ease"><i data-lucide="car"></i> צעצועים</button>
       </div>
     </div>
   </div>
@@ -1782,9 +1782,9 @@ function update(){
 
   // pills
   const pg = document.getElementById('pillGarden');
-  pg.style.background = garden ? '#14442F' : 'transparent'; pg.style.color = garden ? '#fff' : '#5A6B60';
+  pg.style.background = garden ? '#14442F' : '#E7F0E9'; pg.style.color = garden ? '#fff' : '#1E6B47';
   const pr = document.getElementById('pillRc');
-  pr.style.background = !garden ? '#B5683C' : 'transparent'; pr.style.color = !garden ? '#fff' : '#5A6B60';
+  pr.style.background = !garden ? '#B5683C' : '#F2E2D5'; pr.style.color = !garden ? '#fff' : '#9E5429';
 
   renderCatChips();
   renderCatShowcase();
