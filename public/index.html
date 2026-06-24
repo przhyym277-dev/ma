@@ -310,6 +310,21 @@
   <!-- PRODUCT GRID -->
   <section id="main-content" data-page="shop" role="main" tabindex="-1" aria-label="קטלוג המוצרים" style="max-width:1200px;margin:0 auto;padding:18px 20px 90px;outline:none">
     <div id="catFilter" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:20px"></div>
+    <details id="calcCard" style="background:#fff;border-radius:18px;box-shadow:0 4px 18px rgba(20,68,47,0.06);border:1px solid rgba(20,68,47,0.06);margin-bottom:22px;overflow:hidden">
+      <summary style="cursor:pointer;list-style:none;padding:16px 20px;font-weight:800;font-size:16px;color:#14442F;display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <span style="display:inline-flex;align-items:center;gap:9px"><i data-lucide="calculator" style="color:#B5683C"></i> מחשבון כמויות — כמה צריך?</span>
+        <span style="color:#B5683C;font-size:20px">＋</span>
+      </summary>
+      <div style="padding:0 20px 20px">
+        <p style="font-size:14px;color:#6B7A70;font-weight:500;margin:0 0 14px;line-height:1.5">לא בטוחים כמה קומפוסט / חיפוי / אדמה צריך? הזינו את שטח האזור ועובי השכבה הרצוי, ונחשב לכם:</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+          <label style="flex:1;min-width:130px;font-size:12.5px;font-weight:700;color:#4A574E">שטח (מ"ר)<input id="calcArea" type="number" min="0" inputmode="decimal" placeholder="לדוגמה: 20" class="qty-input" style="width:100%;margin-top:5px;border:1.5px solid #DCD7C9;border-radius:11px;padding:11px 13px;font-size:15px;font-weight:700;background:#FBFAF6"></label>
+          <label style="flex:1;min-width:130px;font-size:12.5px;font-weight:700;color:#4A574E">עובי שכבה (ס"מ)<input id="calcDepth" type="number" min="0" inputmode="decimal" placeholder="לדוגמה: 5" class="qty-input" style="width:100%;margin-top:5px;border:1.5px solid #DCD7C9;border-radius:11px;padding:11px 13px;font-size:15px;font-weight:700;background:#FBFAF6"></label>
+          <button data-act="calc-run" style="border:none;background:#14442F;color:#fff;font-weight:800;font-size:15px;padding:12px 26px;border-radius:12px;cursor:pointer">חשב</button>
+        </div>
+        <div id="calcResult" style="margin-top:14px;font-size:15px;font-weight:600;color:#1C2620;line-height:1.6"></div>
+      </div>
+    </details>
     <div id="grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:24px"></div>
   </section>
 
@@ -1319,6 +1334,18 @@ function gotoProduct(id){
   }, 280);
 }
 
+/* ===== מחשבון כמויות ===== */
+function runCalc(){
+  const area = parseFloat(document.getElementById('calcArea').value)||0;
+  const depth = parseFloat(document.getElementById('calcDepth').value)||0;
+  const el = document.getElementById('calcResult');
+  if(area<=0 || depth<=0){ el.innerHTML='<span style="color:#9E4A1E">הזינו שטח ועובי שכבה גדולים מ‑0</span>'; return; }
+  const liters = Math.round(area * depth * 10);   // מ"ר × ס"מ × 10 = ליטר
+  const cube = liters/1000;
+  const bags = Math.ceil(liters/200);
+  el.innerHTML = '<div style="background:#EAF2EB;border-radius:13px;padding:14px 16px">דרושים כ‑<strong style="color:#14442F;font-size:18px">'+nf(liters)+' ליטר</strong>'+(cube>=1?(' (≈ '+(+cube.toFixed(2))+' קוב)'):'')+'<br><span style="font-size:13.5px;color:#4A574E">כ‑<strong>'+bags+'</strong> שקים/באלות של 200 ליטר. מומלץ להוסיף כ‑10% לעיבוד ולדחיסה.</span></div>';
+}
+
 /* ===== פעולות סל ===== */
 function stockMax(id){ const p = state.products.find(x=>x.id===id); return (p && typeof p.stock==='number') ? p.stock : Infinity; }
 function addToCart(id){
@@ -1698,6 +1725,7 @@ function update(){
   document.getElementById('fabCount').textContent   = count;
 
   document.getElementById('sectionTitle').textContent = garden ? 'עולם הגינון' : 'עולם הצעצועים';
+  const _cc = document.getElementById('calcCard'); if(_cc) _cc.style.display = garden ? 'block' : 'none';
 
   // pills
   const pg = document.getElementById('pillGarden');
@@ -2256,6 +2284,7 @@ document.addEventListener('click', e => {
     case 'del-contact': deleteContact(id); break;
     case 'play-video': playVideo(Number(t.dataset.vid)); break;
     case 'open-gallery': openGallery(id); break;
+    case 'calc-run': runCalc(); break;
     case 'open-search': openSearch(); break;
     case 'close-search': closeSearch(); break;
     case 'search-pick': gotoProduct(id); break;
