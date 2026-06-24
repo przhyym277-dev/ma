@@ -2016,19 +2016,33 @@ async function showProduct(id){
   if (data.ok){ const p = state.products.find(x=>x.id===id); if(p) p.hidden=false; showToast('המוצר חזר לאתר'); update(); }
   else showToast('⚠️ ' + (data.error||'נכשל'));
 }
+function startEdit(id){
+  const p = state.products.find(x=>x.id===id);
+  state.editingId = id;
+  state.editImg = { keep:(p && p.images && p.images.length)?[...p.images]:((p && p.image)?[p.image]:[]), files:[], previews:[] };
+  update();
+}
 async function saveEdit(id){
   const name = document.getElementById('edit-name-'+id).value.trim();
   const price = document.getElementById('edit-price-'+id).value;
   if (!name || !price){ showToast('⚠️ שם ומחיר נדרשים'); return; }
-  const res = await adminFetch(API + '/api/products/' + encodeURIComponent(id), {
-    method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, price })
-  });
+  const world = document.getElementById('edit-world-'+id).value;
+  const category = document.getElementById('edit-cat-'+id).value;
+  const desc = document.getElementById('edit-desc-'+id).value.trim();
+  const ei = state.editImg || { keep:[], files:[] };
+  const fd = new FormData();
+  fd.append('name', name); fd.append('price', price); fd.append('world', world);
+  fd.append('category', category); fd.append('desc', desc);
+  fd.append('keepImages', ei.keep.join(' | '));
+  (ei.files||[]).forEach(f => fd.append('images', f));
+  showToast('שומר שינויים...');
+  const res = await adminFetch(API + '/api/products/' + encodeURIComponent(id), { method:'PUT', body: fd });
   if (!res) return;
   const data = await res.json();
   if (data.ok){
-    const p = state.products.find(x=>x.id===id);
-    if (p){ p.name=name; p.price=Number(price); }
-    state.editingId=null; showToast('המוצר עודכן'); update();
+    const idx = state.products.findIndex(x=>x.id===id);
+    if (idx>=0 && data.product) state.products[idx] = { ...state.products[idx], ...data.product };
+    state.editingId=null; state.editImg=null; showToast('המוצר עודכן ✓'); update();
   } else showToast('⚠️ ' + (data.error||'נכשל'));
 }
 
@@ -2041,11 +2055,31 @@ function renderAdminList(){
     const g = p.world==='garden';
     const worldBadge = g ? '🌿 גינון' : '🏎️ RC';
     if (state.editingId === p.id){
-      return `<div style="display:flex;gap:10px;align-items:center;padding:12px;border-bottom:1px solid #EFEBE0;flex-wrap:wrap">
-        <input id="edit-name-${esc(p.id)}" aria-label="שם המוצר" value="${esc(p.name)}" style="flex:1;min-width:140px;border:1.5px solid #14442F;border-radius:10px;padding:9px 11px;font-size:14px;font-weight:600;background:#FBFAF6">
-        <input id="edit-price-${esc(p.id)}" aria-label="מחיר המוצר" type="number" value="${esc(p.price)}" style="width:90px;border:1.5px solid #14442F;border-radius:10px;padding:9px 11px;font-size:14px;font-weight:700;background:#FBFAF6">
-        <button data-act="admin-edit-save" data-id="${esc(p.id)}" style="border:none;background:#25A65A;color:#fff;font-weight:800;font-size:13px;padding:9px 14px;border-radius:10px;cursor:pointer">שמירה ✓</button>
-        <button data-act="admin-edit-cancel" data-id="${esc(p.id)}" style="border:none;background:#EFEBE0;color:#1C2620;font-weight:700;font-size:13px;padding:9px 12px;border-radius:10px;cursor:pointer">ביטול</button>
+      const ei = state.editImg || { keep:[], files:[], previews:[] };
+      const inp = 'border:1.5px solid #14442F;border-radius:10px;padding:9px 11px;font-size:14px;font-weight:600;background:#fff';
+      const catOpts = ['<option value="">— ללא קטגוריה —</option>'].concat((state.categories||[]).map(c=>`<option value="${esc(c)}"${c===p.category?' selected':''}>${esc(c)}</option>`)).join('');
+      const keepThumbs = ei.keep.map((u,i)=>`<div style="position:relative;width:58px;height:58px;border-radius:10px;background-image:url('${optImg(u)}');background-size:cover;background-position:center;border:1px solid #DCD7C9"><button data-act="edit-img-del" data-idx="${i}" aria-label="מחיקה" style="position:absolute;top:-6px;left:-6px;width:20px;height:20px;border:none;border-radius:50%;background:#C8372B;color:#fff;font-size:11px;font-weight:800;cursor:pointer">✕</button></div>`).join('');
+      const newThumbs = (ei.previews||[]).map((u,i)=>`<div style="position:relative;width:58px;height:58px;border-radius:10px;background-image:url('${u}');background-size:cover;background-position:center;border:2px solid #25A65A"><button data-act="edit-newimg-del" data-idx="${i}" aria-label="מחיקה" style="position:absolute;top:-6px;left:-6px;width:20px;height:20px;border:none;border-radius:50%;background:#C8372B;color:#fff;font-size:11px;font-weight:800;cursor:pointer">✕</button></div>`).join('');
+      return `<div style="padding:14px;border-bottom:1px solid #EFEBE0;background:#FBFAF6;display:grid;gap:10px">
+        <input id="edit-name-${esc(p.id)}" aria-label="שם המוצר" value="${esc(p.name)}" placeholder="שם המוצר" style="${inp}">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input id="edit-price-${esc(p.id)}" aria-label="מחיר" type="number" value="${esc(p.price)}" placeholder="מחיר" style="width:100px;${inp};font-weight:700">
+          <select id="edit-world-${esc(p.id)}" aria-label="עולם" style="${inp}"><option value="garden"${g?' selected':''}>🌿 גינון</option><option value="rc"${!g?' selected':''}>🏎️ צעצועים</option></select>
+          <select id="edit-cat-${esc(p.id)}" aria-label="קטגוריה" style="flex:1;min-width:130px;${inp}">${catOpts}</select>
+        </div>
+        <textarea id="edit-desc-${esc(p.id)}" aria-label="תיאור" placeholder="תיאור המוצר" rows="2" style="${inp};resize:vertical;font-family:inherit">${esc(p.desc)}</textarea>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#6B7A70;margin-bottom:6px">תמונות:</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+            ${keepThumbs}${newThumbs}
+            <input id="edit-file-${esc(p.id)}" type="file" accept="image/*" multiple style="display:none">
+            <button data-act="edit-add-img" data-id="${esc(p.id)}" aria-label="הוסף תמונה" style="width:58px;height:58px;border:2px dashed #B5A98C;border-radius:10px;background:#fff;color:#9E5429;font-size:24px;font-weight:700;cursor:pointer">＋</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button data-act="admin-edit-save" data-id="${esc(p.id)}" style="border:none;background:#25A65A;color:#fff;font-weight:800;font-size:14px;padding:11px 20px;border-radius:10px;cursor:pointer">שמירה ✓</button>
+          <button data-act="admin-edit-cancel" data-id="${esc(p.id)}" style="border:none;background:#EFEBE0;color:#1C2620;font-weight:700;font-size:14px;padding:11px 16px;border-radius:10px;cursor:pointer">ביטול</button>
+        </div>
       </div>`;
     }
     const hiddenBadge = p.hidden ? ' <span style="font-size:11px;background:#EFEBE0;color:#7A7466;padding:2px 7px;border-radius:999px;font-weight:700">מוסתר</span>' : '';
@@ -2135,9 +2169,12 @@ document.addEventListener('click', e => {
     case 'go-admin': closeMobileMenu(); enterAdmin(); break;
     case 'go-shop': state.view='shop'; update(); break;
     case 'logout': clearPw(); state.view='shop'; state.editingId=null; update(); showToast('התנתקת מהפאנל'); break;
-    case 'admin-edit': state.editingId=id; update(); break;
-    case 'admin-edit-cancel': state.editingId=null; update(); break;
+    case 'admin-edit': startEdit(id); break;
+    case 'admin-edit-cancel': state.editingId=null; state.editImg=null; update(); break;
     case 'admin-edit-save': saveEdit(id); break;
+    case 'edit-add-img': { const fi=document.getElementById('edit-file-'+id); if(fi) fi.click(); break; }
+    case 'edit-img-del': if(state.editImg){ state.editImg.keep.splice(Number(t.dataset.idx),1); update(); } break;
+    case 'edit-newimg-del': if(state.editImg){ const i=Number(t.dataset.idx); state.editImg.files.splice(i,1); state.editImg.previews.splice(i,1); update(); } break;
     case 'admin-hide': hideProduct(id); break;
     case 'admin-show': showProduct(id); break;
     case 'admin-delete': removeProduct(id, t.dataset.name); break;
@@ -2183,6 +2220,7 @@ document.getElementById('galleryFileInput').addEventListener('change', e => { ad
 // עדכון כמות בהקלדה ישירה (כרטיס מוצר + סל)
 document.addEventListener('change', e => { const inp = e.target.closest && e.target.closest('input[data-qty]'); if(inp) setQty(inp.getAttribute('data-qty'), inp.value); });
 document.addEventListener('change', e => { const inp = e.target.closest && e.target.closest('input[data-stock]'); if(inp) saveStock(inp.getAttribute('data-stock'), inp.value.trim()); });
+document.addEventListener('change', e => { if(e.target && e.target.id && e.target.id.indexOf('edit-file-')===0 && state.editImg){ Array.from(e.target.files||[]).forEach(f=>{ state.editImg.files.push(f); state.editImg.previews.push(URL.createObjectURL(f)); }); e.target.value=''; update(); } });
 document.addEventListener('keydown', e => { if(e.key==='Enter'){ const inp = e.target.closest && e.target.closest('input[data-qty],input[data-stock]'); if(inp) inp.blur(); } });
 document.getElementById('loginPw').addEventListener('keydown', e => { if(e.key==='Enter') submitLogin(); });
 document.getElementById('fileInput').addEventListener('change', e => {

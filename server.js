@@ -290,28 +290,43 @@ app.post('/api/products', requireAuth, upload.array('images', 6), async (req, re
   }
 });
 
-app.put('/api/products/:id', requireAuth, async (req, res) => {
+const truthy = v => v === true || v === 'true' || v === 'TRUE' || v === '1' || v === 1;
+app.put('/api/products/:id', requireAuth, upload.array('images', 6), async (req, res) => {
   try {
     const { name, price, desc, world, category, hidden } = req.body || {};
+    // תמונות: keepImages = הקיימות שנשארות (מופרד ב-|) + העלאת חדשות
+    const files = (req.files && req.files.length) ? req.files : [];
+    const newUrls = [];
+    for (const f of files) { const u = await uploadImage(f); if (u) newUrls.push(u); }
+    const keepRaw = req.body.keepImages;
+    const imgUpdate = (keepRaw !== undefined) || newUrls.length;
+    const keep = keepRaw !== undefined ? String(keepRaw).split('|').map(s => s.trim()).filter(Boolean) : [];
+    const finalImgs = imgUpdate ? [...keep, ...newUrls] : null;
+
     if (!SHEETS_ENABLED) {
       const p = memProducts.find(x => String(x.id) === String(req.params.id));
       if (!p) return res.status(404).json({ ok: false, error: 'מוצר לא נמצא' });
       if (name !== undefined) p.name = String(name).trim();
-      if (price !== undefined) p.price = Number(price);
+      if (price !== undefined && price !== '') p.price = Number(price);
       if (desc !== undefined) p.desc = String(desc).trim();
       if (world !== undefined) p.world = world === 'rc' ? 'rc' : 'garden';
       if (category !== undefined) p.category = String(category);
-      if (hidden !== undefined) p.hidden = !!hidden;
+      if (hidden !== undefined) p.hidden = truthy(hidden);
+      if (finalImgs !== null) { p.images = finalImgs; p.image = finalImgs[0] || ''; }
       return res.json({ ok: true, product: p });
     }
-    const { row } = await findRowById(req.params.id);
+    const { sheet, row } = await findRowById(req.params.id);
     if (!row) return res.status(404).json({ ok: false, error: 'מוצר לא נמצא' });
     if (name !== undefined) row.set('name', String(name).trim());
-    if (price !== undefined) row.set('price', Number(price));
+    if (price !== undefined && price !== '') row.set('price', Number(price));
     if (desc !== undefined) row.set('desc', String(desc).trim());
     if (world !== undefined) row.set('world', world === 'rc' ? 'rc' : 'garden');
     if (category !== undefined) row.set('category', String(category));
-    if (hidden !== undefined) row.set('hidden', hidden ? 'TRUE' : 'FALSE');
+    if (hidden !== undefined) row.set('hidden', truthy(hidden) ? 'TRUE' : 'FALSE');
+    if (finalImgs !== null) {
+      const imgCol = ((sheet && sheet.headerValues) || []).find(h => h.toLowerCase() === 'imageurl') || 'imageUrl';
+      row.set(imgCol, finalImgs.join(' | '));
+    }
     await row.save();
     res.json({ ok: true, product: rowToProduct(row) });
   } catch (err) {
