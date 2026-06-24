@@ -310,21 +310,13 @@
   <!-- PRODUCT GRID -->
   <section id="main-content" data-page="shop" role="main" tabindex="-1" aria-label="קטלוג המוצרים" style="max-width:1200px;margin:0 auto;padding:18px 20px 90px;outline:none">
     <div id="catFilter" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:20px"></div>
-    <details id="calcCard" style="background:#fff;border-radius:18px;box-shadow:0 4px 18px rgba(20,68,47,0.06);border:1px solid rgba(20,68,47,0.06);margin-bottom:22px;overflow:hidden">
-      <summary style="cursor:pointer;list-style:none;padding:16px 20px;font-weight:800;font-size:16px;color:#14442F;display:flex;align-items:center;justify-content:space-between;gap:10px">
-        <span style="display:inline-flex;align-items:center;gap:9px"><i data-lucide="calculator" style="color:#B5683C"></i> מחשבון כמויות — כמה צריך?</span>
-        <span style="color:#B5683C;font-size:20px">＋</span>
-      </summary>
-      <div style="padding:0 20px 20px">
-        <p style="font-size:14px;color:#6B7A70;font-weight:500;margin:0 0 14px;line-height:1.5">לא בטוחים כמה קומפוסט / חיפוי / אדמה צריך? הזינו את שטח האזור ועובי השכבה הרצוי, ונחשב לכם:</p>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
-          <label style="flex:1;min-width:130px;font-size:12.5px;font-weight:700;color:#4A574E">שטח (מ"ר)<input id="calcArea" type="number" min="0" inputmode="decimal" placeholder="לדוגמה: 20" class="qty-input" style="width:100%;margin-top:5px;border:1.5px solid #DCD7C9;border-radius:11px;padding:11px 13px;font-size:15px;font-weight:700;background:#FBFAF6"></label>
-          <label style="flex:1;min-width:130px;font-size:12.5px;font-weight:700;color:#4A574E">עובי שכבה (ס"מ)<input id="calcDepth" type="number" min="0" inputmode="decimal" placeholder="לדוגמה: 5" class="qty-input" style="width:100%;margin-top:5px;border:1.5px solid #DCD7C9;border-radius:11px;padding:11px 13px;font-size:15px;font-weight:700;background:#FBFAF6"></label>
-          <button data-act="calc-run" style="border:none;background:#14442F;color:#fff;font-weight:800;font-size:15px;padding:12px 26px;border-radius:12px;cursor:pointer">חשב</button>
-        </div>
-        <div id="calcResult" style="margin-top:14px;font-size:15px;font-weight:600;color:#1C2620;line-height:1.6"></div>
+    <div id="calcCard" style="background:#fff;border-radius:18px;box-shadow:0 4px 18px rgba(20,68,47,0.06);border:1px solid rgba(20,68,47,0.06);margin-bottom:22px;padding:18px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <div style="font-weight:800;font-size:16px;color:#14442F;display:flex;align-items:center;gap:8px"><i data-lucide="calculator" style="color:#B5683C;width:18px;height:18px"></i> לא בטוחים כמה צריך?</div>
+        <p style="font-size:13.5px;color:#6B7A70;font-weight:500;margin:6px 0 0;line-height:1.55">רוצים לחשב כמויות של חיפוי, קומפוסט או תערובת שתילה? שלחו לנו את פרטי השטח, ובעל העסק ייצור איתכם קשר ויעזור לכם בחישוב המדויק.</p>
       </div>
-    </details>
+      <a href="https://wa.me/972525408113?text=שלום, אשמח לעזרה בחישוב כמויות. פרטי השטח שלי:" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;background:#14442F;color:#fff;font-weight:800;font-size:14.5px;padding:12px 22px;border-radius:12px;text-decoration:none;white-space:nowrap"><i data-lucide="message-circle" style="width:17px;height:17px"></i> צרו קשר לחישוב</a>
+    </div>
     <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;margin-bottom:18px">
       <select id="sortSelect" aria-label="מיון מוצרים" style="border:1.5px solid #DCD7C9;border-radius:11px;padding:9px 13px;font-size:13.5px;font-weight:700;background:#fff;color:#14442F;cursor:pointer">
         <option value="default">⭐ מומלצים</option>
@@ -1836,7 +1828,7 @@ function update(){
     note.innerHTML = '⚠️ למשלוח עד הבית נדרשת הזמנה מעל ₪'+nf(GARDEN_MIN)+'. בהזמנה קטנה יותר — איסוף עצמי בלבד.';
   } else if (isDelivery && canDeliver && dec.kind==='rc'){
     note.style.display='block'; note.style.background='#EAF2EB'; note.style.color='#1E6B47';
-    note.innerHTML = '📦 משלוח בדואר ישראל — כל ₪60 כוללים עד 3 צעצועים · אספקה עד 10 ימי עסקים.';
+    note.innerHTML = '📦 משלוח בדואר ישראל — כל ₪60 כוללים משלוח של עד 3 צעצועים · אספקה עד 10 ימי עסקים.<br><span style="color:#C8372B">⚠️ ייתכנו עיכובים קלים בשל עומס בחברת השליחויות.</span>';
   } else { note.style.display='none'; }
 
   // בדיקת כתובת — לגינון (מעל מינימום) ולחבילות
