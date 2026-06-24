@@ -1260,13 +1260,17 @@ async function checkShipping(){
 }
 
 /* ===== פעולות סל ===== */
+function stockMax(id){ const p = state.products.find(x=>x.id===id); return (p && typeof p.stock==='number') ? p.stock : Infinity; }
 function addToCart(id){
+  const max = stockMax(id);
+  if(max<=0){ showToast('המוצר אזל מהמלאי'); return; }
+  if((state.cart[id]||0)+1 > max){ showToast('נותרו רק '+max+' יח׳ במלאי'); return; }
   state.cart[id] = (state.cart[id]||0)+1; state.pop = true;
   update(); clearTimeout(window._t); window._t = setTimeout(()=>{ state.pop=false; update(); }, 360);
 }
-function inc(id){ state.cart[id]=(state.cart[id]||0)+1; update(); }
+function inc(id){ const max=stockMax(id); if((state.cart[id]||0)+1>max){ showToast('נותרו רק '+max+' יח׳ במלאי'); return; } state.cart[id]=(state.cart[id]||0)+1; update(); }
 function dec(id){ const q=(state.cart[id]||0)-1; if(q<=0) delete state.cart[id]; else state.cart[id]=q; update(); }
-function setQty(id, n){ n = Math.max(0, Math.min(9999, parseInt(n,10)||0)); if(n<=0) delete state.cart[id]; else state.cart[id]=n; update(); }
+function setQty(id, n){ n = Math.max(0, Math.min(9999, parseInt(n,10)||0)); const max=stockMax(id); if(n>max){ n=max; showToast('נותרו רק '+max+' יח׳ במלאי'); } if(n<=0) delete state.cart[id]; else state.cart[id]=n; update(); }
 function removeItem(id){ delete state.cart[id]; update(); }
 
 /* ===== checkout → וואטסאפ ===== */
@@ -1532,15 +1536,22 @@ function renderGrid(){
   }
   el.innerHTML = items.map(p => {
     const qty = state.cart[p.id] || 0, inCart = qty>0, g = p.world==='garden';
+    const outOfStock = p.stock === 0;
+    const lowStock = (typeof p.stock === 'number' && p.stock > 0 && p.stock <= 5);
     const tagBg = g ? 'rgba(231,240,233,0.92)' : 'rgba(242,226,213,0.92)';
     const tagColor = g ? '#1E6B47' : '#9E5429';
-    const qtyControl = inCart
+    const qtyControl = outOfStock
+      ? `<button disabled aria-label="אזל במלאי" style="border:none;border-radius:14px;padding:14px;font-weight:800;font-size:15px;background:#E4DFD2;color:#8A8268;display:flex;align-items:center;justify-content:center;gap:6px;cursor:not-allowed"><i data-lucide="x-circle" style="width:17px;height:17px"></i> אזל במלאי</button>`
+      : inCart
       ? `<div style="display:flex;align-items:center;gap:6px;background:#14442F;border-radius:14px;padding:6px">
            <button data-act="dec" data-id="${esc(p.id)}" aria-label="הפחתת כמות" style="width:40px;height:40px;border:none;border-radius:10px;background:rgba(255,255,255,0.16);color:#fff;font-size:23px;font-weight:800;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">−</button>
            <input data-qty="${esc(p.id)}" type="number" min="0" inputmode="numeric" value="${qty}" aria-label="כמות" class="qty-input" style="flex:1;min-width:0;width:100%;text-align:center;border:none;background:transparent;color:#fff;font-size:18px;font-weight:800;padding:0">
            <button data-act="inc" data-id="${esc(p.id)}" aria-label="הוספת כמות" style="width:40px;height:40px;border:none;border-radius:10px;background:rgba(255,255,255,0.16);color:#fff;font-size:23px;font-weight:800;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">+</button>
          </div>`
       : `<button data-act="add" data-id="${esc(p.id)}" style="border:none;border-radius:14px;padding:14px;font-weight:800;font-size:15px;cursor:pointer;background:#B5683C;color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 6px 16px rgba(181,104,60,0.25)"><i data-lucide="shopping-cart" style="width:17px;height:17px"></i> הוספה לסל</button>`;
+    const stockBadge = outOfStock
+      ? `<span style="position:absolute;top:10px;left:10px;background:rgba(138,130,104,0.95);color:#fff;font-size:11px;font-weight:800;padding:4px 9px;border-radius:999px;pointer-events:none">אזל במלאי</span>`
+      : lowStock ? `<span style="position:absolute;top:10px;left:10px;background:#C8743F;color:#fff;font-size:11px;font-weight:800;padding:4px 9px;border-radius:999px;pointer-events:none">נותרו ${p.stock}</span>` : '';
     const nImg = (p.images && p.images.length) ? p.images.length : (p.image ? 1 : 0);
     const galAttr = nImg>1 ? ` data-act="open-gallery" data-id="${esc(p.id)}"` : '';
     const galBadge = nImg>1 ? `<span style="position:absolute;bottom:10px;left:10px;background:rgba(20,68,47,0.82);color:#fff;font-size:11px;font-weight:800;padding:4px 9px;border-radius:999px;backdrop-filter:blur(4px);pointer-events:none">📷 ${nImg}</span>` : '';
@@ -1548,9 +1559,9 @@ function renderGrid(){
     const pkgBadge = isPkg ? `<span style="position:absolute;bottom:10px;right:10px;background:#1E6B47;color:#fff;font-size:10.5px;font-weight:800;padding:4px 9px;border-radius:999px;display:inline-flex;align-items:center;gap:4px;pointer-events:none"><i data-lucide="truck" style="width:12px;height:12px"></i> הובלה כלולה</span>` : '';
     const pkgLink = isPkg ? `<button data-act="nav" data-nav="terms" style="margin-top:9px;width:100%;border:none;background:none;color:#9E5429;font-weight:700;font-size:12.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px"><i data-lucide="info" style="width:14px;height:14px"></i> פרטי משלוח בתקנון</button>` : '';
     return `<div class="card" style="background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 18px rgba(20,68,47,0.06);border:1px solid rgba(20,68,47,0.05);display:flex;flex-direction:column">
-      <div class="prodimg"${galAttr} style="position:relative;aspect-ratio:4/3;background-image:${imgFor(p)};background-size:cover;background-position:center;${nImg>1?'cursor:pointer':''}">
+      <div class="prodimg"${galAttr} style="position:relative;aspect-ratio:4/3;background-image:${imgFor(p)};background-size:cover;background-position:center;${nImg>1?'cursor:pointer':''}${outOfStock?';filter:grayscale(0.75);opacity:0.7':''}">
         <span style="position:absolute;top:10px;right:10px;background:${tagBg};color:${tagColor};font-size:11px;font-weight:800;padding:5px 10px;border-radius:999px;backdrop-filter:blur(4px)">${esc(p.category)}</span>
-        ${galBadge}${pkgBadge}
+        ${galBadge}${pkgBadge}${stockBadge}
       </div>
       <div style="padding:14px 14px 16px;display:flex;flex-direction:column;flex:1">
         <h3 style="font-family:'Frank Ruhl Libre',serif;font-weight:700;font-size:18px;margin:0;line-height:1.25;color:#1C2620">${esc(p.name)}</h3>
@@ -2037,6 +2048,11 @@ function renderAdminList(){
       <div style="flex:1;min-width:0">
         <div style="font-weight:800;font-size:14.5px;color:#1C2620;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.name)}${hiddenBadge}</div>
         <div style="font-size:12.5px;color:#6B7A70;font-weight:600;margin-top:2px">${worldBadge} · ₪${nf(p.price)}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:6px">
+          <span style="font-size:12px;font-weight:700;color:#6B7A70">מלאי:</span>
+          <input data-stock="${esc(p.id)}" type="number" min="0" inputmode="numeric" placeholder="ללא הגבלה" value="${p.stock==null?'':p.stock}" aria-label="כמות במלאי" class="qty-input" style="width:96px;border:1.5px solid #DCD7C9;border-radius:8px;padding:5px 8px;font-size:13px;font-weight:700;background:#FBFAF6;text-align:center">
+          ${p.stock===0?'<span style="font-size:11px;color:#C8372B;font-weight:800">אזל ⛔</span>':''}
+        </div>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
         <button data-act="admin-edit" data-id="${esc(p.id)}" style="border:1px solid #DCD7C9;background:#fff;color:#14442F;font-weight:700;font-size:13px;padding:8px 11px;border-radius:10px;cursor:pointer">✏️ ערוך</button>
@@ -2045,6 +2061,14 @@ function renderAdminList(){
       </div>
     </div>`;
   }).join('');
+}
+
+/* ===== עדכון מלאי מוצר ===== */
+async function saveStock(id, val){
+  const res = await adminFetch(API+'/api/stock', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id, stock: val==='' ? null : val }) });
+  if(!res) return; const d = await res.json();
+  if(d.ok){ const p = state.products.find(x=>x.id===id); if(p) p.stock = d.stock; showToast(d.stock===null ? 'מלאי: ללא הגבלה' : ('מלאי עודכן ל-'+d.stock+' יח׳')); update(); }
+  else showToast('⚠️ ' + (d.error||'עדכון מלאי נכשל'));
 }
 
 /* ===== ניהול קטגוריות ===== */
@@ -2149,7 +2173,8 @@ document.getElementById('newCatInput').addEventListener('keydown', e => { if(e.k
 document.getElementById('galleryFileInput').addEventListener('change', e => { addGalleryPhotos(e.target.files); e.target.value=''; });
 // עדכון כמות בהקלדה ישירה (כרטיס מוצר + סל)
 document.addEventListener('change', e => { const inp = e.target.closest && e.target.closest('input[data-qty]'); if(inp) setQty(inp.getAttribute('data-qty'), inp.value); });
-document.addEventListener('keydown', e => { if(e.key==='Enter'){ const inp = e.target.closest && e.target.closest('input[data-qty]'); if(inp) inp.blur(); } });
+document.addEventListener('change', e => { const inp = e.target.closest && e.target.closest('input[data-stock]'); if(inp) saveStock(inp.getAttribute('data-stock'), inp.value.trim()); });
+document.addEventListener('keydown', e => { if(e.key==='Enter'){ const inp = e.target.closest && e.target.closest('input[data-qty],input[data-stock]'); if(inp) inp.blur(); } });
 document.getElementById('loginPw').addEventListener('keydown', e => { if(e.key==='Enter') submitLogin(); });
 document.getElementById('fileInput').addEventListener('change', e => {
   const files = Array.from(e.target.files || []); if(!files.length) return;

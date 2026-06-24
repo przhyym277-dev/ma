@@ -161,6 +161,31 @@ async function saveCategoriesToSheet(arr) {
   else await cfg.addRow({ key: 'categories', value: val });
 }
 
+/* ---------- מלאי מנוהל (נשמר בגיליון config, key=stock, כ-JSON {id:qty}) ---------- */
+let runtimeStock = {};
+async function loadStockFromSheet() {
+  if (!SHEETS_ENABLED) return;
+  try {
+    const doc = await getDoc();
+    const cfg = doc.sheetsByTitle['config'];
+    if (!cfg) return;
+    const rows = await cfg.getRows();
+    const r = rows.find(x => x.get('key') === 'stock');
+    if (r) { try { runtimeStock = JSON.parse(r.get('value') || '{}') || {}; } catch (e) { runtimeStock = {}; } }
+  } catch (e) { console.error('loadStock:', e.message); }
+}
+async function saveStockToSheet() {
+  if (!SHEETS_ENABLED) return;
+  const doc = await getDoc();
+  const cfg = await getNamedSheet(doc, 'config', ['key', 'value']);
+  const rows = await cfg.getRows();
+  const r = rows.find(x => x.get('key') === 'stock');
+  const val = JSON.stringify(runtimeStock);
+  if (r) { r.set('value', val); await r.save(); }
+  else await cfg.addRow({ key: 'stock', value: val });
+}
+const withStock = p => ({ ...p, stock: (p.id in runtimeStock) ? runtimeStock[p.id] : null });
+
 async function countActiveProducts() {
   if (!SHEETS_ENABLED) return memProducts.filter(p => !p.hidden).length;
   const sheet = await getSheet();
@@ -212,10 +237,10 @@ app.post('/api/admin/login', (req, res) => {
  * ============================================================ */
 app.get('/api/products', async (req, res) => {
   try {
-    if (!SHEETS_ENABLED) return res.json({ ok: true, products: memProducts, source: 'memory', limit: runtimeLimit });
+    if (!SHEETS_ENABLED) return res.json({ ok: true, products: memProducts.map(withStock), source: 'memory', limit: runtimeLimit });
     const sheet = await getSheet();
     const rows = await sheet.getRows();
-    res.json({ ok: true, products: rows.map(rowToProduct), source: 'sheets', limit: runtimeLimit });
+    res.json({ ok: true, products: rows.map(rowToProduct).map(withStock), source: 'sheets', limit: runtimeLimit });
   } catch (err) {
     console.error('GET /api/products:', err.message);
     res.status(500).json({ ok: false, error: 'נכשלה משיכת המוצרים מגוגל שיטס' });
@@ -566,10 +591,23 @@ app.delete('/api/categories/:name', requireAuth, async (req, res) => {
   } catch (err) { console.error('DELETE /api/categories:', err.message); res.status(500).json({ ok: false, error: 'מחיקת קטגוריה נכשלה' }); }
 });
 
+/* ---------- מלאי ---------- */
+app.post('/api/stock', requireAuth, async (req, res) => {
+  try {
+    const { id, stock } = req.body || {};
+    if (!id) return res.status(400).json({ ok: false, error: 'חסר מזהה מוצר' });
+    if (stock === '' || stock === null || stock === undefined) delete runtimeStock[id];
+    else runtimeStock[id] = Math.max(0, parseInt(stock, 10) || 0);
+    await saveStockToSheet();
+    res.json({ ok: true, id, stock: (id in runtimeStock) ? runtimeStock[id] : null });
+  } catch (err) { console.error('POST /api/stock:', err.message); res.status(500).json({ ok: false, error: 'עדכון מלאי נכשל' }); }
+});
+
 /* ---------- start ---------- */
 app.listen(PORT, async () => {
   await loadLimitFromSheet();
   await loadCategoriesFromSheet();
+  await loadStockFromSheet();
   console.log(`🌿 צרפתי שיווק רץ על http://localhost:${PORT}`);
   console.log(`   מקור מוצרים: ${SHEETS_ENABLED ? 'Google Sheets ✅' : 'זיכרון (דמו)'}`);
   console.log(`   תמונות: ${CLOUDINARY_ENABLED ? 'Cloudinary ✅' : 'data-URL'}`);
