@@ -176,6 +176,9 @@
   <!-- ================= SHOP VIEW ================= -->
   <div id="shopView" style="position:relative;z-index:1;display:block">
 
+  <!-- ANNOUNCEMENT BAR -->
+  <div id="announceBar" style="display:none;background:linear-gradient(90deg,#B5683C,#9E5429);color:#fff;text-align:center;padding:9px 16px;font-size:13.5px;font-weight:800;letter-spacing:.2px"></div>
+
   <!-- בס"ד -->
   <div style="background:#0A2218;text-align:center;padding:3px 0;font-size:11px;font-weight:700;color:#7FA08C;letter-spacing:1px">בס"ד</div>
 
@@ -986,6 +989,18 @@
         </div>
       </div>
 
+      <!-- announcement manager -->
+      <div style="background:#fff;border-radius:22px;box-shadow:0 8px 30px rgba(20,68,47,0.08);overflow:hidden;margin-top:22px">
+        <div style="padding:20px 22px 16px;border-bottom:1px solid #EFEBE0">
+          <h2 style="font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:20px;margin:0;color:#14442F;display:flex;align-items:center;gap:8px"><i data-lucide="megaphone"></i> סרגל הודעה עליון</h2>
+          <p style="font-size:13px;color:#6B7A70;margin:5px 0 0;font-weight:500">הודעה/מבצע שתופיע ברצועה כתומה בראש האתר. רוקנו את השדה כדי להסיר.</p>
+        </div>
+        <div style="padding:18px 22px;display:flex;gap:10px;flex-wrap:wrap">
+          <input id="announceInput" maxlength="200" placeholder="לדוגמה: מבצע השבוע — 10% הנחה על קומפוסט!" style="flex:1;min-width:200px;border:1.5px solid #DCD7C9;border-radius:12px;padding:11px 14px;font-size:14.5px;font-weight:600;background:#FBFAF6">
+          <button data-act="save-announce" style="display:inline-flex;align-items:center;gap:6px;border:none;background:#B5683C;color:#fff;font-weight:800;font-size:14px;padding:11px 18px;border-radius:12px;cursor:pointer"><i data-lucide="check"></i> עדכן הודעה</button>
+        </div>
+      </div>
+
       <!-- gallery manager -->
       <div style="background:#fff;border-radius:22px;box-shadow:0 8px 30px rgba(20,68,47,0.08);overflow:hidden;margin-top:22px">
         <div style="padding:20px 22px 16px;border-bottom:1px solid #EFEBE0;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
@@ -1255,9 +1270,12 @@ function lines(){
   return Object.keys(state.cart).map(id => {
     const p = state.products.find(x => x.id === id); if(!p) return null;
     const qty = state.cart[id];
-    return { id, name:p.name, price:p.price, qty, line:p.price*qty, world:p.world, category:p.category||'', image:p.image };
+    const pr = priceOf(p);
+    return { id, name:p.name, price:pr, qty, line:pr*qty, world:p.world, category:p.category||'', image:p.image };
   }).filter(Boolean);
 }
+const onSale = p => (typeof p.salePrice==='number' && p.salePrice>0 && p.salePrice < p.price);
+const priceOf = p => onSale(p) ? p.salePrice : p.price;
 const cartCount = () => lines().reduce((s,i)=>s+i.qty,0);
 const cartTotal = () => lines().reduce((s,i)=>s+i.line,0);
 
@@ -1691,10 +1709,17 @@ function renderGrid(){
       <div style="padding:14px 14px 16px;display:flex;flex-direction:column;flex:1">
         <h3 style="font-family:'Frank Ruhl Libre',serif;font-weight:700;font-size:18px;margin:0;line-height:1.25;color:#1C2620">${esc(p.name)}</h3>
         <p style="font-size:15px;color:#4A574E;font-weight:500;margin:7px 0 0;line-height:1.55;flex:1">${esc(p.desc)}</p>
-        <div style="display:flex;align-items:baseline;gap:6px;margin:12px 0 8px">
-          <span style="font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:27px;color:#14442F">₪${nf(p.price)}</span>
-          <span style="font-size:11.5px;font-weight:600;color:#8A968D">כולל מע"מ</span>
-        </div>
+        ${ onSale(p)
+          ? `<div style="display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;margin:12px 0 8px">
+               <span style="font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:27px;color:#C8372B">₪${nf(p.salePrice)}</span>
+               <span style="font-size:15px;color:#9E9486;text-decoration:line-through;font-weight:700">₪${nf(p.price)}</span>
+               <span style="background:#C8372B;color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px">-${Math.round((1-p.salePrice/p.price)*100)}%</span>
+               <span style="font-size:11.5px;font-weight:600;color:#8A968D;width:100%;margin-top:1px">כולל מע"מ</span>
+             </div>`
+          : `<div style="display:flex;align-items:baseline;gap:6px;margin:12px 0 8px">
+               <span style="font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:27px;color:#14442F">₪${nf(p.price)}</span>
+               <span style="font-size:11.5px;font-weight:600;color:#8A968D">כולל מע"מ</span>
+             </div>` }
         ${stockLine}
         ${qtyControl}
         ${qtyHint}
@@ -2240,10 +2265,12 @@ function renderAdminList(){
       <div style="flex:1;min-width:0">
         <div style="font-weight:800;font-size:14.5px;color:#1C2620;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.name)}${hiddenBadge}</div>
         <div style="font-size:12.5px;color:#6B7A70;font-weight:600;margin-top:2px">${worldBadge} · ₪${nf(p.price)}</div>
-        <div style="display:flex;align-items:center;gap:6px;margin-top:6px">
+        <div style="display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:wrap">
           <span style="font-size:12px;font-weight:700;color:#6B7A70">מלאי:</span>
-          <input data-stock="${esc(p.id)}" type="number" min="0" inputmode="numeric" placeholder="ללא הגבלה" value="${p.stock==null?'':p.stock}" aria-label="כמות במלאי" class="qty-input" style="width:96px;border:1.5px solid #DCD7C9;border-radius:8px;padding:5px 8px;font-size:13px;font-weight:700;background:#FBFAF6;text-align:center">
+          <input data-stock="${esc(p.id)}" type="number" min="0" inputmode="numeric" placeholder="ללא הגבלה" value="${p.stock==null?'':p.stock}" aria-label="כמות במלאי" class="qty-input" style="width:90px;border:1.5px solid #DCD7C9;border-radius:8px;padding:5px 8px;font-size:13px;font-weight:700;background:#FBFAF6;text-align:center">
           ${p.stock===0?'<span style="font-size:11px;color:#C8372B;font-weight:800">אזל ⛔</span>':''}
+          <span style="font-size:12px;font-weight:700;color:#C8372B;margin-right:4px">מבצע ₪:</span>
+          <input data-sale="${esc(p.id)}" type="number" min="0" inputmode="numeric" placeholder="—" value="${p.salePrice==null?'':p.salePrice}" aria-label="מחיר מבצע" class="qty-input" style="width:80px;border:1.5px solid ${p.salePrice!=null?'#C8372B':'#DCD7C9'};border-radius:8px;padding:5px 8px;font-size:13px;font-weight:700;background:#FBFAF6;text-align:center">
         </div>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
@@ -2261,6 +2288,22 @@ async function saveStock(id, val){
   if(!res) return; const d = await res.json();
   if(d.ok){ const p = state.products.find(x=>x.id===id); if(p) p.stock = d.stock; showToast(d.stock===null ? 'מלאי: ללא הגבלה' : ('מלאי עודכן ל-'+d.stock+' יח׳')); update(); }
   else showToast('⚠️ ' + (d.error||'עדכון מלאי נכשל'));
+}
+
+/* ===== עדכון מחיר מבצע ===== */
+async function saveSale(id, val){
+  const res = await adminFetch(API+'/api/sale', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id, price: val==='' ? null : val }) });
+  if(!res) return; const d = await res.json();
+  if(d.ok){ const p = state.products.find(x=>x.id===id); if(p) p.salePrice = d.salePrice; showToast(d.salePrice===null ? 'מחיר מבצע בוטל' : ('מחיר מבצע: ₪'+d.salePrice)); update(); }
+  else showToast('⚠️ ' + (d.error||'נכשל'));
+}
+/* ===== סרגל הודעה ===== */
+async function saveAnnouncement(){
+  const text = (document.getElementById('announceInput').value||'').trim();
+  const res = await adminFetch(API+'/api/announcement', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text }) });
+  if(!res) return; const d = await res.json();
+  if(d.ok){ showToast(text ? 'סרגל ההודעה עודכן ✓' : 'סרגל ההודעה הוסר'); const b=document.getElementById('announceBar'); if(text){ b.textContent='📣 '+text; b.style.display='block'; } else b.style.display='none'; }
+  else showToast('⚠️ ' + (d.error||'נכשל'));
 }
 
 /* ===== ניהול קטגוריות ===== */
@@ -2348,6 +2391,7 @@ document.addEventListener('click', e => {
     case 'play-video': playVideo(Number(t.dataset.vid)); break;
     case 'open-gallery': openGallery(id); break;
     case 'calc-run': runCalc(); break;
+    case 'save-announce': saveAnnouncement(); break;
     case 'cookie-accept': try{ localStorage.setItem('cookieOk','1'); }catch(e){} document.getElementById('cookieBanner').style.display='none'; break;
     case 'open-search': openSearch(); break;
     case 'close-search': closeSearch(); break;
@@ -2380,6 +2424,7 @@ document.getElementById('galleryFileInput').addEventListener('change', e => { ad
 // עדכון כמות בהקלדה ישירה (כרטיס מוצר + סל)
 document.addEventListener('change', e => { const inp = e.target.closest && e.target.closest('input[data-qty]'); if(inp) setQty(inp.getAttribute('data-qty'), inp.value); });
 document.addEventListener('change', e => { const inp = e.target.closest && e.target.closest('input[data-stock]'); if(inp) saveStock(inp.getAttribute('data-stock'), inp.value.trim()); });
+document.addEventListener('change', e => { const inp = e.target.closest && e.target.closest('input[data-sale]'); if(inp) saveSale(inp.getAttribute('data-sale'), inp.value.trim()); });
 document.addEventListener('change', e => { if(e.target && e.target.id && e.target.id.indexOf('edit-file-')===0 && state.editImg){ Array.from(e.target.files||[]).forEach(f=>{ state.editImg.files.push(f); state.editImg.previews.push(URL.createObjectURL(f)); }); e.target.value=''; update(); } });
 document.addEventListener('change', e => { if(e.target && e.target.id && e.target.id.indexOf('edit-rel-')===0 && e.target.value && state.editRelated){ if(!state.editRelated.includes(e.target.value)) state.editRelated.push(e.target.value); e.target.value=''; update(); } });
 document.addEventListener('keydown', e => { if(e.key==='Enter'){ const inp = e.target.closest && e.target.closest('input[data-qty],input[data-stock]'); if(inp) inp.blur(); } });
@@ -2437,6 +2482,9 @@ loadGalleryPhotos();
 
 /* באנר עוגיות — מוצג עד אישור */
 try{ if(!localStorage.getItem('cookieOk')) document.getElementById('cookieBanner').style.display='block'; }catch(e){}
+
+/* סרגל הודעה */
+fetch(API+'/api/announcement?t='+Date.now()).then(r=>r.json()).then(d=>{ if(!d.ok) return; const inp=document.getElementById('announceInput'); if(inp) inp.value=d.text||''; if(d.text && d.text.trim()){ const b=document.getElementById('announceBar'); b.textContent='📣 '+d.text; b.style.display='block'; } }).catch(()=>{});
 
 /* סטטוס פתוח / סגור לפי שעות הפעילות */
 (function(){

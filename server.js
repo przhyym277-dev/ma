@@ -209,7 +209,55 @@ async function saveRelatedToSheet() {
   if (r) { r.set('value', val); await r.save(); }
   else await cfg.addRow({ key: 'related', value: val });
 }
-const withExtras = p => ({ ...p, stock: (p.id in runtimeStock) ? runtimeStock[p.id] : null, related: runtimeRelated[p.id] || [] });
+/* ---------- מחירי מבצע (config key=sale, JSON {id:price}) ---------- */
+let runtimeSale = {};
+async function loadSaleFromSheet() {
+  if (!SHEETS_ENABLED) return;
+  try {
+    const doc = await getDoc();
+    const cfg = doc.sheetsByTitle['config'];
+    if (!cfg) return;
+    const rows = await cfg.getRows();
+    const r = rows.find(x => x.get('key') === 'sale');
+    if (r) { try { runtimeSale = JSON.parse(r.get('value') || '{}') || {}; } catch (e) { runtimeSale = {}; } }
+  } catch (e) { console.error('loadSale:', e.message); }
+}
+async function saveSaleToSheet() {
+  if (!SHEETS_ENABLED) return;
+  const doc = await getDoc();
+  const cfg = await getNamedSheet(doc, 'config', ['key', 'value']);
+  const rows = await cfg.getRows();
+  const r = rows.find(x => x.get('key') === 'sale');
+  const val = JSON.stringify(runtimeSale);
+  if (r) { r.set('value', val); await r.save(); }
+  else await cfg.addRow({ key: 'sale', value: val });
+}
+
+/* ---------- סרגל הודעה (config key=announcement) ---------- */
+let runtimeAnnouncement = '';
+async function loadAnnouncementFromSheet() {
+  if (!SHEETS_ENABLED) return;
+  try {
+    const doc = await getDoc();
+    const cfg = doc.sheetsByTitle['config'];
+    if (!cfg) return;
+    const rows = await cfg.getRows();
+    const r = rows.find(x => x.get('key') === 'announcement');
+    if (r) runtimeAnnouncement = String(r.get('value') || '');
+  } catch (e) { console.error('loadAnnouncement:', e.message); }
+}
+async function saveAnnouncementToSheet(text) {
+  runtimeAnnouncement = text;
+  if (!SHEETS_ENABLED) return;
+  const doc = await getDoc();
+  const cfg = await getNamedSheet(doc, 'config', ['key', 'value']);
+  const rows = await cfg.getRows();
+  const r = rows.find(x => x.get('key') === 'announcement');
+  if (r) { r.set('value', text); await r.save(); }
+  else await cfg.addRow({ key: 'announcement', value: text });
+}
+
+const withExtras = p => ({ ...p, stock: (p.id in runtimeStock) ? runtimeStock[p.id] : null, related: runtimeRelated[p.id] || [], salePrice: (p.id in runtimeSale) ? runtimeSale[p.id] : null });
 
 async function countActiveProducts() {
   if (!SHEETS_ENABLED) return memProducts.filter(p => !p.hidden).length;
@@ -655,12 +703,35 @@ app.post('/api/related', requireAuth, async (req, res) => {
   } catch (err) { console.error('POST /api/related:', err.message); res.status(500).json({ ok: false, error: 'עדכון מוצרים משלימים נכשל' }); }
 });
 
+/* ---------- מחיר מבצע ---------- */
+app.post('/api/sale', requireAuth, async (req, res) => {
+  try {
+    const { id, price } = req.body || {};
+    if (!id) return res.status(400).json({ ok: false, error: 'חסר מזהה מוצר' });
+    if (price === '' || price === null || price === undefined) delete runtimeSale[id];
+    else runtimeSale[id] = Math.max(0, Number(price) || 0);
+    await saveSaleToSheet();
+    res.json({ ok: true, id, salePrice: (id in runtimeSale) ? runtimeSale[id] : null });
+  } catch (err) { console.error('POST /api/sale:', err.message); res.status(500).json({ ok: false, error: 'עדכון מחיר מבצע נכשל' }); }
+});
+
+/* ---------- סרגל הודעה ---------- */
+app.get('/api/announcement', (req, res) => res.json({ ok: true, text: runtimeAnnouncement }));
+app.post('/api/announcement', requireAuth, async (req, res) => {
+  try {
+    await saveAnnouncementToSheet(String((req.body || {}).text || '').slice(0, 200));
+    res.json({ ok: true, text: runtimeAnnouncement });
+  } catch (err) { console.error('POST /api/announcement:', err.message); res.status(500).json({ ok: false, error: 'עדכון ההודעה נכשל' }); }
+});
+
 /* ---------- start ---------- */
 app.listen(PORT, async () => {
   await loadLimitFromSheet();
   await loadCategoriesFromSheet();
   await loadStockFromSheet();
   await loadRelatedFromSheet();
+  await loadSaleFromSheet();
+  await loadAnnouncementFromSheet();
   console.log(`🌿 צרפתי שיווק רץ על http://localhost:${PORT}`);
   console.log(`   מקור מוצרים: ${SHEETS_ENABLED ? 'Google Sheets ✅' : 'זיכרון (דמו)'}`);
   console.log(`   תמונות: ${CLOUDINARY_ENABLED ? 'Cloudinary ✅' : 'data-URL'}`);
