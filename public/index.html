@@ -887,8 +887,19 @@
         </div>
         <div id="shipResult" style="font-size:12px;font-weight:700;margin-top:8px;line-height:1.5"></div>
       </div>
+      <div id="couponSection" style="display:none;margin-bottom:11px">
+        <div style="display:flex;gap:7px">
+          <input id="couponInput" placeholder="קוד קופון" autocomplete="off" aria-label="קוד קופון" style="flex:1;min-width:0;border:1.5px solid #DCD7C9;border-radius:11px;padding:9px 12px;font-size:13.5px;font-weight:700;background:#fff;text-transform:uppercase">
+          <button data-act="apply-coupon" style="border:none;background:#14442F;color:#fff;font-weight:800;font-size:13px;padding:9px 18px;border-radius:11px;cursor:pointer;white-space:nowrap">החל</button>
+        </div>
+        <div id="couponMsg" style="font-size:12px;font-weight:700;margin-top:6px;line-height:1.4"></div>
+      </div>
       <div id="subtotalRow" style="display:none;align-items:center;justify-content:space-between;font-size:13.5px;font-weight:600;color:#7E8A80;margin-bottom:7px">
         <span>סכום מוצרים</span><span>₪<span id="cartSubtotal">0</span></span>
+      </div>
+      <div id="discountRow" style="display:none;align-items:center;justify-content:space-between;font-size:13.5px;font-weight:700;color:#1E8E4E;margin-bottom:7px">
+        <span style="display:inline-flex;align-items:center;gap:5px"><i data-lucide="ticket" style="width:15px;height:15px"></i> הנחת קופון <span id="couponCodeLbl" style="opacity:.65"></span> <button data-act="remove-coupon" aria-label="הסר קופון" style="border:none;background:none;color:#C8372B;cursor:pointer;font-weight:800;font-size:14px;padding:0 2px">✕</button></span>
+        <span id="discountAmount" style="font-weight:800">-₪0</span>
       </div>
       <div id="deliveryFeeRow" style="display:none;align-items:center;justify-content:space-between;font-size:13.5px;font-weight:600;color:#4A574E;margin-bottom:7px">
         <span id="feeLabel" style="display:inline-flex;align-items:center;gap:6px"><i data-lucide="truck" style="width:15px;height:15px;color:#9E5429"></i> דמי משלוח</span>
@@ -1012,6 +1023,23 @@
         <div style="padding:18px 22px;display:flex;gap:10px;flex-wrap:wrap">
           <input id="announceInput" maxlength="200" placeholder="לדוגמה: מבצע השבוע — 10% הנחה על קומפוסט!" style="flex:1;min-width:200px;border:1.5px solid #DCD7C9;border-radius:12px;padding:11px 14px;font-size:14.5px;font-weight:600;background:#FBFAF6">
           <button data-act="save-announce" style="display:inline-flex;align-items:center;gap:6px;border:none;background:#B5683C;color:#fff;font-weight:800;font-size:14px;padding:11px 18px;border-radius:12px;cursor:pointer"><i data-lucide="check"></i> עדכן הודעה</button>
+        </div>
+      </div>
+
+      <!-- coupon manager -->
+      <div style="background:#fff;border-radius:22px;box-shadow:0 8px 30px rgba(20,68,47,0.08);overflow:hidden;margin-top:22px">
+        <div style="padding:20px 22px 16px;border-bottom:1px solid #EFEBE0">
+          <h2 style="font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:20px;margin:0;color:#14442F;display:flex;align-items:center;gap:8px"><i data-lucide="ticket"></i> קודי קופון</h2>
+          <p style="font-size:13px;color:#6B7A70;margin:5px 0 0;font-weight:500">צרו קודי הנחה ללקוחות — אחוז או סכום קבוע</p>
+        </div>
+        <div style="padding:18px 22px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <input id="couponCode" placeholder="קוד (למשל WELCOME10)" style="flex:1;min-width:150px;border:1.5px solid #DCD7C9;border-radius:12px;padding:11px 14px;font-size:14.5px;font-weight:700;background:#FBFAF6;text-transform:uppercase">
+            <select id="couponType" aria-label="סוג הנחה" style="border:1.5px solid #DCD7C9;border-radius:12px;padding:11px 12px;font-size:14px;font-weight:700;background:#FBFAF6"><option value="percent">% אחוז</option><option value="fixed">₪ סכום</option></select>
+            <input id="couponValue" type="number" min="0" placeholder="ערך" style="width:90px;border:1.5px solid #DCD7C9;border-radius:12px;padding:11px 12px;font-size:14px;font-weight:700;background:#FBFAF6;text-align:center">
+            <button data-act="add-coupon" style="display:inline-flex;align-items:center;gap:6px;border:none;background:#14442F;color:#fff;font-weight:800;font-size:14px;padding:11px 18px;border-radius:12px;cursor:pointer"><i data-lucide="plus"></i> הוסף</button>
+          </div>
+          <div id="couponList" style="display:flex;flex-wrap:wrap;gap:9px;margin-top:16px"></div>
         </div>
       </div>
 
@@ -1191,6 +1219,8 @@ const state = {
   shipCheck:null,
   sort:'default',
   inStockOnly:false,
+  coupon:null,
+  coupons:{},
   saving:false, editingId:null, limit:60,
   reviews:[], role:'', rvRating:5, contacts:[], activeCat:'all', page:'home',
 };
@@ -1418,6 +1448,26 @@ function dec(id){ const q=(state.cart[id]||0)-1; if(q<=0) delete state.cart[id];
 function setQty(id, n){ n = Math.max(0, Math.min(9999, parseInt(n,10)||0)); const max=stockMax(id); if(n>max){ n=max; showToast('נותרו רק '+max+' יח׳ במלאי'); } if(n<=0) delete state.cart[id]; else state.cart[id]=n; update(); }
 function removeItem(id){ delete state.cart[id]; update(); }
 
+/* ===== קופונים ===== */
+async function applyCoupon(){
+  const inp = document.getElementById('couponInput'); const msg = document.getElementById('couponMsg');
+  const code = (inp.value||'').trim();
+  if(!code){ msg.innerHTML='<span style="color:#9E4A1E">הזינו קוד קופון</span>'; return; }
+  msg.innerHTML='<span style="color:#6B7A70">בודק...</span>';
+  try{
+    const r = await fetch(API+'/api/coupon',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
+    const d = await r.json();
+    if(d.ok){ state.coupon = { code:d.code, type:d.type, value:d.value }; msg.innerHTML=''; showToast('קופון הופעל ✓'); update(); }
+    else { state.coupon=null; msg.innerHTML='<span style="color:#C8372B">⚠️ '+(d.error||'קוד לא תקין')+'</span>'; update(); }
+  }catch(e){ msg.innerHTML='<span style="color:#C8372B">⚠️ שגיאה — נסו שוב</span>'; }
+}
+function removeCoupon(){ state.coupon=null; const inp=document.getElementById('couponInput'); if(inp) inp.value=''; const msg=document.getElementById('couponMsg'); if(msg) msg.innerHTML=''; update(); }
+function couponDiscount(total){
+  if(!state.coupon) return 0;
+  if(state.coupon.type==='percent') return Math.round(total * state.coupon.value/100);
+  return Math.min(state.coupon.value, total);
+}
+
 /* ===== checkout → וואטסאפ ===== */
 function checkout(){
   const ls = lines(); if(!ls.length) return;
@@ -1436,16 +1486,18 @@ function checkout(){
     state.delivery='pickup'; isDelivery=false; update();
   }
   const fee = isDelivery ? (dec.fee || 0) : 0;
-  const grand = subtotal + fee;
+  const discount = couponDiscount(subtotal);
+  const grand = Math.max(0, subtotal + fee - discount);
   let m = '🛒 *הזמנה חדשה — צרפתי שיווק*\n\n';
   ls.forEach(it => { m += '▪️ '+it.name+'\n   '+it.qty+' × ₪'+nf(it.price)+' = *₪'+nf(it.line)+'*\n'; });
   m += '\n———————————\n';
+  if (isDelivery || discount>0) m += 'סכום מוצרים: ₪'+nf(subtotal)+'\n';
   if (isDelivery){
-    m += 'סכום מוצרים: ₪'+nf(subtotal)+'\n';
     if (dec.free) m += '🎁 משלוח: חינם\n';
     else if (dec.kind==='rc') m += '📦 דמי משלוח בדואר: ₪'+nf(fee)+' (עד 10 ימי עסקים)\n';
     else m += '🚚 דמי משלוח עד הבית: ₪'+nf(fee)+'\n';
   }
+  if (discount>0) m += '🎟️ קופון '+state.coupon.code+': -₪'+nf(discount)+'\n';
   m += '💰 *סה״כ לתשלום: ₪'+nf(grand)+'*\n';
   m += isDelivery ? '🚚 משלוח עד הבית\n' : '🏬 איסוף עצמי מהמחסן\n';
   if (isDelivery && chk) m += '📍 כתובת: '+chk.label+' (כ‑'+chk.minutes+' דק׳ נסיעה)\n';
@@ -1802,7 +1854,8 @@ function update(){
   const chk = state.shipCheck;
   const canDeliver = dec.status === 'ok';                     // משלוח אפשרי בפועל
   const fee = (isDelivery && canDeliver) ? (dec.fee || 0) : 0;
-  const grand = total + fee;
+  const discount = couponDiscount(total);
+  const grand = Math.max(0, total + fee - discount);
 
   // תצוגות
   document.getElementById('shopView').style.display  = state.view==='shop'  ? 'block' : 'none';
@@ -1853,6 +1906,15 @@ function update(){
   document.getElementById('subtotalRow').style.display = isDelivery ? 'flex' : 'none';
   document.getElementById('cartSubtotal').textContent = nf(total);
   document.getElementById('cartTotal').textContent = nf(grand);
+
+  // קופון
+  document.getElementById('couponSection').style.display = hasItems ? 'block' : 'none';
+  const discRow = document.getElementById('discountRow');
+  if (state.coupon && discount>0){
+    discRow.style.display = 'flex';
+    document.getElementById('couponCodeLbl').textContent = '· ' + state.coupon.code + (state.coupon.type==='percent' ? (' ('+state.coupon.value+'%)') : '');
+    document.getElementById('discountAmount').textContent = '-₪'+nf(discount);
+  } else discRow.style.display = 'none';
 
   // שורת דמי משלוח — תווית וסכום דינמיים
   const feeRow = document.getElementById('deliveryFeeRow');
@@ -1991,7 +2053,7 @@ function handle401(){
 }
 
 function enterAdmin(){
-  if (getPw()){ state.role = getRole(); state.view='admin'; state.open=false; update(); loadContacts(); }
+  if (getPw()){ state.role = getRole(); state.view='admin'; state.open=false; update(); loadContacts(); loadCoupons(); }
   else openLogin();
 }
 function openLogin(){
@@ -2018,7 +2080,7 @@ async function submitLogin(){
     });
     const d = await res.json().catch(()=>({}));
     if (!res.ok){ errEl.textContent='סיסמה שגויה, נסו שוב'; errEl.style.display='block'; return; }
-    setPw(pw); setRole(d.role||'admin'); closeLogin(); state.view='admin'; state.open=false; update(); loadContacts();
+    setPw(pw); setRole(d.role||'admin'); closeLogin(); state.view='admin'; state.open=false; update(); loadContacts(); loadCoupons();
   } catch(e){ errEl.textContent='שגיאת חיבור לשרת'; errEl.style.display='block'; }
   finally { btn.disabled=false; btn.style.opacity='1'; }
 }
@@ -2320,6 +2382,35 @@ async function saveAnnouncement(){
   else showToast('⚠️ ' + (d.error||'נכשל'));
 }
 
+/* ===== ניהול קופונים (אדמין) ===== */
+async function loadCoupons(){
+  const res = await adminFetch(API+'/api/coupons');
+  if(!res) return; const d = await res.json();
+  if(d.ok){ state.coupons = d.coupons||{}; renderCouponList(); }
+}
+function renderCouponList(){
+  const el = document.getElementById('couponList'); if(!el) return;
+  const codes = Object.keys(state.coupons||{});
+  if(!codes.length){ el.innerHTML = '<div style="font-size:12.5px;color:#A9B3AB;font-weight:600">אין קופונים עדיין</div>'; return; }
+  el.innerHTML = codes.map(c=>{ const x=state.coupons[c]; const lbl = x.type==='percent' ? (x.value+'%') : ('₪'+x.value);
+    return `<span style="display:inline-flex;align-items:center;gap:7px;background:#E7F0E9;color:#14442F;font-weight:800;font-size:13px;padding:7px 12px;border-radius:999px">🎟️ ${esc(c)} · ${lbl}<button data-act="del-coupon" data-code="${esc(c)}" aria-label="מחיקה" style="border:none;background:none;color:#C8372B;font-weight:800;cursor:pointer;font-size:14px;padding:0">✕</button></span>`; }).join('');
+}
+async function addCoupon(){
+  const code=(document.getElementById('couponCode').value||'').trim();
+  const type=document.getElementById('couponType').value;
+  const value=document.getElementById('couponValue').value;
+  if(!code || !value){ showToast('⚠️ הזינו קוד וערך'); return; }
+  const res = await adminFetch(API+'/api/coupons',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,type,value})});
+  if(!res) return; const d=await res.json();
+  if(d.ok){ state.coupons=d.coupons; document.getElementById('couponCode').value=''; document.getElementById('couponValue').value=''; showToast('קופון נוסף ✓'); renderCouponList(); }
+  else showToast('⚠️ '+(d.error||'נכשל'));
+}
+async function deleteCoupon(code){
+  const res = await adminFetch(API+'/api/coupons/'+encodeURIComponent(code),{method:'DELETE'});
+  if(!res) return; const d=await res.json();
+  if(d.ok){ state.coupons=d.coupons; showToast('קופון נמחק'); renderCouponList(); }
+}
+
 /* ===== ניהול קטגוריות ===== */
 async function loadCategories(){
   try{ const r=await fetch(API+'/api/categories?t='+Date.now(),{cache:'no-store'}); const d=await r.json(); if(d.ok) state.categories=d.categories||[]; }
@@ -2406,10 +2497,14 @@ document.addEventListener('click', e => {
     case 'open-gallery': openGallery(id); break;
     case 'calc-run': runCalc(); break;
     case 'save-announce': saveAnnouncement(); break;
+    case 'add-coupon': addCoupon(); break;
+    case 'del-coupon': deleteCoupon(t.dataset.code); break;
     case 'cookie-accept': try{ localStorage.setItem('cookieOk','1'); }catch(e){} document.getElementById('cookieBanner').style.display='none'; break;
     case 'open-search': openSearch(); break;
     case 'close-search': closeSearch(); break;
     case 'search-pick': gotoProduct(id); break;
+    case 'apply-coupon': applyCoupon(); break;
+    case 'remove-coupon': removeCoupon(); break;
     case 'check-ship': checkShipping(); break;
     case 'open-gallery-photo': openPhotoGallery(t.dataset.idx); break;
     case 'add-gallery': document.getElementById('galleryFileInput').click(); break;
@@ -2430,6 +2525,7 @@ document.getElementById('fWorld').addEventListener('change', e => { state.form.w
 document.getElementById('fCat').addEventListener('change', e => { state.form.cat = e.target.value; });
 document.getElementById('newCatInput').addEventListener('keydown', e => { if(e.key==='Enter'){ e.preventDefault(); addCategory(); } });
 document.getElementById('searchInput').addEventListener('input', e => runSearch(e.target.value));
+document.getElementById('couponInput').addEventListener('keydown', e => { if(e.key==='Enter'){ e.preventDefault(); applyCoupon(); } });
 document.getElementById('sortSelect').addEventListener('change', e => { state.sort = e.target.value; update(); });
 document.getElementById('inStockChk').addEventListener('change', e => { state.inStockOnly = e.target.checked; update(); });
 document.getElementById('searchOverlay').addEventListener('click', e => { if(e.target.id==='searchOverlay') closeSearch(); });

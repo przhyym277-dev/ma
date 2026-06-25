@@ -715,6 +715,59 @@ app.post('/api/sale', requireAuth, async (req, res) => {
   } catch (err) { console.error('POST /api/sale:', err.message); res.status(500).json({ ok: false, error: 'עדכון מחיר מבצע נכשל' }); }
 });
 
+/* ---------- קופונים (config key=coupons, JSON {CODE:{type,value}}) ---------- */
+let runtimeCoupons = {};
+async function loadCouponsFromSheet() {
+  if (!SHEETS_ENABLED) return;
+  try {
+    const doc = await getDoc();
+    const cfg = doc.sheetsByTitle['config'];
+    if (!cfg) return;
+    const rows = await cfg.getRows();
+    const r = rows.find(x => x.get('key') === 'coupons');
+    if (r) { try { runtimeCoupons = JSON.parse(r.get('value') || '{}') || {}; } catch (e) { runtimeCoupons = {}; } }
+  } catch (e) { console.error('loadCoupons:', e.message); }
+}
+async function saveCouponsToSheet() {
+  if (!SHEETS_ENABLED) return;
+  const doc = await getDoc();
+  const cfg = await getNamedSheet(doc, 'config', ['key', 'value']);
+  const rows = await cfg.getRows();
+  const r = rows.find(x => x.get('key') === 'coupons');
+  const val = JSON.stringify(runtimeCoupons);
+  if (r) { r.set('value', val); await r.save(); }
+  else await cfg.addRow({ key: 'coupons', value: val });
+}
+const normCode = c => String(c || '').trim().toUpperCase();
+
+app.get('/api/coupons', requireAuth, (req, res) => res.json({ ok: true, coupons: runtimeCoupons }));
+app.post('/api/coupons', requireAuth, async (req, res) => {
+  try {
+    const code = normCode((req.body || {}).code);
+    const type = (req.body || {}).type === 'fixed' ? 'fixed' : 'percent';
+    const value = Math.max(0, Number((req.body || {}).value) || 0);
+    if (!code || !value) return res.status(400).json({ ok: false, error: 'חסר קוד או ערך' });
+    if (type === 'percent' && value > 100) return res.status(400).json({ ok: false, error: 'אחוז עד 100' });
+    runtimeCoupons[code] = { type, value };
+    await saveCouponsToSheet();
+    res.json({ ok: true, coupons: runtimeCoupons });
+  } catch (err) { console.error('POST /api/coupons:', err.message); res.status(500).json({ ok: false, error: 'שמירת קופון נכשלה' }); }
+});
+app.delete('/api/coupons/:code', requireAuth, async (req, res) => {
+  try {
+    delete runtimeCoupons[normCode(decodeURIComponent(req.params.code))];
+    await saveCouponsToSheet();
+    res.json({ ok: true, coupons: runtimeCoupons });
+  } catch (err) { console.error('DELETE /api/coupons:', err.message); res.status(500).json({ ok: false, error: 'מחיקה נכשלה' }); }
+});
+// ולידציה ציבורית — מחזיר רק את הקופון המבוקש
+app.post('/api/coupon', (req, res) => {
+  const code = normCode((req.body || {}).code);
+  const c = runtimeCoupons[code];
+  if (!c) return res.json({ ok: false, error: 'קוד קופון לא תקין' });
+  res.json({ ok: true, code, type: c.type, value: c.value });
+});
+
 /* ---------- סרגל הודעה ---------- */
 app.get('/api/announcement', (req, res) => res.json({ ok: true, text: runtimeAnnouncement }));
 app.post('/api/announcement', requireAuth, async (req, res) => {
@@ -732,6 +785,7 @@ app.listen(PORT, async () => {
   await loadRelatedFromSheet();
   await loadSaleFromSheet();
   await loadAnnouncementFromSheet();
+  await loadCouponsFromSheet();
   console.log(`🌿 צרפתי שיווק רץ על http://localhost:${PORT}`);
   console.log(`   מקור מוצרים: ${SHEETS_ENABLED ? 'Google Sheets ✅' : 'זיכרון (דמו)'}`);
   console.log(`   תמונות: ${CLOUDINARY_ENABLED ? 'Cloudinary ✅' : 'data-URL'}`);
