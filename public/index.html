@@ -1333,8 +1333,11 @@ const GARDEN_MIN = 1000;  // המינימום הנמוך ביותר למשלוח
 const isPkgCat = c => /חביל/.test(c || '');
 function pkgThreshold(pkgs){
   let t = 80;
-  pkgs.forEach(i => { const n=i.name||''; let z=80;
-    if(/גזם|רסק/.test(n)) z=45; else if(/קומפוסט/.test(n) && /3/.test(n)) z=80; else if(/קומפוסט/.test(n) && /2/.test(n)) z=60;
+  pkgs.forEach(i => {
+    const p = state.products.find(x=>x.id===i.id);
+    let z;
+    if(p && typeof p.pkgZone==='number' && p.pkgZone>0){ z = p.pkgZone; }   // הגדרה ידנית של אלעד
+    else { const n=i.name||''; z=80; if(/גזם|רסק/.test(n)) z=45; else if(/קומפוסט/.test(n) && /3/.test(n)) z=80; else if(/קומפוסט/.test(n) && /2/.test(n)) z=60; }
     t = Math.min(t, z); });
   return t;
 }
@@ -2348,6 +2351,10 @@ function renderAdminList(){
           <span style="font-size:12px;font-weight:700;color:#C8372B;margin-right:4px">מבצע ₪:</span>
           <input data-sale="${esc(p.id)}" type="number" min="0" inputmode="numeric" placeholder="—" value="${p.salePrice==null?'':p.salePrice}" aria-label="מחיר מבצע" class="qty-input" style="width:80px;border:1.5px solid ${p.salePrice!=null?'#C8372B':'#DCD7C9'};border-radius:8px;padding:5px 8px;font-size:13px;font-weight:700;background:#FBFAF6;text-align:center">
         </div>
+        ${ /חביל|הובלה כלולה/.test(p.category||'') ? `<div style="display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:wrap">
+          <span style="font-size:12px;font-weight:700;color:#1E6B47">🚚 משלוח כלול עד (דק' נסיעה):</span>
+          <input data-pkgzone="${esc(p.id)}" type="number" min="0" inputmode="numeric" placeholder="לפי שם" value="${p.pkgZone==null?'':p.pkgZone}" aria-label="אזור משלוח כלול בדקות" class="qty-input" style="width:90px;border:1.5px solid ${p.pkgZone!=null?'#1E6B47':'#DCD7C9'};border-radius:8px;padding:5px 8px;font-size:13px;font-weight:700;background:#FBFAF6;text-align:center">
+        </div>` : '' }
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
         <button data-act="admin-edit" data-id="${esc(p.id)}" style="border:1px solid #DCD7C9;background:#fff;color:#14442F;font-weight:700;font-size:13px;padding:8px 11px;border-radius:10px;cursor:pointer">✏️ ערוך</button>
@@ -2373,6 +2380,14 @@ async function saveSale(id, val){
   if(d.ok){ const p = state.products.find(x=>x.id===id); if(p) p.salePrice = d.salePrice; showToast(d.salePrice===null ? 'מחיר מבצע בוטל' : ('מחיר מבצע: ₪'+d.salePrice)); update(); }
   else showToast('⚠️ ' + (d.error||'נכשל'));
 }
+/* ===== אזור משלוח כלול לחבילה ===== */
+async function savePkgZone(id, val){
+  const res = await adminFetch(API+'/api/pkgzone', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id, minutes: val==='' ? null : val }) });
+  if(!res) return; const d = await res.json();
+  if(d.ok){ const p = state.products.find(x=>x.id===id); if(p) p.pkgZone = d.pkgZone; showToast(d.pkgZone===null ? 'אזור משלוח: לפי שם המוצר' : ('משלוח כלול עד '+d.pkgZone+' דק׳')); update(); }
+  else showToast('⚠️ ' + (d.error||'נכשל'));
+}
+
 /* ===== סרגל הודעה ===== */
 async function saveAnnouncement(){
   const text = (document.getElementById('announceInput').value||'').trim();
@@ -2535,6 +2550,7 @@ document.getElementById('galleryFileInput').addEventListener('change', e => { ad
 document.addEventListener('change', e => { const inp = e.target.closest && e.target.closest('input[data-qty]'); if(inp) setQty(inp.getAttribute('data-qty'), inp.value); });
 document.addEventListener('change', e => { const inp = e.target.closest && e.target.closest('input[data-stock]'); if(inp) saveStock(inp.getAttribute('data-stock'), inp.value.trim()); });
 document.addEventListener('change', e => { const inp = e.target.closest && e.target.closest('input[data-sale]'); if(inp) saveSale(inp.getAttribute('data-sale'), inp.value.trim()); });
+document.addEventListener('change', e => { const inp = e.target.closest && e.target.closest('input[data-pkgzone]'); if(inp) savePkgZone(inp.getAttribute('data-pkgzone'), inp.value.trim()); });
 document.addEventListener('change', e => { if(e.target && e.target.id && e.target.id.indexOf('edit-file-')===0 && state.editImg){ Array.from(e.target.files||[]).forEach(f=>{ state.editImg.files.push(f); state.editImg.previews.push(URL.createObjectURL(f)); }); e.target.value=''; update(); } });
 document.addEventListener('change', e => { if(e.target && e.target.id && e.target.id.indexOf('edit-rel-')===0 && e.target.value && state.editRelated){ if(!state.editRelated.includes(e.target.value)) state.editRelated.push(e.target.value); e.target.value=''; update(); } });
 document.addEventListener('keydown', e => { if(e.key==='Enter'){ const inp = e.target.closest && e.target.closest('input[data-qty],input[data-stock]'); if(inp) inp.blur(); } });

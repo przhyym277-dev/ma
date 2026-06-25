@@ -257,7 +257,31 @@ async function saveAnnouncementToSheet(text) {
   else await cfg.addRow({ key: 'announcement', value: text });
 }
 
-const withExtras = p => ({ ...p, stock: (p.id in runtimeStock) ? runtimeStock[p.id] : null, related: runtimeRelated[p.id] || [], salePrice: (p.id in runtimeSale) ? runtimeSale[p.id] : null });
+/* ---------- אזור משלוח כלול לחבילות (config key=pkgzone, JSON {id:minutes}) ---------- */
+let runtimePkgZone = {};
+async function loadPkgZoneFromSheet() {
+  if (!SHEETS_ENABLED) return;
+  try {
+    const doc = await getDoc();
+    const cfg = doc.sheetsByTitle['config'];
+    if (!cfg) return;
+    const rows = await cfg.getRows();
+    const r = rows.find(x => x.get('key') === 'pkgzone');
+    if (r) { try { runtimePkgZone = JSON.parse(r.get('value') || '{}') || {}; } catch (e) { runtimePkgZone = {}; } }
+  } catch (e) { console.error('loadPkgZone:', e.message); }
+}
+async function savePkgZoneToSheet() {
+  if (!SHEETS_ENABLED) return;
+  const doc = await getDoc();
+  const cfg = await getNamedSheet(doc, 'config', ['key', 'value']);
+  const rows = await cfg.getRows();
+  const r = rows.find(x => x.get('key') === 'pkgzone');
+  const val = JSON.stringify(runtimePkgZone);
+  if (r) { r.set('value', val); await r.save(); }
+  else await cfg.addRow({ key: 'pkgzone', value: val });
+}
+
+const withExtras = p => ({ ...p, stock: (p.id in runtimeStock) ? runtimeStock[p.id] : null, related: runtimeRelated[p.id] || [], salePrice: (p.id in runtimeSale) ? runtimeSale[p.id] : null, pkgZone: (p.id in runtimePkgZone) ? runtimePkgZone[p.id] : null });
 
 async function countActiveProducts() {
   if (!SHEETS_ENABLED) return memProducts.filter(p => !p.hidden).length;
@@ -703,6 +727,18 @@ app.post('/api/related', requireAuth, async (req, res) => {
   } catch (err) { console.error('POST /api/related:', err.message); res.status(500).json({ ok: false, error: 'עדכון מוצרים משלימים נכשל' }); }
 });
 
+/* ---------- אזור משלוח כלול לחבילה ---------- */
+app.post('/api/pkgzone', requireAuth, async (req, res) => {
+  try {
+    const { id, minutes } = req.body || {};
+    if (!id) return res.status(400).json({ ok: false, error: 'חסר מזהה מוצר' });
+    if (minutes === '' || minutes === null || minutes === undefined) delete runtimePkgZone[id];
+    else runtimePkgZone[id] = Math.max(0, parseInt(minutes, 10) || 0);
+    await savePkgZoneToSheet();
+    res.json({ ok: true, id, pkgZone: (id in runtimePkgZone) ? runtimePkgZone[id] : null });
+  } catch (err) { console.error('POST /api/pkgzone:', err.message); res.status(500).json({ ok: false, error: 'עדכון אזור משלוח נכשל' }); }
+});
+
 /* ---------- מחיר מבצע ---------- */
 app.post('/api/sale', requireAuth, async (req, res) => {
   try {
@@ -786,6 +822,7 @@ app.listen(PORT, async () => {
   await loadSaleFromSheet();
   await loadAnnouncementFromSheet();
   await loadCouponsFromSheet();
+  await loadPkgZoneFromSheet();
   console.log(`🌿 צרפתי שיווק רץ על http://localhost:${PORT}`);
   console.log(`   מקור מוצרים: ${SHEETS_ENABLED ? 'Google Sheets ✅' : 'זיכרון (דמו)'}`);
   console.log(`   תמונות: ${CLOUDINARY_ENABLED ? 'Cloudinary ✅' : 'data-URL'}`);
