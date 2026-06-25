@@ -281,7 +281,31 @@ async function savePkgZoneToSheet() {
   else await cfg.addRow({ key: 'pkgzone', value: val });
 }
 
-const withExtras = p => ({ ...p, stock: (p.id in runtimeStock) ? runtimeStock[p.id] : null, related: runtimeRelated[p.id] || [], salePrice: (p.id in runtimeSale) ? runtimeSale[p.id] : null, pkgZone: (p.id in runtimePkgZone) ? runtimePkgZone[p.id] : null });
+/* ---------- וריאציות/גדלים (config key=variants, JSON {id:[{label,price}]}) ---------- */
+let runtimeVariants = {};
+async function loadVariantsFromSheet() {
+  if (!SHEETS_ENABLED) return;
+  try {
+    const doc = await getDoc();
+    const cfg = doc.sheetsByTitle['config'];
+    if (!cfg) return;
+    const rows = await cfg.getRows();
+    const r = rows.find(x => x.get('key') === 'variants');
+    if (r) { try { runtimeVariants = JSON.parse(r.get('value') || '{}') || {}; } catch (e) { runtimeVariants = {}; } }
+  } catch (e) { console.error('loadVariants:', e.message); }
+}
+async function saveVariantsToSheet() {
+  if (!SHEETS_ENABLED) return;
+  const doc = await getDoc();
+  const cfg = await getNamedSheet(doc, 'config', ['key', 'value']);
+  const rows = await cfg.getRows();
+  const r = rows.find(x => x.get('key') === 'variants');
+  const val = JSON.stringify(runtimeVariants);
+  if (r) { r.set('value', val); await r.save(); }
+  else await cfg.addRow({ key: 'variants', value: val });
+}
+
+const withExtras = p => ({ ...p, stock: (p.id in runtimeStock) ? runtimeStock[p.id] : null, related: runtimeRelated[p.id] || [], salePrice: (p.id in runtimeSale) ? runtimeSale[p.id] : null, pkgZone: (p.id in runtimePkgZone) ? runtimePkgZone[p.id] : null, variants: runtimeVariants[p.id] || [] });
 
 async function countActiveProducts() {
   if (!SHEETS_ENABLED) return memProducts.filter(p => !p.hidden).length;
@@ -727,6 +751,20 @@ app.post('/api/related', requireAuth, async (req, res) => {
   } catch (err) { console.error('POST /api/related:', err.message); res.status(500).json({ ok: false, error: 'עדכון מוצרים משלימים נכשל' }); }
 });
 
+/* ---------- וריאציות/גדלים ---------- */
+app.post('/api/variants', requireAuth, async (req, res) => {
+  try {
+    const { id, variants } = req.body || {};
+    if (!id) return res.status(400).json({ ok: false, error: 'חסר מזהה מוצר' });
+    const arr = Array.isArray(variants) ? variants
+      .map(v => ({ label: String(v.label || '').trim(), price: Math.max(0, Number(v.price) || 0) }))
+      .filter(v => v.label && v.price > 0).slice(0, 12) : [];
+    if (arr.length) runtimeVariants[id] = arr; else delete runtimeVariants[id];
+    await saveVariantsToSheet();
+    res.json({ ok: true, id, variants: runtimeVariants[id] || [] });
+  } catch (err) { console.error('POST /api/variants:', err.message); res.status(500).json({ ok: false, error: 'עדכון גדלים נכשל' }); }
+});
+
 /* ---------- אזור משלוח כלול לחבילה ---------- */
 app.post('/api/pkgzone', requireAuth, async (req, res) => {
   try {
@@ -823,6 +861,7 @@ app.listen(PORT, async () => {
   await loadAnnouncementFromSheet();
   await loadCouponsFromSheet();
   await loadPkgZoneFromSheet();
+  await loadVariantsFromSheet();
   console.log(`🌿 צרפתי שיווק רץ על http://localhost:${PORT}`);
   console.log(`   מקור מוצרים: ${SHEETS_ENABLED ? 'Google Sheets ✅' : 'זיכרון (דמו)'}`);
   console.log(`   תמונות: ${CLOUDINARY_ENABLED ? 'Cloudinary ✅' : 'data-URL'}`);
