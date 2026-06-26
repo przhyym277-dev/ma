@@ -104,6 +104,9 @@
   /* ===== נגישות (IS 5568) ===== */
   .skip-link{position:fixed;top:-80px;right:16px;z-index:200;background:#14442F;color:#fff;padding:12px 20px;border-radius:0 0 12px 12px;font-weight:800;font-size:15px;text-decoration:none;transition:top .2s ease}
   .skip-link:focus{top:0}
+  /* פוקוס מקלדת ברור (WCAG 2.4.7) */
+  a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible,[role="button"]:focus-visible{outline:3px solid #1E6B47;outline-offset:2px;border-radius:4px}
+  @media (prefers-reduced-motion: reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important;scroll-behavior:auto !important}}
   a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible,label:focus-visible,[tabindex]:focus-visible{outline:3px solid #1559B0 !important;outline-offset:2px !important;border-radius:6px}
   /* מצבי נגישות (מוחלים על <html>) */
   html.a11y-contrast{filter:contrast(1.4)}
@@ -549,9 +552,9 @@
       <div style="background:#fff;border-radius:22px;padding:26px;box-shadow:0 4px 18px rgba(20,68,47,0.06);border:1px solid rgba(20,68,47,0.05)">
         <h3 style="font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:19px;color:#14442F;margin:0 0 4px">שלחו לנו הודעה</h3>
         <p style="font-size:13.5px;color:#6B7A70;font-weight:500;margin:0 0 16px">נחזור אליכם בהקדם האפשרי</p>
-        <input id="ctName" maxlength="60" placeholder="שם מלא" style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:12px 14px;font-size:15px;font-weight:600;background:#FBFAF6;margin-bottom:12px">
-        <input id="ctPhone" type="tel" inputmode="tel" maxlength="30" placeholder="טלפון" style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:12px 14px;font-size:15px;font-weight:600;background:#FBFAF6;margin-bottom:12px">
-        <textarea id="ctMsg" rows="3" maxlength="1000" placeholder="במה נוכל לעזור?" style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:12px 14px;font-size:15px;font-weight:500;background:#FBFAF6;resize:vertical;line-height:1.5;margin-bottom:14px"></textarea>
+        <input id="ctName" aria-label="שם מלא" maxlength="60" placeholder="שם מלא" style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:12px 14px;font-size:15px;font-weight:600;background:#FBFAF6;margin-bottom:12px">
+        <input id="ctPhone" aria-label="מספר טלפון" type="tel" inputmode="tel" maxlength="30" placeholder="טלפון" style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:12px 14px;font-size:15px;font-weight:600;background:#FBFAF6;margin-bottom:12px">
+        <textarea id="ctMsg" aria-label="תוכן ההודעה" rows="3" maxlength="1000" placeholder="במה נוכל לעזור?" style="width:100%;border:1.5px solid #DCD7C9;border-radius:13px;padding:12px 14px;font-size:15px;font-weight:500;background:#FBFAF6;resize:vertical;line-height:1.5;margin-bottom:14px"></textarea>
         <button id="ctSubmit" data-act="send-contact" style="width:100%;border:none;border-radius:14px;padding:14px;background:#14442F;color:#fff;font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:15.5px;cursor:pointer;box-shadow:0 10px 24px rgba(20,68,47,0.22)">שליחת פנייה</button>
       </div>
 
@@ -932,7 +935,7 @@
         <span style="font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:26px;color:#14442F">₪<span id="cartTotal">0</span></span>
       </div>
       <label style="display:flex;align-items:flex-start;gap:8px;font-size:12.5px;font-weight:600;color:#4A574E;line-height:1.5;margin-bottom:11px;cursor:pointer">
-        <input type="checkbox" id="agreeTerms" style="width:17px;height:17px;flex-shrink:0;margin-top:1px;accent-color:#14442F">
+        <input type="checkbox" id="agreeTerms" aria-label="קראתי ואני מאשר/ת את תקנון האתר ומדיניות הפרטיות" style="width:17px;height:17px;flex-shrink:0;margin-top:1px;accent-color:#14442F">
         <span>קראתי ואני מאשר/ת את <a href="#usage" data-act="nav" data-nav="usage" style="color:#1E6B47;font-weight:800">תקנון האתר</a> ואת <a href="#privacy" data-act="nav" data-nav="privacy" style="color:#1E6B47;font-weight:800">מדיניות הפרטיות</a></span>
       </label>
       <button id="checkoutBtn" data-act="checkout" style="width:100%;border:none;border-radius:15px;padding:15px;font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;gap:9px;transition:filter .18s ease,transform .1s ease">
@@ -1028,7 +1031,7 @@
         </div>
         <div style="padding:18px 22px">
           <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <input id="newCatInput" placeholder="שם קטגוריה חדשה (למשל: אדמה)" style="flex:1;min-width:180px;border:1.5px solid #DCD7C9;border-radius:12px;padding:11px 14px;font-size:14.5px;font-weight:600;background:#FBFAF6">
+            <input id="newCatInput" aria-label="שם קטגוריה חדשה" placeholder="שם קטגוריה חדשה (למשל: אדמה)" style="flex:1;min-width:180px;border:1.5px solid #DCD7C9;border-radius:12px;padding:11px 14px;font-size:14.5px;font-weight:600;background:#FBFAF6">
             <button data-act="add-category" style="display:inline-flex;align-items:center;gap:6px;border:none;background:#14442F;color:#fff;font-weight:800;font-size:14px;padding:11px 18px;border-radius:12px;cursor:pointer"><i data-lucide="plus"></i> הוסף קטגוריה</button>
           </div>
           <div id="catManagerList" style="display:flex;flex-wrap:wrap;gap:9px;margin-top:16px"></div>
@@ -1042,7 +1045,7 @@
           <p style="font-size:13px;color:#6B7A70;margin:5px 0 0;font-weight:500">הודעה/מבצע שתופיע ברצועה כתומה בראש האתר. רוקנו את השדה כדי להסיר.</p>
         </div>
         <div style="padding:18px 22px;display:flex;gap:10px;flex-wrap:wrap">
-          <input id="announceInput" maxlength="200" placeholder="לדוגמה: מבצע השבוע — 10% הנחה על קומפוסט!" style="flex:1;min-width:200px;border:1.5px solid #DCD7C9;border-radius:12px;padding:11px 14px;font-size:14.5px;font-weight:600;background:#FBFAF6">
+          <input id="announceInput" aria-label="טקסט סרגל ההודעה" maxlength="200" placeholder="לדוגמה: מבצע השבוע — 10% הנחה על קומפוסט!" style="flex:1;min-width:200px;border:1.5px solid #DCD7C9;border-radius:12px;padding:11px 14px;font-size:14.5px;font-weight:600;background:#FBFAF6">
           <button data-act="save-announce" style="display:inline-flex;align-items:center;gap:6px;border:none;background:#B5683C;color:#fff;font-weight:800;font-size:14px;padding:11px 18px;border-radius:12px;cursor:pointer"><i data-lucide="check"></i> עדכן הודעה</button>
         </div>
       </div>
@@ -1055,9 +1058,9 @@
         </div>
         <div style="padding:18px 22px">
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-            <input id="couponCode" placeholder="קוד (למשל WELCOME10)" style="flex:1;min-width:150px;border:1.5px solid #DCD7C9;border-radius:12px;padding:11px 14px;font-size:14.5px;font-weight:700;background:#FBFAF6;text-transform:uppercase">
+            <input id="couponCode" aria-label="קוד קופון חדש" placeholder="קוד (למשל WELCOME10)" style="flex:1;min-width:150px;border:1.5px solid #DCD7C9;border-radius:12px;padding:11px 14px;font-size:14.5px;font-weight:700;background:#FBFAF6;text-transform:uppercase">
             <select id="couponType" aria-label="סוג הנחה" style="border:1.5px solid #DCD7C9;border-radius:12px;padding:11px 12px;font-size:14px;font-weight:700;background:#FBFAF6"><option value="percent">% אחוז</option><option value="fixed">₪ סכום</option></select>
-            <input id="couponValue" type="number" min="0" placeholder="ערך" style="width:90px;border:1.5px solid #DCD7C9;border-radius:12px;padding:11px 12px;font-size:14px;font-weight:700;background:#FBFAF6;text-align:center">
+            <input id="couponValue" aria-label="ערך ההנחה" type="number" min="0" placeholder="ערך" style="width:90px;border:1.5px solid #DCD7C9;border-radius:12px;padding:11px 12px;font-size:14px;font-weight:700;background:#FBFAF6;text-align:center">
             <button data-act="add-coupon" style="display:inline-flex;align-items:center;gap:6px;border:none;background:#14442F;color:#fff;font-weight:800;font-size:14px;padding:11px 18px;border-radius:12px;cursor:pointer"><i data-lucide="plus"></i> הוסף</button>
           </div>
           <div id="couponList" style="display:flex;flex-wrap:wrap;gap:9px;margin-top:16px"></div>
@@ -1201,7 +1204,7 @@
   </aside>
 
   <!-- TOAST -->
-  <div id="toast" style="position:fixed;top:20px;left:50%;z-index:90;transform:translateX(-50%) translateY(-24px);opacity:0;transition:all .4s cubic-bezier(.22,.8,.28,1);pointer-events:none">
+  <div id="toast" role="status" aria-live="polite" aria-atomic="true" style="position:fixed;top:20px;left:50%;z-index:90;transform:translateX(-50%) translateY(-24px);opacity:0;transition:all .4s cubic-bezier(.22,.8,.28,1);pointer-events:none">
     <div style="display:flex;align-items:center;gap:10px;background:#14442F;color:#fff;padding:13px 20px;border-radius:14px;box-shadow:0 14px 36px rgba(20,68,47,0.34);font-weight:700;font-size:14.5px;white-space:nowrap">
       <span style="font-size:18px">✅</span> <span id="toastMsg">המוצר נשמר בהצלחה ונוסף לגוגל שיטס!</span>
     </div>
