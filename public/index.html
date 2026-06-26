@@ -2590,7 +2590,7 @@ document.addEventListener('click', e => {
     case 'save-announce': saveAnnouncement(); break;
     case 'add-coupon': addCoupon(); break;
     case 'del-coupon': deleteCoupon(t.dataset.code); break;
-    case 'cookie-accept': try{ localStorage.setItem('cookieOk','1'); }catch(e){} document.getElementById('cookieBanner').style.display='none'; break;
+    case 'cookie-accept': try{ localStorage.setItem('cookieOk','1'); }catch(e){} document.getElementById('cookieBanner').style.display='none'; loadClarity(); break;
     case 'open-search': openSearch(); break;
     case 'close-search': closeSearch(); break;
     case 'search-pick': gotoProduct(id); break;
@@ -2684,7 +2684,13 @@ loadCategories();
 loadGalleryPhotos();
 
 /* באנר עוגיות — מוצג עד אישור */
-try{ if(!localStorage.getItem('cookieOk')) document.getElementById('cookieBanner').style.display='block'; }catch(e){}
+/* Microsoft Clarity — אנליטיקס + הקלטות, נטען רק לאחר אישור עוגיות */
+let _clarityLoaded=false;
+function loadClarity(){
+  if(_clarityLoaded) return; _clarityLoaded=true;
+  (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","xcxrbn8voq");
+}
+try{ if(!localStorage.getItem('cookieOk')) document.getElementById('cookieBanner').style.display='block'; else loadClarity(); }catch(e){}
 
 /* סרגל הודעה */
 fetch(API+'/api/announcement?t='+Date.now()).then(r=>r.json()).then(d=>{ if(!d.ok) return; const inp=document.getElementById('announceInput'); if(inp) inp.value=d.text||''; if(d.text && d.text.trim()){ const b=document.getElementById('announceBar'); b.textContent='📣 '+d.text; b.style.display='block'; } }).catch(()=>{});
