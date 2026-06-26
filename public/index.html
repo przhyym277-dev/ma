@@ -2473,8 +2473,17 @@ function renderCatSelect(){
 function renderCatManager(){
   const el=document.getElementById('catManagerList'); if(!el) return;
   if(!state.categories.length){ el.innerHTML='<div style="color:#8A968D;font-weight:600;font-size:13.5px">אין קטגוריות עדיין — הוסיפו את הראשונה למעלה ☝️</div>'; return; }
-  el.innerHTML=state.categories.map(c=>`<span style="display:inline-flex;align-items:center;gap:8px;background:#EAF2EB;color:#14442F;font-weight:700;font-size:13.5px;padding:7px 8px 7px 14px;border-radius:999px">${esc(c)}<button data-act="del-category" data-name="${esc(c)}" aria-label="מחיקת קטגוריה" style="width:22px;height:22px;border:none;border-radius:50%;background:#fff;color:#C8372B;cursor:pointer;display:flex;align-items:center;justify-content:center"><i data-lucide="x" style="width:13px;height:13px"></i></button></span>`).join('');
+  el.innerHTML=state.categories.map(c=>`<span style="display:inline-flex;align-items:center;gap:6px;background:#EAF2EB;color:#14442F;font-weight:700;font-size:13.5px;padding:7px 8px 7px 14px;border-radius:999px">${esc(c)}<button data-act="edit-category" data-name="${esc(c)}" aria-label="עריכת שם קטגוריה" style="width:22px;height:22px;border:none;border-radius:50%;background:#fff;color:#1E6B47;cursor:pointer;display:flex;align-items:center;justify-content:center"><i data-lucide="pencil" style="width:12px;height:12px"></i></button><button data-act="del-category" data-name="${esc(c)}" aria-label="מחיקת קטגוריה" style="width:22px;height:22px;border:none;border-radius:50%;background:#fff;color:#C8372B;cursor:pointer;display:flex;align-items:center;justify-content:center"><i data-lucide="x" style="width:13px;height:13px"></i></button></span>`).join('');
   drawIcons();
+}
+async function renameCategory(oldName){
+  const newName=(prompt('שם חדש לקטגוריה "'+oldName+'":', oldName)||'').trim();
+  if(!newName || newName===oldName) return;
+  showToast('משנה שם ומעדכן מוצרים...');
+  const res=await adminFetch(API+'/api/categories',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({oldName, newName})});
+  if(!res) return; const d=await res.json();
+  if(d.ok){ state.categories=d.categories||[]; await loadProducts(); showToast('השם עודכן ✓'+(d.updated?(' · '+d.updated+' מוצרים'):'')); renderCatSelect(); renderCatManager(); update(); }
+  else showToast('⚠️ '+(d.error||'נכשל'));
 }
 async function addCategory(){
   const inp=document.getElementById('newCatInput'); const name=(inp.value||'').trim();
@@ -2546,6 +2555,7 @@ document.addEventListener('click', e => {
     case 'save-limit': saveLimit(); break;
     case 'add-category': addCategory(); break;
     case 'del-category': deleteCategory(t.dataset.name); break;
+    case 'edit-category': renameCategory(t.dataset.name); break;
     case 'send-contact': sendContact(); break;
     case 'del-contact': deleteContact(id); break;
     case 'play-video': playVideo(Number(t.dataset.vid)); break;

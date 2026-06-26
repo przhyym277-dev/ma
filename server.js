@@ -726,6 +726,28 @@ app.delete('/api/categories/:name', requireAuth, async (req, res) => {
     res.json({ ok: true, categories: runtimeCategories });
   } catch (err) { console.error('DELETE /api/categories:', err.message); res.status(500).json({ ok: false, error: 'מחיקת קטגוריה נכשלה' }); }
 });
+// שינוי שם קטגוריה — מעדכן גם את כל המוצרים המשויכים
+app.put('/api/categories', requireAuth, async (req, res) => {
+  try {
+    const oldName = String((req.body || {}).oldName || '').trim();
+    const newName = String((req.body || {}).newName || '').trim();
+    if (!oldName || !newName) return res.status(400).json({ ok: false, error: 'חסר שם קטגוריה' });
+    if (!runtimeCategories.includes(oldName)) return res.status(404).json({ ok: false, error: 'קטגוריה לא נמצאה' });
+    const newList = runtimeCategories.map(c => c === oldName ? newName : c).filter((c, i, a) => a.indexOf(c) === i);
+    await saveCategoriesToSheet(newList);
+    let updated = 0;
+    if (SHEETS_ENABLED) {
+      const sheet = await getSheet();
+      const rows = await sheet.getRows();
+      for (const row of rows) {
+        if (String(row.get('category') || '').trim() === oldName) { row.set('category', newName); await row.save(); updated++; }
+      }
+    } else {
+      memProducts.forEach(p => { if (String(p.category || '').trim() === oldName) { p.category = newName; updated++; } });
+    }
+    res.json({ ok: true, categories: runtimeCategories, updated });
+  } catch (err) { console.error('PUT /api/categories:', err.message); res.status(500).json({ ok: false, error: 'שינוי שם קטגוריה נכשל' }); }
+});
 
 /* ---------- מלאי ---------- */
 app.post('/api/stock', requireAuth, async (req, res) => {
