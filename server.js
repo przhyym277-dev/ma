@@ -622,15 +622,37 @@ app.post('/api/shipping/check', async (req, res) => {
 /* ============================================================
  *  גולשים מחוברים (online presence) — אמיתי + בסיס עדין
  * ============================================================ */
-const onlineMap = new Map(); // id -> lastSeen(ms)
+const onlineMap = new Map();      // id -> lastSeen(ms) — נוכחים כעת
+const visitTimes = [];            // חותמות זמן של ביקורים ב-24 השעות האחרונות
+const lastVisitById = new Map();  // id -> זמן ביקור אחרון שנספר (למניעת כפילויות)
+let peakToday = 0;                // שיא נוכחים בו-זמנית היום
+let peakDay = new Date().toDateString();
+function pruneStats(now) {
+  for (const [k, t] of onlineMap) if (now - t > 40000) onlineMap.delete(k); // לא-פעילים (40 שנ')
+  const cut = now - 86400000;
+  while (visitTimes.length && visitTimes[0] < cut) visitTimes.shift();      // מעל 24 שעות
+  const d = new Date(now).toDateString();
+  if (d !== peakDay) { peakDay = d; peakToday = 0; }                        // איפוס שיא יומי
+  if (lastVisitById.size > 6000) for (const [k, t] of lastVisitById) if (now - t > 86400000) lastVisitById.delete(k);
+}
 app.get('/api/online', (req, res) => {
   const id = String(req.query.id || '').slice(0, 40) || ('x' + Math.random());
   const now = Date.now();
   onlineMap.set(id, now);
-  for (const [k, t] of onlineMap) if (now - t > 40000) onlineMap.delete(k); // ניקוי לא-פעילים (40 שנ')
+  pruneStats(now);
+  const lastV = lastVisitById.get(id) || 0;
+  if (now - lastV > 1800000) { visitTimes.push(now); lastVisitById.set(id, now); } // ביקור חדש = פער של 30 דק'
   const real = onlineMap.size;
-  const base = 6 + (Math.floor(now / 60000) % 8); // 6–13, משתנה בהדרגה
+  if (real > peakToday) peakToday = real;
+  const base = 6 + (Math.floor(now / 60000) % 8); // בסיס לתצוגה הציבורית (social proof)
   res.json({ ok: true, online: base + real });
+});
+/* סטטיסטיקה אמיתית — למנהל בלבד */
+app.get('/api/stats', requireAuth, (req, res) => {
+  const now = Date.now();
+  pruneStats(now);
+  const since = ms => visitTimes.filter(t => now - t <= ms).length;
+  res.json({ ok: true, onlineNow: onlineMap.size, last15min: since(900000), lastHour: since(3600000), last24h: visitTimes.length, peakToday });
 });
 
 /* ============================================================

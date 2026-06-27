@@ -1041,6 +1041,25 @@
         </div>
       </div>
 
+      <!-- our own stats -->
+      <div style="background:#fff;border-radius:22px;box-shadow:0 8px 30px rgba(20,68,47,0.08);overflow:hidden;margin-top:22px">
+        <div style="padding:20px 22px 16px;border-bottom:1px solid #EFEBE0;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <div>
+            <h2 style="font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:20px;margin:0;color:#14442F;display:flex;align-items:center;gap:8px"><i data-lucide="activity"></i> הסטטיסטיקה שלנו <span style="font-size:11px;font-weight:800;background:#E7F0E9;color:#1E8E4E;padding:3px 9px;border-radius:999px">אמת · חי</span></h2>
+            <p style="font-size:13px;color:#6B7A70;margin:5px 0 0;font-weight:500">נתונים אמיתיים מהשרת שלנו — מתעדכן אוטומטית כל 10 שניות</p>
+          </div>
+          <button data-act="refresh-stats" style="border:none;background:#EFEBE0;color:#14442F;font-weight:700;font-size:13px;padding:9px 14px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:6px"><i data-lucide="refresh-cw" style="width:14px;height:14px"></i> רענן</button>
+        </div>
+        <div style="padding:18px 22px;display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px">
+          <div style="background:#EAF2EB;border-radius:14px;padding:16px;text-align:center"><div style="font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:30px;color:#1E8E4E" id="statOnline">–</div><div style="font-size:12px;color:#4A574E;font-weight:700;margin-top:3px">🟢 גולשים כעת</div></div>
+          <div style="background:#FBFAF6;border-radius:14px;padding:16px;text-align:center"><div style="font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:30px;color:#14442F" id="stat15">–</div><div style="font-size:12px;color:#4A574E;font-weight:700;margin-top:3px">15 דק' אחרונות</div></div>
+          <div style="background:#FBFAF6;border-radius:14px;padding:16px;text-align:center"><div style="font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:30px;color:#14442F" id="statHour">–</div><div style="font-size:12px;color:#4A574E;font-weight:700;margin-top:3px">שעה אחרונה</div></div>
+          <div style="background:#FBFAF6;border-radius:14px;padding:16px;text-align:center"><div style="font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:30px;color:#14442F" id="stat24">–</div><div style="font-size:12px;color:#4A574E;font-weight:700;margin-top:3px">24 שעות</div></div>
+          <div style="background:#F8F4EC;border-radius:14px;padding:16px;text-align:center"><div style="font-family:'Frank Ruhl Libre',serif;font-weight:900;font-size:30px;color:#9E5429" id="statPeak">–</div><div style="font-size:12px;color:#4A574E;font-weight:700;margin-top:3px">⛰️ שיא בו-זמני היום</div></div>
+        </div>
+        <p style="font-size:11.5px;color:#A9B3AB;font-weight:600;margin:0;padding:0 22px 18px">* "ביקור" נספר פעם אחת לכל גולש ב-30 דקות. הנתונים מתאפסים אם השרת נכנס למצב שינה (חיסכון בעלות).</p>
+      </div>
+
       <!-- analytics (Clarity) -->
       <div style="background:#fff;border-radius:22px;box-shadow:0 8px 30px rgba(20,68,47,0.08);overflow:hidden;margin-top:22px">
         <div style="padding:20px 22px 16px;border-bottom:1px solid #EFEBE0">
@@ -1051,6 +1070,16 @@
           <a href="https://clarity.microsoft.com/projects/view/xcxrbn8voq/impressions" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;background:#14442F;color:#fff;font-weight:800;font-size:14px;padding:11px 18px;border-radius:12px;text-decoration:none"><i data-lucide="play-circle" style="width:17px;height:17px"></i> הקלטות גולשים</a>
           <a href="https://clarity.microsoft.com/projects/view/xcxrbn8voq/dashboard" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;background:#E7F0E9;color:#14442F;font-weight:800;font-size:14px;padding:11px 18px;border-radius:12px;text-decoration:none"><i data-lucide="layout-dashboard" style="width:17px;height:17px"></i> סטטיסטיקות</a>
           <a href="https://clarity.microsoft.com/projects/view/xcxrbn8voq/heatmaps" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px;background:#F2E2D5;color:#9E5429;font-weight:800;font-size:14px;padding:11px 18px;border-radius:12px;text-decoration:none"><i data-lucide="flame" style="width:17px;height:17px"></i> מפות חום</a>
+        </div>
+        <div style="margin:0 22px 20px;background:#FBFAF6;border:1px solid #EFEBE0;border-radius:14px;padding:16px 18px">
+          <div style="font-size:14px;font-weight:800;color:#14442F;margin-bottom:8px">🎥 איך עובדים עם ההקלטות?</div>
+          <ol style="margin:0;padding-right:18px;font-size:13.5px;line-height:1.9;color:#4A574E;font-weight:500">
+            <li>לחצו על <strong>"הקלטות גולשים"</strong> למעלה (פעם ראשונה — התחברו עם חשבון מיקרוסופט).</li>
+            <li>תראו רשימה — כל שורה היא ביקור (תאריך, מכשיר, מדינה).</li>
+            <li>לחצו על <strong>▶️ הכפתור הכחול</strong> ליד הביקור → נפתח <strong>סרטון</strong> של מה שהגולש עשה.</li>
+            <li>בכלים שלמעלה: <strong>Click</strong> = קפיצה ללחיצות · <strong>Scroll</strong> = גלילות · <strong>Attention</strong> = איפה שהה הכי הרבה.</li>
+            <li>הקלטות חדשות לוקחות <strong>~30 דק' עד שעתיים</strong> להופיע (עיבוד). טאב <strong>"Live"</strong> מראה ביקורים חיים מהר יותר.</li>
+          </ol>
         </div>
       </div>
 
@@ -2112,7 +2141,7 @@ function handle401(){
 }
 
 function enterAdmin(){
-  if (getPw()){ state.role = getRole(); state.view='admin'; state.open=false; update(); loadContacts(); loadCoupons(); }
+  if (getPw()){ state.role = getRole(); state.view='admin'; state.open=false; update(); loadContacts(); loadCoupons(); startStats(); }
   else openLogin();
 }
 function openLogin(){
@@ -2139,7 +2168,7 @@ async function submitLogin(){
     });
     const d = await res.json().catch(()=>({}));
     if (!res.ok){ errEl.textContent='סיסמה שגויה, נסו שוב'; errEl.style.display='block'; return; }
-    setPw(pw); setRole(d.role||'admin'); closeLogin(); state.view='admin'; state.open=false; update(); loadContacts(); loadCoupons();
+    setPw(pw); setRole(d.role||'admin'); closeLogin(); state.view='admin'; state.open=false; update(); loadContacts(); loadCoupons(); startStats();
   } catch(e){ errEl.textContent='שגיאת חיבור לשרת'; errEl.style.display='block'; }
   finally { btn.disabled=false; btn.style.opacity='1'; }
 }
@@ -2468,6 +2497,22 @@ async function saveAnnouncement(){
   else showToast('⚠️ ' + (d.error||'נכשל'));
 }
 
+/* ===== הסטטיסטיקה שלנו (אדמין) ===== */
+let _statsTimer=null;
+async function loadStats(){
+  if(!document.getElementById('statOnline')) return;
+  const res=await adminFetch(API+'/api/stats'); if(!res) return; const d=await res.json();
+  if(d.ok){
+    const set=(id,v)=>{const e=document.getElementById(id); if(e) e.textContent=v;};
+    set('statOnline',d.onlineNow); set('stat15',d.last15min); set('statHour',d.lastHour); set('stat24',d.last24h); set('statPeak',d.peakToday);
+  }
+}
+function startStats(){
+  loadStats();
+  if(_statsTimer) clearInterval(_statsTimer);
+  _statsTimer=setInterval(()=>{ if(state.view==='admin') loadStats(); else { clearInterval(_statsTimer); _statsTimer=null; } }, 10000);
+}
+
 /* ===== ניהול קופונים (אדמין) ===== */
 async function loadCoupons(){
   const res = await adminFetch(API+'/api/coupons');
@@ -2600,6 +2645,7 @@ document.addEventListener('click', e => {
     case 'play-video': playVideo(Number(t.dataset.vid)); break;
     case 'open-gallery': openGallery(id); break;
     case 'calc-run': runCalc(); break;
+    case 'refresh-stats': loadStats(); break;
     case 'save-announce': saveAnnouncement(); break;
     case 'add-coupon': addCoupon(); break;
     case 'del-coupon': deleteCoupon(t.dataset.code); break;
