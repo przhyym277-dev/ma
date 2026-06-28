@@ -655,6 +655,34 @@ app.get('/api/stats', requireAuth, (req, res) => {
   res.json({ ok: true, onlineNow: onlineMap.size, last15min: since(900000), lastHour: since(3600000), last24h: visitTimes.length, peakToday });
 });
 
+/* ---------- מסע הגולש (מעקב אירועים עצמאי, בזיכרון) ---------- */
+const journeys = new Map(); // sid -> { start, device, events:[], last }
+const deviceOf = ua => /Mobi|Android|iPhone|iPad/i.test(ua) ? 'מובייל' : 'מחשב';
+app.post('/api/track', (req, res) => {
+  try {
+    const { sid, events } = req.body || {};
+    if (!sid || !Array.isArray(events)) return res.json({ ok: false });
+    const key = String(sid).slice(0, 40);
+    const now = Date.now();
+    let s = journeys.get(key);
+    if (!s) { s = { start: now, device: deviceOf(req.headers['user-agent'] || ''), events: [], last: now }; journeys.set(key, s); }
+    for (const e of events.slice(0, 50)) s.events.push({ t: Number(e.t) || now, type: String(e.type || '').slice(0, 20), label: String(e.label || '').slice(0, 80) });
+    if (s.events.length > 200) s.events = s.events.slice(-200);
+    s.last = now;
+    if (journeys.size > 400) {
+      const cut = now - 86400000;
+      for (const [k, v] of journeys) if (v.last < cut) journeys.delete(k);
+      if (journeys.size > 400) { const arr = [...journeys.entries()].sort((a, b) => a[1].last - b[1].last); for (let i = 0; i < arr.length - 400; i++) journeys.delete(arr[i][0]); }
+    }
+    res.json({ ok: true });
+  } catch (e) { res.json({ ok: false }); }
+});
+app.get('/api/journeys', requireAuth, (req, res) => {
+  const list = [...journeys.values()].sort((a, b) => b.last - a.last).slice(0, 40)
+    .map(s => ({ start: s.start, last: s.last, device: s.device, count: s.events.length, events: s.events.slice(-50) }));
+  res.json({ ok: true, journeys: list });
+});
+
 /* ============================================================
  *  צור קשר — פניות מהאתר (ציבורי לשליחה, מנהל לצפייה/מחיקה)
  * ============================================================ */

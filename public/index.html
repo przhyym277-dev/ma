@@ -1083,6 +1083,18 @@
         </div>
       </div>
 
+      <!-- visitor journey -->
+      <div style="background:#fff;border-radius:22px;box-shadow:0 8px 30px rgba(20,68,47,0.08);overflow:hidden;margin-top:22px">
+        <div style="padding:20px 22px 16px;border-bottom:1px solid #EFEBE0;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <div>
+            <h2 style="font-family:'Frank Ruhl Libre',serif;font-weight:800;font-size:20px;margin:0;color:#14442F;display:flex;align-items:center;gap:8px"><i data-lucide="footprints"></i> מסע הגולש <span style="font-size:11px;font-weight:800;background:#E7F0E9;color:#1E8E4E;padding:3px 9px;border-radius:999px">שלנו</span></h2>
+            <p style="font-size:13px;color:#6B7A70;margin:5px 0 0;font-weight:500">מה כל גולש עשה באתר — עמודים, מוצרים והזמנות (מעקב עצמאי, ללא צד שלישי)</p>
+          </div>
+          <button data-act="refresh-journeys" style="border:none;background:#EFEBE0;color:#14442F;font-weight:700;font-size:13px;padding:9px 14px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:6px"><i data-lucide="refresh-cw" style="width:14px;height:14px"></i> רענן</button>
+        </div>
+        <div id="journeyList" style="padding:14px 18px;display:flex;flex-direction:column;gap:10px"></div>
+      </div>
+
       <!-- announcement manager -->
       <div style="background:#fff;border-radius:22px;box-shadow:0 8px 30px rgba(20,68,47,0.08);overflow:hidden;margin-top:22px">
         <div style="padding:20px 22px 16px;border-bottom:1px solid #EFEBE0">
@@ -1314,7 +1326,16 @@ const _countObs = ('IntersectionObserver' in window) ? new IntersectionObserver(
 }, { threshold:0.6 }) : null;
 function initCount(){ if(!_countObs) return; document.querySelectorAll('[data-count]:not([data-counted])').forEach(el=>{ if(el.offsetParent!==null || el.getBoundingClientRect().height>0) _countObs.observe(el); }); }
 
+/* ===== מסע הגולש — מעקב אירועים עצמאי ===== */
+function _sid(){ let c=sessionStorage.getItem('cid'); if(!c){ c='c'+Date.now()+Math.random().toString(36).slice(2,8); sessionStorage.setItem('cid',c); } return c; }
+let _evtBuf=[];
+function trackEvent(type,label){ try{ _evtBuf.push({t:Date.now(),type,label:String(label||'').slice(0,80)}); if(_evtBuf.length>=15) flushTrack(); }catch(e){} }
+function flushTrack(){ if(!_evtBuf.length) return; const ev=_evtBuf.splice(0); try{ fetch(API+'/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sid:_sid(),events:ev}),keepalive:true}).catch(()=>{}); }catch(e){} }
+setInterval(flushTrack, 12000);
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) flushTrack(); });
+
 function showPage(page){
+  trackEvent('view', page);
   const pages = ['home','shop','about','articles','contact','gallery','terms','privacy','returns','usage','accessibility'];
   page = pages.includes(page) ? page : 'home';
   state.page = page;
@@ -1517,6 +1538,7 @@ function addToCart(id){
   if(max<=0){ showToast('המוצר אזל מהמלאי'); return; }
   if((state.cart[id]||0)+1 > max){ showToast('נותרו רק '+max+' יח׳ במלאי'); return; }
   state.cart[id] = (state.cart[id]||0)+1; state.pop = true;
+  const _ap = state.products.find(x=>x.id===cartKeyParts(id)[0]); if(_ap) trackEvent('add', _ap.name);
   update(); clearTimeout(window._t); window._t = setTimeout(()=>{ state.pop=false; update(); }, 360);
 }
 function inc(id){ const max=stockMax(id); if((state.cart[id]||0)+1>max){ showToast('נותרו רק '+max+' יח׳ במלאי'); return; } state.cart[id]=(state.cart[id]||0)+1; update(); }
@@ -1549,6 +1571,7 @@ function checkout(){
   const ls = lines(); if(!ls.length) return;
   const agree = document.getElementById('agreeTerms');
   if(agree && !agree.checked){ showToast('יש לאשר את התקנון ומדיניות הפרטיות'); agree.focus(); return; }
+  trackEvent('checkout', 'שליחת הזמנה ('+ls.length+' פריטים)');
   const subtotal = cartTotal();
   const dec = shipDecision();
   const chk = state.shipCheck;
@@ -2141,7 +2164,7 @@ function handle401(){
 }
 
 function enterAdmin(){
-  if (getPw()){ state.role = getRole(); state.view='admin'; state.open=false; update(); loadContacts(); loadCoupons(); startStats(); }
+  if (getPw()){ state.role = getRole(); state.view='admin'; state.open=false; update(); loadContacts(); loadCoupons(); startStats(); loadJourneys(); }
   else openLogin();
 }
 function openLogin(){
@@ -2168,7 +2191,7 @@ async function submitLogin(){
     });
     const d = await res.json().catch(()=>({}));
     if (!res.ok){ errEl.textContent='סיסמה שגויה, נסו שוב'; errEl.style.display='block'; return; }
-    setPw(pw); setRole(d.role||'admin'); closeLogin(); state.view='admin'; state.open=false; update(); loadContacts(); loadCoupons(); startStats();
+    setPw(pw); setRole(d.role||'admin'); closeLogin(); state.view='admin'; state.open=false; update(); loadContacts(); loadCoupons(); startStats(); loadJourneys();
   } catch(e){ errEl.textContent='שגיאת חיבור לשרת'; errEl.style.display='block'; }
   finally { btn.disabled=false; btn.style.opacity='1'; }
 }
@@ -2513,6 +2536,26 @@ function startStats(){
   _statsTimer=setInterval(()=>{ if(state.view==='admin') loadStats(); else { clearInterval(_statsTimer); _statsTimer=null; } }, 10000);
 }
 
+/* ===== מסע הגולש (אדמין) ===== */
+async function loadJourneys(){
+  const el=document.getElementById('journeyList'); if(!el) return;
+  const res=await adminFetch(API+'/api/journeys'); if(!res) return; const d=await res.json();
+  if(!d || !d.ok) return;
+  if(!d.journeys.length){ el.innerHTML='<div style="color:#A9B3AB;font-weight:600;font-size:13.5px;text-align:center;padding:14px">אין ביקורים עדיין — ברגע שגולשים ייכנסו, המסע שלהם יופיע כאן</div>'; return; }
+  const evIcon={view:'📄',add:'🛒',checkout:'✅',search:'🔍'};
+  const evPre={view:'צפה ב',add:'הוסיף לסל: ',checkout:'',search:'חיפש: '};
+  const pn={home:'דף הבית',shop:'חנות',about:'אודות',contact:'צור קשר',gallery:'גלריה',articles:'מאמרים',terms:'תקנון משלוחים',privacy:'פרטיות',returns:'החזרות',usage:'תנאי שימוש',accessibility:'נגישות'};
+  const tf=t=>new Date(t).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
+  el.innerHTML=d.journeys.map(s=>{
+    const dur=Math.max(1,Math.round((s.last-s.start)/60000));
+    const steps=s.events.map(e=>{ let lbl=e.type==='view'?(pn[e.label]||e.label):e.label;
+      return '<div style="display:flex;gap:8px;font-size:13px;color:#4A574E;padding:3px 0"><span style="color:#A9B3AB;min-width:44px">'+tf(e.t)+'</span><span>'+(evIcon[e.type]||'•')+' '+(evPre[e.type]||'')+esc(lbl)+'</span></div>'; }).join('');
+    return '<details style="background:#FBFAF6;border:1px solid #EFEBE0;border-radius:14px"><summary style="cursor:pointer;padding:13px 16px;font-weight:700;color:#14442F;font-size:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+      +'<span>'+(s.device==='מובייל'?'📱':'💻')+' '+s.device+'</span><span style="color:#8A968D;font-weight:600;font-size:12.5px">'+tf(s.start)+' · '+dur+' דק׳ · '+s.count+' פעולות</span></summary>'
+      +'<div style="padding:4px 16px 14px;border-top:1px dashed #E4DFD2">'+(steps||'—')+'</div></details>';
+  }).join('');
+}
+
 /* ===== ניהול קופונים (אדמין) ===== */
 async function loadCoupons(){
   const res = await adminFetch(API+'/api/coupons');
@@ -2646,6 +2689,7 @@ document.addEventListener('click', e => {
     case 'open-gallery': openGallery(id); break;
     case 'calc-run': runCalc(); break;
     case 'refresh-stats': loadStats(); break;
+    case 'refresh-journeys': loadJourneys(); break;
     case 'save-announce': saveAnnouncement(); break;
     case 'add-coupon': addCoupon(); break;
     case 'del-coupon': deleteCoupon(t.dataset.code); break;
